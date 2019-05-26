@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{30D65B27-004B-4DE9-8A9C-B834AC871FEE}</ProjectGuid>
+    <RootNamespace>LtMicros</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="kernel\arch\x86\Gdt.cpp" />
+    <ClCompile Include="kernel\arch\x86\Idt.cpp" />
+    <ClCompile Include="kernel\arch\x86\InterruptContext.cpp" />
+    <ClCompile Include="kernel\arch\x86\isr_exceptions.cpp" />
+    <ClCompile Include="kernel\arch\x86\Pmm.cpp" />
+    <ClCompile Include="kernel\arch\x86\Process.cpp" />
+    <ClCompile Include="kernel\arch\x86\Thread.cpp" />
+    <ClCompile Include="kernel\arch\x86\Vmm.cpp" />
+    <ClCompile Include="kernel\cppsupport.cpp" />
+    <ClCompile Include="kernel\drivers\BaseDriver.cpp" />
+    <ClCompile Include="kernel\drivers\Clock.cpp" />
+    <ClCompile Include="kernel\drivers\Pic.cpp" />
+    <ClCompile Include="kernel\drivers\Screen.cpp" />
+    <ClCompile Include="kernel\drivers\Serial.cpp" />
+    <ClCompile Include="kernel\Kernel.cpp" />
+    <ClCompile Include="kernel\kmain.cpp" />
+    <ClCompile Include="kernel\lib\CriticalSection.cpp" />
+    <ClCompile Include="kernel\lib\List.cpp" />
+    <ClCompile Include="kernel\lib\StdIo.cpp" />
+    <ClCompile Include="kernel\lib\StdLib.cpp" />
+    <ClCompile Include="kernel\lib\StdMem.cpp" />
+    <ClCompile Include="kernel\Logger.cpp" />
+    <ClCompile Include="kernel\mem\Heap.cpp" />
+    <ClCompile Include="kernel\mem\PagePool.cpp" />
+    <ClCompile Include="kernel\syscalls\Syscalls.cpp" />
+    <ClCompile Include="kernel\task\ProcessManager.cpp" />
+    <ClCompile Include="kernel\task\Scheduler.cpp" />
+    <ClCompile Include="kernel\task\ThreadManager.cpp" />
+    <ClCompile Include="kernel\tests\UserTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="kernel\arch\x86\Gdt.hpp" />
+    <ClInclude Include="kernel\arch\x86\Idt.hpp" />
+    <ClInclude Include="kernel\arch\x86\InterruptContext.hpp" />
+    <ClInclude Include="kernel\arch\x86\MemCommon.hpp" />
+    <ClInclude Include="kernel\arch\x86\Pmm.hpp" />
+    <ClInclude Include="kernel\arch\x86\Process.hpp" />
+    <ClInclude Include="kernel\arch\x86\Thread.hpp" />
+    <ClInclude Include="kernel\arch\x86\Vmm.hpp" />
+    <ClInclude Include="kernel\cppsupport.hpp" />
+    <ClInclude Include="kernel\drivers\BaseDriver.hpp" />
+    <ClInclude Include="kernel\drivers\Clock.hpp" />
+    <ClInclude Include="kernel\drivers\Pic.hpp" />
+    <ClInclude Include="kernel\drivers\proc_io.hpp" />
+    <ClInclude Include="kernel\drivers\Screen.hpp" />
+    <ClInclude Include="kernel\drivers\Serial.hpp" />
+    <ClInclude Include="kernel\Kernel.hpp" />
+    <ClInclude Include="kernel\lib\ICleanableObject.hpp" />
+    <ClInclude Include="kernel\lib\List.hpp" />
+    <ClInclude Include="kernel\lib\Status.hpp" />
+    <ClInclude Include="kernel\lib\stdarg.h" />
+    <ClInclude Include="kernel\lib\StdIo.hpp" />
+    <ClInclude Include="kernel\lib\StdLib.hpp" />
+    <ClInclude Include="kernel\lib\StdMem.hpp" />
+    <ClInclude Include="kernel\lib\Types.hpp" />
+    <ClInclude Include="kernel\Logger.hpp" />
+    <ClInclude Include="kernel\mem\Heap.hpp" />
+    <ClInclude Include="kernel\mem\PagePool.hpp" />
+    <ClInclude Include="kernel\multiboot.hpp" />
+    <ClInclude Include="kernel\syscalls\Syscalls.hpp" />
+    <ClInclude Include="kernel\syscalls\SyscallsList.hpp" />
+    <ClInclude Include="kernel\task\Common.hpp" />
+    <ClInclude Include="kernel\task\ProcessManager.hpp" />
+    <ClInclude Include="kernel\task\Scheduler.hpp" />
+    <ClInclude Include="kernel\task\ThreadManager.hpp" />
+    <ClInclude Include="kernel\tests\UserTests.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="boot\bootsector.asm" />
+    <None Include="boot\Makefile" />
+    <None Include="kernel\arch\x86\GdtLoader.asm" />
+    <None Include="kernel\arch\x86\IdtLoader.asm" />
+    <None Include="kernel\arch\x86\isr_exceptions.asm" />
+    <None Include="kernel\arch\x86\isr_utils.asm" />
+    <None Include="kernel\arch\x86\thread_utils.asm" />
+    <None Include="kernel\arch\x86\vmm_utils.asm" />
+    <None Include="kernel\drivers\clock_isr.asm" />
+    <None Include="kernel\lib\asm_helper.asm" />
+    <None Include="kernel\Makefile" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

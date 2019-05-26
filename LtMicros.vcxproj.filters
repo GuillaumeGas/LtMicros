@@ -1,0 +1,278 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel">
+      <UniqueIdentifier>{aa893144-1dc7-4a24-8bf6-58ee6fc14d30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\lib">
+      <UniqueIdentifier>{cdd8c34e-93e1-45ea-a894-4495386f1bc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\arch">
+      <UniqueIdentifier>{2e0d4157-59db-4e78-92ce-0b20aa3024b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\arch\x86">
+      <UniqueIdentifier>{80c96e2a-3389-4fa4-bd42-49486bf92b01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\drivers">
+      <UniqueIdentifier>{4b6fa45b-22f5-44a1-8448-904b3f15a63c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\mem">
+      <UniqueIdentifier>{c6a9ec0d-687b-49d1-8366-a534126e0f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\task">
+      <UniqueIdentifier>{049cea25-9327-4bb9-b866-45a45d9ffada}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\tests">
+      <UniqueIdentifier>{1531b3c4-f987-4d82-a50f-f72e3a08f060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\boot">
+      <UniqueIdentifier>{e27e74ec-edc7-4354-8a37-9fb984006a12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\syscalls">
+      <UniqueIdentifier>{335bef3c-3ed2-40af-9201-35a41ea83da1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="kernel\kmain.cpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lib\List.cpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lib\StdIo.cpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lib\StdLib.cpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lib\StdMem.cpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Gdt.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Idt.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\InterruptContext.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\isr_exceptions.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Pmm.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Process.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Thread.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Vmm.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\drivers\BaseDriver.cpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\drivers\Clock.cpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\drivers\Pic.cpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\drivers\Screen.cpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\drivers\Serial.cpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\mem\Heap.cpp">
+      <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\mem\PagePool.cpp">
+      <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\task\ProcessManager.cpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\task\Scheduler.cpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\task\ThreadManager.cpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\tests\UserTest.cpp">
+      <Filter>Fichiers sources\kernel\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\cppsupport.cpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\Kernel.cpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\Logger.cpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lib\CriticalSection.cpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\syscalls\Syscalls.cpp">
+      <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="kernel\multiboot.hpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\StdLib.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\Status.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\StdMem.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\ICleanableObject.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\List.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\stdarg.h">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\StdIo.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lib\Types.hpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Gdt.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Idt.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\InterruptContext.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\MemCommon.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Pmm.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Process.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Thread.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Vmm.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\drivers\BaseDriver.hpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\drivers\Clock.hpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\drivers\Pic.hpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\drivers\proc_io.hpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\drivers\Screen.hpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\drivers\Serial.hpp">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mem\Heap.hpp">
+      <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mem\PagePool.hpp">
+      <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\Common.hpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\ProcessManager.hpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\Scheduler.hpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\ThreadManager.hpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\tests\UserTests.hpp">
+      <Filter>Fichiers sources\kernel\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\cppsupport.hpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\Kernel.hpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\Logger.hpp">
+      <Filter>Fichiers sources\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\syscalls\Syscalls.hpp">
+      <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\syscalls\SyscallsList.hpp">
+      <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernel\lib\asm_helper.asm">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </None>
+    <None Include="kernel\arch\x86\GdtLoader.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\arch\x86\IdtLoader.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\arch\x86\isr_exceptions.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\arch\x86\isr_utils.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\arch\x86\thread_utils.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\arch\x86\vmm_utils.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\drivers\clock_isr.asm">
+      <Filter>Fichiers sources\kernel\drivers</Filter>
+    </None>
+    <None Include="boot\bootsector.asm">
+      <Filter>Fichiers sources\boot</Filter>
+    </None>
+    <None Include="boot\Makefile">
+      <Filter>Fichiers sources\boot</Filter>
+    </None>
+    <None Include="kernel\Makefile">
+      <Filter>Fichiers sources\kernel</Filter>
+    </None>
+  </ItemGroup>
+</Project>
