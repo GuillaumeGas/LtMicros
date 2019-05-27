@@ -37,12 +37,23 @@ void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, const InterruptFromU
     }
 }
 
+/*  
+    SYSCALLS Begin
+*/
 void SysPrint(const InterruptFromUserlandContext * context)
 {
     KLOG(LOG_DEBUG, "Print !");
+}
+
+void SysPrint2(const InterruptFromUserlandContext * context)
+{
+    KLOG(LOG_DEBUG, "Print 2 !");
 }
 
 void SysInvalid(const InterruptFromUserlandContext * context)
 {
     KLOG(LOG_ERROR, "Invalid syscall called");
 }
+/*
+    SYSCALLS End
+*/

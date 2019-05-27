@@ -5,6 +5,7 @@
 
 #include "SyscallsList.hpp"
 
+/// @brief Syscalls list built using the syscalls list defined in SyscallsList.hpp
 enum SyscallId 
 {
 #define SYSCALL(name, _) name,
@@ -14,11 +15,13 @@ enum SyscallId
 #undef SYSCALL_ID
 };
 
-void SysPrint(const InterruptFromUserlandContext * context);
-void SysInvalid(const InterruptFromUserlandContext * context);
-
+/// @brief Class used to execute syscalls
 class SyscallsHandler
 {
 public:
+    /// @brief Executes a syscall
+    ///        Its body is build using the syscalls list defined in SyscallsList.hpp
+    /// @param[in] sysId The syscall id we want to execute
+    /// @param[in] context A pointer to the syscall trap context
     static void ExecuteSyscall(const SyscallId sysId, const InterruptFromUserlandContext * context);
 };
