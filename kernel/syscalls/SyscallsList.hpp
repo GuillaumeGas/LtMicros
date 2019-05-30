@@ -2,7 +2,7 @@
 
 /// @file
 
-/// @defgroup TaskGroup Task group
+/// @defgroup Syscalls Syscalls group
 /// @{
 
 /// @brief This file contains the syscalls list

@@ -4,15 +4,28 @@
 #include <kernel/arch/x86/Vmm.hpp>
 #include <kernel/lib/StdLib.hpp>
 
-#define TEST() asm("mov $0x01, %%eax; int $0x30" ::);
+#define TEST() asm("mov $0x00, %%eax; int $0x30" ::);
+#define TEST2() asm("mov $0x01, %%eax; int $0x30" ::);
 
 static void _testUser()
 {
-    TEST();
-    while (1);
+    while (1)
+    {
+        TEST();
+        for (int i = 0; i < 1000; i++);
+    }
 }
 
-void UserTest()
+static void _testUser2()
+{
+    while (1)
+    {
+        TEST2();
+        for (int i = 0; i < 2000; i++);
+    }
+}
+
+void UserTest(int id)
 {
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
@@ -31,7 +44,10 @@ void UserTest()
 
     gVmm.AddPageToPageDirectory((u32)vAddr, (u32)pAddr, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
 
-    MemCopy((void *)_testUser, vAddr, 512);
+    if (id == 0)
+        MemCopy((void *)_testUser, vAddr, 512);
+    else
+        MemCopy((void *)_testUser2, vAddr, 512);
 
     gVmm.RestoreMemoryMapping();
 

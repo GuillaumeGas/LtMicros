@@ -136,9 +136,12 @@
     <ClCompile Include="kernel\arch\x86\isr_exceptions.cpp" />
     <ClCompile Include="kernel\arch\x86\Pmm.cpp" />
     <ClCompile Include="kernel\arch\x86\Process.cpp" />
+    <ClCompile Include="kernel\arch\x86\Syscalls.cpp" />
     <ClCompile Include="kernel\arch\x86\Thread.cpp" />
     <ClCompile Include="kernel\arch\x86\Vmm.cpp" />
     <ClCompile Include="kernel\cppsupport.cpp" />
+    <ClCompile Include="kernel\debug\LtDbg.cpp" />
+    <ClCompile Include="kernel\debug\LtDbgCom.cpp" />
     <ClCompile Include="kernel\drivers\BaseDriver.cpp" />
     <ClCompile Include="kernel\drivers\Clock.cpp" />
     <ClCompile Include="kernel\drivers\Pic.cpp" />
@@ -154,7 +157,7 @@
     <ClCompile Include="kernel\Logger.cpp" />
     <ClCompile Include="kernel\mem\Heap.cpp" />
     <ClCompile Include="kernel\mem\PagePool.cpp" />
-    <ClCompile Include="kernel\syscalls\Syscalls.cpp" />
+    <ClCompile Include="kernel\syscalls\SyscallsHandler.cpp" />
     <ClCompile Include="kernel\task\ProcessManager.cpp" />
     <ClCompile Include="kernel\task\Scheduler.cpp" />
     <ClCompile Include="kernel\task\ThreadManager.cpp" />
@@ -167,9 +170,14 @@
     <ClInclude Include="kernel\arch\x86\MemCommon.hpp" />
     <ClInclude Include="kernel\arch\x86\Pmm.hpp" />
     <ClInclude Include="kernel\arch\x86\Process.hpp" />
+    <ClInclude Include="kernel\arch\x86\Syscalls.hpp" />
     <ClInclude Include="kernel\arch\x86\Thread.hpp" />
     <ClInclude Include="kernel\arch\x86\Vmm.hpp" />
     <ClInclude Include="kernel\cppsupport.hpp" />
+    <ClInclude Include="kernel\debug\Common.hpp" />
+    <ClInclude Include="kernel\debug\LtDbg.hpp" />
+    <ClInclude Include="kernel\debug\LtDbgCom.hpp" />
+    <ClInclude Include="kernel\debug\LtDbgCommands.hpp" />
     <ClInclude Include="kernel\drivers\BaseDriver.hpp" />
     <ClInclude Include="kernel\drivers\Clock.hpp" />
     <ClInclude Include="kernel\drivers\Pic.hpp" />
@@ -189,7 +197,7 @@
     <ClInclude Include="kernel\mem\Heap.hpp" />
     <ClInclude Include="kernel\mem\PagePool.hpp" />
     <ClInclude Include="kernel\multiboot.hpp" />
-    <ClInclude Include="kernel\syscalls\Syscalls.hpp" />
+    <ClInclude Include="kernel\syscalls\SyscallsHandler.hpp" />
     <ClInclude Include="kernel\syscalls\SyscallsList.hpp" />
     <ClInclude Include="kernel\task\Common.hpp" />
     <ClInclude Include="kernel\task\ProcessManager.hpp" />
@@ -204,8 +212,10 @@
     <None Include="kernel\arch\x86\IdtLoader.asm" />
     <None Include="kernel\arch\x86\isr_exceptions.asm" />
     <None Include="kernel\arch\x86\isr_utils.asm" />
+    <None Include="kernel\arch\x86\syscall_isr.asm" />
     <None Include="kernel\arch\x86\thread_utils.asm" />
     <None Include="kernel\arch\x86\vmm_utils.asm" />
+    <None Include="kernel\debug\ltdbg_isr.asm" />
     <None Include="kernel\drivers\clock_isr.asm" />
     <None Include="kernel\lib\asm_helper.asm" />
     <None Include="kernel\Makefile" />

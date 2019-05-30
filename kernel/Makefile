@@ -11,6 +11,7 @@ ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr
 MEM=PagePool.o Heap.o
 SYSCALLS=SyscallsHandler.o
 TASK=ProcessManager.o ThreadManager.o Scheduler.o
+DEBUG=LtDbg.o ltdbg_isr.o LtDbgCom.o
 TESTS=UserTest.o
 
 all: $(OBJ) 
@@ -25,7 +26,7 @@ clean:
 doc:
 	doxygen doc/doxyConf
 
-kernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(TESTS)
+kernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(DEBUG) $(TESTS)
 	$(LD) $^ -o $@
 
 # ROOT
@@ -147,6 +148,16 @@ ThreadManager.o: task/ThreadManager.cpp
 	$(CC) -c $^
 
 Scheduler.o: task/Scheduler.cpp
+	$(CC) -c $^
+
+# DEBUG DIRECTORY
+LtDbg.o: debug/LtDbg.cpp
+	$(CC) -c $^
+
+ltdbg_isr.o: debug/ltdbg_isr.asm
+	$(ASM) -o $@ $^
+
+LtDbgCom.o: debug/LtDbgCom.cpp
 	$(CC) -c $^
 
 # TESTS DIRECTORY

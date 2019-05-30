@@ -24,6 +24,8 @@
 #include <kernel/lib/StdLib.hpp>
 #include <kernel/lib/List.hpp>
 
+#include <kernel/debug/LtDbg.hpp>
+
 #include <kernel/tests/UserTests.hpp>
 
 #include <kernel/Logger.hpp>
@@ -35,6 +37,8 @@
 /// @brief Kernel page tables physical location
 #define KERNEL_PAGES_TABLE_P_ADDR 0x400000
 
+#define DEBUG_MODE
+
 Kernel::Kernel()
 {
     info.pPageDirectory.pdEntry = (PageDirectoryEntry *)KERNEL_PAGE_DIR_P_ADDR;
@@ -45,7 +49,12 @@ Kernel::Kernel()
     info.vPagePoolLimit = KERNEL_PAGE_POOL_V_LIMIT_ADDR;
     info.vHeapBase = KERNEL_HEAP_V_BASE_ADDR;
     info.vHeapLimit = KERNEL_HEAP_V_LIMIT_ADDR;
-    info.debug = FALSE;
+
+#ifdef DEBUG_MODE
+    info.debug = true;
+#else
+    info.debug = false;
+#endif
 }
 
 void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
@@ -54,7 +63,6 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
 
     CheckMultibootPartialInfo(mbi, multibootMagicNumber);
 
-    // We initialize the Interrupt Descriptor Table
     gIdt.Init();
     KLOG(LOG_INFO, "IDT initialized");
 
@@ -88,6 +96,13 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
 
     gSyscallsX86.Init();
     KLOG(LOG_INFO, "X86 syscalls handler initialized");
+
+    if (gKernel.info.debug)
+    {
+        gLtDbg.Init();
+        KLOG(LOG_INFO, "Kernel debugger initialized");
+        __debugbreak();
+    }
 }
 
 void Kernel::Start()
@@ -107,7 +122,8 @@ void Kernel::Start()
 
     gScheduler.AddThread(systemProcess->mainThread);
 
-    UserTest();
+    //UserTest(0);
+    //UserTest(1);
 
     gScheduler.Start();
 

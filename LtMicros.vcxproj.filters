@@ -43,6 +43,9 @@
     <Filter Include="Fichiers sources\kernel\syscalls">
       <UniqueIdentifier>{335bef3c-3ed2-40af-9201-35a41ea83da1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\kernel\debug">
+      <UniqueIdentifier>{18530ff2-6891-4850-a49e-d26f46c592b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kernel\kmain.cpp">
@@ -129,8 +132,17 @@
     <ClCompile Include="kernel\lib\CriticalSection.cpp">
       <Filter>Fichiers sources\kernel\lib</Filter>
     </ClCompile>
-    <ClCompile Include="kernel\syscalls\Syscalls.cpp">
+    <ClCompile Include="kernel\arch\x86\Syscalls.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\syscalls\SyscallsHandler.cpp">
       <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\debug\LtDbg.cpp">
+      <Filter>Fichiers sources\kernel\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\debug\LtDbgCom.cpp">
+      <Filter>Fichiers sources\kernel\debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,11 +245,26 @@
     <ClInclude Include="kernel\Logger.hpp">
       <Filter>Fichiers sources\kernel</Filter>
     </ClInclude>
-    <ClInclude Include="kernel\syscalls\Syscalls.hpp">
-      <Filter>Fichiers sources\kernel\syscalls</Filter>
-    </ClInclude>
     <ClInclude Include="kernel\syscalls\SyscallsList.hpp">
       <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Syscalls.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\syscalls\SyscallsHandler.hpp">
+      <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\debug\LtDbg.hpp">
+      <Filter>Fichiers sources\kernel\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\debug\LtDbgCom.hpp">
+      <Filter>Fichiers sources\kernel\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\debug\LtDbgCommands.hpp">
+      <Filter>Fichiers sources\kernel\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\debug\Common.hpp">
+      <Filter>Fichiers sources\kernel\debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -273,6 +300,12 @@
     </None>
     <None Include="kernel\Makefile">
       <Filter>Fichiers sources\kernel</Filter>
+    </None>
+    <None Include="kernel\arch\x86\syscall_isr.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </None>
+    <None Include="kernel\debug\ltdbg_isr.asm">
+      <Filter>Fichiers sources\kernel\debug</Filter>
     </None>
   </ItemGroup>
 </Project>

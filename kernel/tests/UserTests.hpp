@@ -1,3 +1,3 @@
 #pragma once
 
-void UserTest();
+void UserTest(int id);

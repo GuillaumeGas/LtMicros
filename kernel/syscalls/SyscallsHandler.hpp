@@ -5,6 +5,11 @@
 
 #include "SyscallsList.hpp"
 
+/// @file
+
+/// @addgroup Syscalls Syscalls group
+/// @{
+
 /// @brief Syscalls list built using the syscalls list defined in SyscallsList.hpp
 enum SyscallId 
 {
@@ -25,3 +30,5 @@ public:
     /// @param[in] context A pointer to the syscall trap context
     static void ExecuteSyscall(const SyscallId sysId, const InterruptFromUserlandContext * context);
 };
+
+/// @}
