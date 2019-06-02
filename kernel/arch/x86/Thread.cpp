@@ -204,6 +204,9 @@ KeStatus Thread::_InitUserThread(Thread * thread, u32 entryAddr)
     u32 pUserStack = 0;
     u32 vUserStack = 0;
 
+    const u32 IntFlag = 0x200;
+    const u32 IoFlag = 0x3000;
+
     if (thread == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid thread parameter");
@@ -253,7 +256,8 @@ KeStatus Thread::_InitUserThread(Thread * thread, u32 entryAddr)
     thread->regs.ebp = thread->regs.esp;
     thread->regs.eip = entryAddr;
 
-    thread->regs.eflags = 0x200 & 0xFFFFBFFF;
+    //thread->regs.eflags = 0x200 & 0xFFFFBFFF;
+    thread->regs.eflags = IntFlag /*| IoFlag | (IoFlag >> 1)*/;
     thread->kstack.esp0 = (((u32)kernelStackPage.vAddr + PAGE_SIZE) - (u32)(sizeof(void*)));
     thread->kstack.ss0 = KERNEL_DATA_SELECTOR;
 

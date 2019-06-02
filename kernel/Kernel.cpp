@@ -37,7 +37,7 @@
 /// @brief Kernel page tables physical location
 #define KERNEL_PAGES_TABLE_P_ADDR 0x400000
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 Kernel::Kernel()
 {
@@ -122,8 +122,13 @@ void Kernel::Start()
 
     gScheduler.AddThread(systemProcess->mainThread);
 
-    //UserTest(0);
-    //UserTest(1);
+    status = LoadModules();
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "LoadAndStartModule() failed with code %d", status);
+        // TODO : handle critical error
+        goto clean;
+    }
 
     gScheduler.Start();
 
@@ -161,6 +166,30 @@ void Kernel::CheckMultibootPartialInfo(MultibootPartialInfo * mbi, u32 multiboot
         KLOG(LOG_WARNING, "Missing MEM_INFO flag !");
         Pause();
     }
+
+    if (FlagOn(mbi->flags, MODS_INFO))
+    {
+        KLOG(LOG_DEBUG, "Found %d module(s)", mbi->mods_count);
+    }
+
+    gKernel.info.multibootInfo = mbi;
+}
+
+KeStatus Kernel::LoadModules()
+{
+    MultibootPartialInfo * mbi = gKernel.info.multibootInfo;
+    MultiBootModule * module = mbi->mods_addr;
+
+    if (mbi->mods_count == 0 || mbi->mods_addr == nullptr)
+        return STATUS_SUCCESS;
+
+    for (int i = 0; i < mbi->mods_count; i++)
+    {
+        KLOG(LOG_INFO, "Loading module %s", module->name);
+        module += sizeof(MultiBootModule);
+    }
+
+    return STATUS_SUCCESS;
 }
 
 void Kernel::Cleanup()

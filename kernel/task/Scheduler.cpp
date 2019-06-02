@@ -2,6 +2,7 @@
 #include "Scheduler.hpp"
 
 #include <kernel/arch/x86/InterruptContext.hpp>
+#include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SCHEDULER", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -32,6 +33,8 @@ void Scheduler::AddThread(Thread * thread)
     // The system process main thread must be the first to be added to the scheduler
     if (_currentThread == nullptr)
         _currentThread = thread;
+
+    //__debugbreak();
 
     ListPush(_threadsList, thread);
     _nbThreads++;

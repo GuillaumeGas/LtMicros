@@ -10,7 +10,6 @@
 
 #define SYSCALLS_LIST				  \
     SYSCALL (SYS_PRINT, SysPrint)	  \
-    SYSCALL (SYS_PRINT2, SysPrint2)   \
     SYSCALL (SYS_INVALID, SysInvalid)
 
 

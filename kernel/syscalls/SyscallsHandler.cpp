@@ -42,12 +42,9 @@ void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, const InterruptFromU
 */
 void SysPrint(const InterruptFromUserlandContext * context)
 {
-    KLOG(LOG_DEBUG, "Print !");
-}
+    kprint("%s", context->ebx);
 
-void SysPrint2(const InterruptFromUserlandContext * context)
-{
-    KLOG(LOG_DEBUG, "Print 2 !");
+    KLOG(LOG_DEBUG, "eflags : %x", context->eflags);
 }
 
 void SysInvalid(const InterruptFromUserlandContext * context)

@@ -42,12 +42,41 @@ void UserTest(int id)
     gVmm.SaveCurrentMemoryMapping();
     gVmm.SetCurrentPageDirectory(process->pageDirectory.pdEntry);
 
-    gVmm.AddPageToPageDirectory((u32)vAddr, (u32)pAddr, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
-
     if (id == 0)
-        MemCopy((void *)_testUser, vAddr, 512);
+    {
+        gVmm.AddPageToPageDirectory((u32)vAddr, (u32)_testUser, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
+        //MemCopy((void *)_testUser, vAddr, 512);
+    }
     else
-        MemCopy((void *)_testUser2, vAddr, 512);
+    {
+        gVmm.AddPageToPageDirectory((u32)vAddr, (u32)_testUser2, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
+        //MemCopy((void *)_testUser2, vAddr, 512);
+    }
+
+    gVmm.RestoreMemoryMapping();
+
+    gScheduler.AddThread(process->mainThread);
+}
+
+void UserSystemTest(void * programAddr)
+{
+    KeStatus status = STATUS_FAILURE;
+    Process * process = nullptr;
+
+    char * pAddr = (char *)gPmm.GetFreePage();
+    char * vAddr = (char *)0x40000000;
+
+    status = gProcessManager.CreateProcess((u32)vAddr, &process, nullptr);
+    if (FAILED(status))
+    {
+        return;
+    }
+
+    gVmm.SaveCurrentMemoryMapping();
+    gVmm.SetCurrentPageDirectory(process->pageDirectory.pdEntry);
+
+    gVmm.AddPageToPageDirectory((u32)vAddr, (u32)pAddr, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
+    MemCopy((void *)programAddr, vAddr, PAGE_SIZE);
 
     gVmm.RestoreMemoryMapping();
 

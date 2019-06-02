@@ -3,13 +3,24 @@
 /// The magic field should contain this.
 #define MULTIBOOT_HEADER_MAGIC 0x2BADB002
 
-struct MultibootPartialInfo {
+struct MultiBootModule
+{
+    void * mod_start;
+    void * mod_end;
+    char * name;
+    u32 reserved;
+};
+
+struct MultibootPartialInfo 
+{
 	unsigned long flags;
 	unsigned long low_mem;
 	unsigned long high_mem;
 	unsigned long boot_device;
 	unsigned long cmdline;
-} typedef MultibootPartialInfo;
+    unsigned long mods_count;
+    MultiBootModule * mods_addr;
+};
 
 enum MultibootFlag
 {

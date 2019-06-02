@@ -143,6 +143,10 @@ KeStatus LtDbgCom::RecvRequest(KeDebugRequest * request)
 
         MemCopy(&(ptrRequest->param), request->param, request->paramSize);
     }
+    else
+    {
+        request->param = nullptr;
+    }
 
     CleanupPacket(&packet);
 

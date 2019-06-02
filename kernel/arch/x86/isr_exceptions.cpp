@@ -11,7 +11,7 @@ static void DefaultExceptionHandler(ExceptionContext * context, const char * str
 
 extern "C" void default_isr(ExceptionContext * context)
 {
-    DefaultExceptionHandler(context, "[!] Unhandled interrupt !");
+    //DefaultExceptionHandler(context, "[!] Unhandled interrupt !");
 }
 
 extern "C" void divided_by_zero_isr(ExceptionContext * context)

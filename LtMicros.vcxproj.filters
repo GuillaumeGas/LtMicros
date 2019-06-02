@@ -307,5 +307,11 @@
     <None Include="kernel\debug\ltdbg_isr.asm">
       <Filter>Fichiers sources\kernel\debug</Filter>
     </None>
+    <None Include="Makefile">
+      <Filter>Fichiers sources</Filter>
+    </None>
+    <None Include="iso\boot\grub\grub.cfg">
+      <Filter>Fichiers sources</Filter>
+    </None>
   </ItemGroup>
 </Project>

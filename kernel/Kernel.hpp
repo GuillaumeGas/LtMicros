@@ -36,6 +36,8 @@ struct KernelInfo
     u32 vHeapLimit;
     /// @brief True if kernel is in debug mode (must be connected to LtDbg
 	bool debug;
+
+    MultibootPartialInfo * multibootInfo;
 };
 
 class Kernel
@@ -51,6 +53,8 @@ public:
 
     /// @brief Starts LtMicros
     void Start();
+
+    KeStatus LoadModules();
 
     /// @brief Calls cleanup methods of all object that are registered in the CleanableObjectsList
     void Cleanup();

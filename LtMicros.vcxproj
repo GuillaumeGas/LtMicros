@@ -208,6 +208,7 @@
   <ItemGroup>
     <None Include="boot\bootsector.asm" />
     <None Include="boot\Makefile" />
+    <None Include="iso\boot\grub\grub.cfg" />
     <None Include="kernel\arch\x86\GdtLoader.asm" />
     <None Include="kernel\arch\x86\IdtLoader.asm" />
     <None Include="kernel\arch\x86\isr_exceptions.asm" />
@@ -219,6 +220,7 @@
     <None Include="kernel\drivers\clock_isr.asm" />
     <None Include="kernel\lib\asm_helper.asm" />
     <None Include="kernel\Makefile" />
+    <None Include="Makefile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
