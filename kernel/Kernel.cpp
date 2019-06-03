@@ -114,7 +114,7 @@ void Kernel::Start()
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "gProcessManager::Create() failed with code %d", status);
-        // TODO : handle critical error
+        Panic();
         goto clean;
     }
 
@@ -126,7 +126,7 @@ void Kernel::Start()
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "LoadAndStartModule() failed with code %d", status);
-        // TODO : handle critical error
+        Panic();
         goto clean;
     }
 
@@ -138,6 +138,7 @@ clean:
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "LtMicros kernel failed to start !");
+        Panic();
     }
     else
     {
@@ -154,7 +155,7 @@ void Kernel::CheckMultibootPartialInfo(MultibootPartialInfo * mbi, u32 multiboot
     if (multibootMagicNumber != MULTIBOOT_HEADER_MAGIC)
     {
         KLOG(LOG_ERROR, "Invalid magic number : %x", multibootMagicNumber);
-        Pause();
+        Panic();
     }
 
     if (FlagOn(mbi->flags, MEM_INFO))
@@ -164,7 +165,7 @@ void Kernel::CheckMultibootPartialInfo(MultibootPartialInfo * mbi, u32 multiboot
     else
     {
         KLOG(LOG_WARNING, "Missing MEM_INFO flag !");
-        Pause();
+        Panic();
     }
 
     if (FlagOn(mbi->flags, MODS_INFO))
@@ -186,6 +187,7 @@ KeStatus Kernel::LoadModules()
     for (int i = 0; i < mbi->mods_count; i++)
     {
         KLOG(LOG_INFO, "Loading module %s", module->name);
+        UserSystemTest(module->mod_start);
         module += sizeof(MultiBootModule);
     }
 
@@ -195,4 +197,11 @@ KeStatus Kernel::LoadModules()
 void Kernel::Cleanup()
 {
 
+}
+
+void Kernel::Panic()
+{
+    DISABLE_IRQ();
+    kprint("Kernel Panic !\n");
+    Pause();
 }

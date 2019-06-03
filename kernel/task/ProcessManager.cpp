@@ -2,6 +2,7 @@
 #include "ProcessManager.hpp"
 
 #include "Common.hpp"
+#include <kernel/Kernel.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("TASK", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -13,9 +14,7 @@ void ProcessManager::Init()
     if (_processList == nullptr)
     {
         KLOG(LOG_ERROR, "CreateList() failed");
-
-        // TODO : handle critical kernel error
-        while (1);
+        gKernel.Panic();
     }
 }
 

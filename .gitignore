@@ -18,3 +18,4 @@ kernel_bin
 *.bxrc
 *.out
 *.bxrc
+*.sys

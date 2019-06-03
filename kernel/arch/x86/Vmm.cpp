@@ -190,9 +190,7 @@ void Vmm::AddPageToKernelPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags)
     if (vAddr > V_USER_BASE_ADDR)
     {
         KLOG(LOG_ERROR, "%p is not in kernel space !", vAddr);
-        Pause();
-
-        // TODO : kernel error handler
+        gKernel.Panic();
         return;
     }
 
@@ -202,10 +200,7 @@ void Vmm::AddPageToKernelPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags)
     if (!FlagOn(*pde, PAGE_PRESENT))
     {
         KLOG(LOG_ERROR, "Page not found (0x%x)", pde);
-        Pause();
-
-        // panic(PAGE_TABLE_NOTE_FOUND);
-        // TODO : kernel error handler
+        gKernel.Panic();
         return;
     }
 
@@ -256,10 +251,7 @@ PageTableEntry Vmm::GetPageTableFromVirtualAddress(u32 vAddr) const
     if (!FlagOn(*pde, PAGE_PRESENT))
     {
         KLOG(LOG_ERROR, "Page dir entry not found (0x%x)", pde);
-        Pause();
-
-        // panic(PAGE_TABLE_NOTE_FOUND);
-        // TODO : kernel error handler
+        gKernel.Panic();
     }
 
     // We do the same with the page table entry
@@ -277,10 +269,7 @@ void Vmm::SetPageTableFromVirtualAddress(u32 vAddr, const PageTableEntry & pageT
     if (!FlagOn(*pde, PAGE_PRESENT))
     {
         KLOG(LOG_ERROR, "Page dir entry not found (0x%x)", pde);
-        Pause();
-
-        // panic(PAGE_TABLE_NOTE_FOUND);
-        // TODO : kernel error handler
+        gKernel.Panic();
     }
 
     // We do the same with the page table entry

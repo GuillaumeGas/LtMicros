@@ -34,8 +34,7 @@ MemBlock * Heap::Sbrk(int n)
     if ((u32)lastBlock + (n * PAGE_SIZE) > gKernel.info.vHeapLimit)
     {
         KLOG(LOG_ERROR, "Kernel heap limit reached (%x, %x, %x, %x)", baseBlock, n, n*PAGE_SIZE, gKernel.info.vHeapLimit);
-        // TODO : kernel error handler
-        while (1);
+        gKernel.Panic();
         return nullptr;
     }
     else
@@ -51,8 +50,7 @@ MemBlock * Heap::Sbrk(int n)
             if (new_page == nullptr)
             {
                 KLOG(LOG_ERROR, "Couldn't find a free page");
-                // TODO : kernel error handler
-                while (1);
+                gKernel.Panic();
             }
 
             gVmm.AddPageToKernelPageDirectory(heap, (u32)new_page, PAGE_PRESENT | PAGE_WRITEABLE);

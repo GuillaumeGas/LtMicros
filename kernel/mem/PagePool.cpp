@@ -101,8 +101,7 @@ void PagePool::_InitPagesList()
     if (blocks == nullptr)
     {
         KLOG(LOG_ERROR, "Couldn't allocate %d bytes", nbPages * sizeof(PageBlock));
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     PageBlock * prev = nullptr;

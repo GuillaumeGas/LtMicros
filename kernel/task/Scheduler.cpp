@@ -3,6 +3,7 @@
 
 #include <kernel/arch/x86/InterruptContext.hpp>
 #include <kernel/debug/LtDbg.hpp>
+#include <kernel/Kernel.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SCHEDULER", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -13,8 +14,7 @@ void Scheduler::Init()
     if (_threadsList == nullptr)
     {
         KLOG(LOG_ERROR, "ListCreate() failed");
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     _running = false;
@@ -55,8 +55,7 @@ void Scheduler::Schedules(InterruptContext * context)
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid context parameter");
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     if (_running && _nbThreads > 1)
@@ -114,15 +113,13 @@ void Scheduler::_SwitchToThread(InterruptContext * context, Thread * thread)
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid context parameter");
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     if (thread == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid thread parameter");
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     _currentThread->SaveState(context);

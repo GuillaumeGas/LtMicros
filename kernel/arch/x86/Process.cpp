@@ -190,8 +190,7 @@ PageDirectory Process::CreateProcessPageDirectory()
     if (savedPage == nullptr)
     {
         KLOG(LOG_ERROR, "Couldn't allocate %d bytes", sizeof(Page));
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     MemCopy(&pd_page, savedPage, sizeof(Page));

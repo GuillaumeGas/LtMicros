@@ -71,8 +71,8 @@ LtDbg::LtDbg() : _isInitialized(false), _isConnected(false) {}
 void LtDbg::Init()
 {
     // TODO : replace 1 and 2 by idt entry macro/enum
-    gIdt.InitDescriptor((u32)_asm_debug_isr, CPU_GATE, 1);
-    gIdt.InitDescriptor((u32)_asm_breakpoint_isr, CPU_GATE, 3);
+    gIdt.InitDescriptor((u32)_asm_debug_isr, CPU_GATE, ISR_INDEX_DEBUG);
+    gIdt.InitDescriptor((u32)_asm_breakpoint_isr, CPU_GATE, ISR_INDEX_BREAKPOINT);
     gIdt.Reload();
 
     _isInitialized = true;

@@ -60,24 +60,24 @@ void Idt::Init()
         InitDescriptor((u32)_asm_default_isr, CPU_GATE, i);
 
     // We initialize processor exceptions ISRs
-    InitDescriptor((u32)_asm_divided_by_zero_isr,          CPU_GATE, 0);
-    InitDescriptor((u32)_asm_non_maskable_int_isr,         CPU_GATE, 2);
-    InitDescriptor((u32)_asm_overflow_isr,                 CPU_GATE, 4);
-    InitDescriptor((u32)_asm_bound_range_exceeded_isr,     CPU_GATE, 5);
-    InitDescriptor((u32)_asm_invalid_opcode_isr,           CPU_GATE, 6);
-    InitDescriptor((u32)_asm_device_not_available_isr,     CPU_GATE, 7);
-    InitDescriptor((u32)_asm_double_fault_isr,             CPU_GATE, 8);
-    InitDescriptor((u32)_asm_invalid_tss_isr,              CPU_GATE, 10);
-    InitDescriptor((u32)_asm_segment_not_present_isr,      CPU_GATE, 11);
-    InitDescriptor((u32)_asm_stack_segment_fault_isr,      CPU_GATE, 12);
-    InitDescriptor((u32)_asm_general_protection_fault_isr, CPU_GATE, 13);
-    InitDescriptor((u32)_asm_page_fault_isr,               CPU_GATE, 14);
-    InitDescriptor((u32)_asm_x87_floating_point_isr,       CPU_GATE, 16);
-    InitDescriptor((u32)_asm_alignment_check_isr,          CPU_GATE, 17);
-    InitDescriptor((u32)_asm_machine_check_isr,            CPU_GATE, 18);
-    InitDescriptor((u32)_asm_simd_floating_point_isr,      CPU_GATE, 19);
-    InitDescriptor((u32)_asm_virtualization_isr,           CPU_GATE, 20);
-    InitDescriptor((u32)_asm_security_isr,                 CPU_GATE, 30);
+    InitDescriptor((u32)_asm_divided_by_zero_isr,          CPU_GATE, ISR_INDEX_DIVIDE_BY_ZERO);
+    InitDescriptor((u32)_asm_non_maskable_int_isr,         CPU_GATE, ISR_INDEX_NON_MASKABLE_INT);
+    InitDescriptor((u32)_asm_overflow_isr,                 CPU_GATE, ISR_INDEX_OVERFLOW);
+    InitDescriptor((u32)_asm_bound_range_exceeded_isr,     CPU_GATE, ISR_INDEX_BOUND_RANGE_EXCEEDED);
+    InitDescriptor((u32)_asm_invalid_opcode_isr,           CPU_GATE, ISR_INDEX_INVALID_OPCODE);
+    InitDescriptor((u32)_asm_device_not_available_isr,     CPU_GATE, ISR_INDEX_DEVICE_NOT_AVAILABLE);
+    InitDescriptor((u32)_asm_double_fault_isr,             CPU_GATE, ISR_INDEX_DOUBLE_FAULT);
+    InitDescriptor((u32)_asm_invalid_tss_isr,              CPU_GATE, ISR_INDEX_INVALID_TSS);
+    InitDescriptor((u32)_asm_segment_not_present_isr,      CPU_GATE, ISR_INDEX_SEGMENT_NOT_PRESENT);
+    InitDescriptor((u32)_asm_stack_segment_fault_isr,      CPU_GATE, ISR_INDEX_STASK_SEGEMENT_FAULT);
+    InitDescriptor((u32)_asm_general_protection_fault_isr, CPU_GATE, ISR_INDEX_GENERAL_PROTECTION_FAULT);
+    InitDescriptor((u32)_asm_page_fault_isr,               CPU_GATE, ISR_INDEX_PAGE_FAULT);
+    InitDescriptor((u32)_asm_x87_floating_point_isr,       CPU_GATE, ISR_INDEX_X87_FLOATING_POINT);
+    InitDescriptor((u32)_asm_alignment_check_isr,          CPU_GATE, ISR_INDEX_ALIGNMENT_CHECK);
+    InitDescriptor((u32)_asm_machine_check_isr,            CPU_GATE, ISR_INDEX_MACHINE_CHECK);
+    InitDescriptor((u32)_asm_simd_floating_point_isr,      CPU_GATE, ISR_INDEX_SIMD_FLOATING_POINT);
+    InitDescriptor((u32)_asm_virtualization_isr,           CPU_GATE, ISR_INDEX_VIRTUALIZATION);
+    InitDescriptor((u32)_asm_security_isr,                 CPU_GATE, ISR_INDEX_SECURITY);
 
     // tmp
     InitDescriptor((u32)TmpKeyboardIsr,                    CPU_GATE, 33);

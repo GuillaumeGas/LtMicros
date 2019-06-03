@@ -34,8 +34,7 @@ void Thread::SaveState(InterruptContext * context)
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid context parameter");
-        // TODO : handle critical error
-        while (1);
+        gKernel.Panic();
     }
 
     regs.eflags = context->eflags;

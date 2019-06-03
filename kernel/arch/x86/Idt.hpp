@@ -21,6 +21,27 @@
 #define CPU_GATE     INT_GATE  | PRESENT | KERNEL_DPL
 #define SYSCALL_GATE TRAP_GATE | PRESENT | USER_DPL
 
+#define ISR_INDEX_DIVIDE_BY_ZERO           0
+#define ISR_INDEX_DEBUG                    1
+#define ISR_INDEX_NON_MASKABLE_INT         2
+#define ISR_INDEX_BREAKPOINT               3
+#define ISR_INDEX_OVERFLOW                 4
+#define ISR_INDEX_BOUND_RANGE_EXCEEDED     5
+#define ISR_INDEX_INVALID_OPCODE           6
+#define ISR_INDEX_DEVICE_NOT_AVAILABLE     7
+#define ISR_INDEX_DOUBLE_FAULT             8
+#define ISR_INDEX_INVALID_TSS              10
+#define ISR_INDEX_SEGMENT_NOT_PRESENT      11
+#define ISR_INDEX_STASK_SEGEMENT_FAULT     12
+#define ISR_INDEX_GENERAL_PROTECTION_FAULT 13
+#define ISR_INDEX_PAGE_FAULT               14
+#define ISR_INDEX_X87_FLOATING_POINT       16
+#define ISR_INDEX_ALIGNMENT_CHECK          17
+#define ISR_INDEX_MACHINE_CHECK            18
+#define ISR_INDEX_SIMD_FLOATING_POINT      19
+#define ISR_INDEX_VIRTUALIZATION           20
+#define ISR_INDEX_SECURITY                 30
+
 /// @brief Represents an IDT entry, called an Idt descriptor
 struct IdtDescriptor
 {

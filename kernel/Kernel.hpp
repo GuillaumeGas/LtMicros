@@ -65,6 +65,8 @@ public:
     /// @brief Pointer to the system process
     Process * process;
 
+    void Panic();
+
 private:
     ///@brief Checks multiboot info and magic number
     ///       https://www.gnu.org/software/grub/manual/multiboot/html_node/Boot-information-format.html#Boot-information-format
