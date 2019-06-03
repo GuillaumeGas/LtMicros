@@ -2,7 +2,7 @@ OBJ=AtaDrv.sys
 INC_SYSDIR=../Common
 INC_STDDIR=../../StdLib/src
 CC=g++ -m32 -ffreestanding -nostdlib -Wall -fno-stack-protector -fno-pie -I$(INC_SYSDIR) -I$(INC_STDDIR)
-LD=ld -Ttext=40000000 -m elf_i386 --oformat binary --entry=main
+LD=ld -Ttext=40000000 -m elf_i386 --entry=main
 ASM=nasm -f elf32
 
 all: $(OBJ)

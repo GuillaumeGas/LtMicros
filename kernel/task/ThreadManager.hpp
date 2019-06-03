@@ -7,6 +7,8 @@
 #include <kernel/arch/x86/Thread.hpp>
 #include <kernel/arch/x86/Process.hpp>
 
+#include "Common.hpp"
+
 /// @file
 
 /// @defgroup TaskGroup Task group
@@ -22,9 +24,10 @@ public:
     /// @warning This does not add the thread to the scheduler
     /// @param[in] entryAddr The virtual address of the first byte of code
     /// @param[in] process A pointer to the parent process.
+    /// @param[in] attribute The process security attribute(s), may be one of the SecurityAttribute enum.
     /// @param[in,opt] parent A pointer to the parent process, or nullptr
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus CreateUserThread(u32 entryAddr, Process * process, Thread ** thread);
+    KeStatus CreateUserThread(u32 entryAddr, Process * process, SecurityAttribute attribute, Thread ** thread);
 
     /// @brief Creates a kernel thread for a given process. If the main thread of the process is null, the created thread will me its main thread
     /// @warning This does not add the thread to the scheduler

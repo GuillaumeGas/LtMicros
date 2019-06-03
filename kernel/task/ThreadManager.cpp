@@ -12,7 +12,7 @@ void ThreadManager::Init()
     // nothing to do
 }
 
-KeStatus ThreadManager::CreateUserThread(u32 entryAddr, Process * process, Thread ** thread)
+KeStatus ThreadManager::CreateUserThread(u32 entryAddr, Process * process, SecurityAttribute attribute, Thread ** thread)
 {
     KeStatus status = STATUS_FAILURE;
     Thread * localThread = nullptr;
@@ -35,7 +35,7 @@ KeStatus ThreadManager::CreateUserThread(u32 entryAddr, Process * process, Threa
         return STATUS_NULL_PARAMETER;
     }
 
-    status = Thread::CreateThread(entryAddr, process, PVL_USER, &localThread);
+    status = Thread::CreateThread(entryAddr, process, PVL_USER, attribute, &localThread);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Thread::CreateThread() failed with code %d", status);
@@ -68,7 +68,7 @@ KeStatus ThreadManager::CreateKernelThread(u32 entryAddr, Process * process, Thr
         return STATUS_NULL_PARAMETER;
     }
 
-    status = Thread::CreateThread(entryAddr, process, PVL_KERNEL, &localThread);
+    status = Thread::CreateThread(entryAddr, process, PVL_KERNEL, SA_NONE, &localThread);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Thread::CreateThread() failed with code %d", status);

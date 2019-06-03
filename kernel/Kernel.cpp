@@ -24,9 +24,9 @@
 #include <kernel/lib/StdLib.hpp>
 #include <kernel/lib/List.hpp>
 
-#include <kernel/debug/LtDbg.hpp>
+#include <kernel/module/Module.hpp>
 
-#include <kernel/tests/UserTests.hpp>
+#include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("KERNEL", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -122,13 +122,9 @@ void Kernel::Start()
 
     gScheduler.AddThread(systemProcess->mainThread);
 
-    status = LoadModules();
-    if (FAILED(status))
-    {
-        KLOG(LOG_ERROR, "LoadAndStartModule() failed with code %d", status);
-        Panic();
-        goto clean;
-    }
+    LoadModules();
+
+    KLOG(LOG_INFO, "Starting LtMicros...");
 
     gScheduler.Start();
 
@@ -139,10 +135,6 @@ clean:
     {
         KLOG(LOG_ERROR, "LtMicros kernel failed to start !");
         Panic();
-    }
-    else
-    {
-        KLOG(LOG_DEBUG, "Kernel started !");
     }
 
     while (1);
@@ -168,35 +160,28 @@ void Kernel::CheckMultibootPartialInfo(MultibootPartialInfo * mbi, u32 multiboot
         Panic();
     }
 
-    if (FlagOn(mbi->flags, MODS_INFO))
-    {
-        KLOG(LOG_DEBUG, "Found %d module(s)", mbi->mods_count);
-    }
-
     gKernel.info.multibootInfo = mbi;
 }
 
-KeStatus Kernel::LoadModules()
+void Kernel::LoadModules()
 {
     MultibootPartialInfo * mbi = gKernel.info.multibootInfo;
     MultiBootModule * module = mbi->mods_addr;
 
+    if (!FlagOn(mbi->flags, MODS_INFO))
+        return;
+
+    KLOG(LOG_INFO, "Found %d module(s)", mbi->mods_count);
+
     if (mbi->mods_count == 0 || mbi->mods_addr == nullptr)
-        return STATUS_SUCCESS;
+        return;
 
     for (int i = 0; i < mbi->mods_count; i++)
     {
         KLOG(LOG_INFO, "Loading module %s", module->name);
-        UserSystemTest(module->mod_start);
+        Module::Load(module);
         module += sizeof(MultiBootModule);
     }
-
-    return STATUS_SUCCESS;
-}
-
-void Kernel::Cleanup()
-{
-
 }
 
 void Kernel::Panic()

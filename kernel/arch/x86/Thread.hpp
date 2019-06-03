@@ -76,12 +76,13 @@ struct Thread
     /// @param[in] entryAddr A 32bits address of the entry code of the thread
     /// @param[in] process A pointer to the process that own this thread
     /// @param[in] privLevel Privilege level of the thread (user or kernel)
+    /// @param[in] attribute The process security attribute(s), may be one of the SecurityAttribute enum.
     /// @param[out] thread Will a pointer to the created thread
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    static KeStatus CreateThread(u32 entryAddr, Process * process, PrivilegeLevel privLevel, Thread ** thread);
+    static KeStatus CreateThread(u32 entryAddr, Process * process, PrivilegeLevel privLevel, SecurityAttribute attribute, Thread ** thread);
 
 private:
-    static KeStatus _InitUserThread(Thread * thread, u32 entryAddr);
+    static KeStatus _InitUserThread(Thread * thread, SecurityAttribute attribute, u32 entryAddr);
     static KeStatus _InitKernelThread(Thread * thread, u32 entryAddr);
 };
 

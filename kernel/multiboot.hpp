@@ -1,5 +1,7 @@
 #pragma once
 
+#include <kernel/lib/Types.hpp>
+
 /// The magic field should contain this.
 #define MULTIBOOT_HEADER_MAGIC 0x2BADB002
 

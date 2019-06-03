@@ -18,7 +18,7 @@ void ProcessManager::Init()
     }
 }
 
-KeStatus ProcessManager::CreateProcess(u32 entryAddr, Process ** newProcess, Process * parent)
+KeStatus ProcessManager::CreateProcess(u32 entryAddr, Process ** newProcess, SecurityAttribute attribute, Process * parent)
 {
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
@@ -43,7 +43,7 @@ KeStatus ProcessManager::CreateProcess(u32 entryAddr, Process ** newProcess, Pro
         goto clean;
     }
 
-    status = gThreadManager.CreateUserThread(entryAddr, process, &mainThread);
+    status = gThreadManager.CreateUserThread(entryAddr, process, attribute, &mainThread);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "ThreadManager::CreateUserThread() failed with code %d", status);

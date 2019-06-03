@@ -54,10 +54,7 @@ public:
     /// @brief Starts LtMicros
     void Start();
 
-    KeStatus LoadModules();
-
-    /// @brief Calls cleanup methods of all object that are registered in the CleanableObjectsList
-    void Cleanup();
+    void LoadModules();
 
     /// @brief Gathers information about kernel
     KernelInfo info;
@@ -71,9 +68,6 @@ private:
     ///@brief Checks multiboot info and magic number
     ///       https://www.gnu.org/software/grub/manual/multiboot/html_node/Boot-information-format.html#Boot-information-format
     void CheckMultibootPartialInfo(MultibootPartialInfo * mbi, u32 multibootMagicNumber);
-
-    //@brief List of object that must be "cleaned up" at shutdown, all these objects implement ICleanableObject::Cleanup()
-    // List * CleanableObjectsList;
 };
 
 #ifdef __KERNEL__

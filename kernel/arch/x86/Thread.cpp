@@ -126,7 +126,7 @@ void Thread::StartOrResume()
     );
 }
 
-KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel privLevel, Thread ** thread)
+KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel privLevel, SecurityAttribute attribute, Thread ** thread)
 {
     KeStatus status = STATUS_FAILURE;
     Thread * localThread = nullptr;
@@ -168,7 +168,7 @@ KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel p
     }
     else
     {
-        status = _InitUserThread(localThread, entryAddr);
+        status = _InitUserThread(localThread, attribute, entryAddr);
         if (FAILED(status))
         {
             KLOG(LOG_ERROR, "_InitUserThread() failed with code %d", status);
@@ -196,7 +196,7 @@ clean:
     return status;
 }
 
-KeStatus Thread::_InitUserThread(Thread * thread, u32 entryAddr)
+KeStatus Thread::_InitUserThread(Thread * thread, SecurityAttribute attribute, u32 entryAddr)
 {
     KeStatus status = STATUS_FAILURE;
     Page kernelStackPage = { 0 };
@@ -255,8 +255,11 @@ KeStatus Thread::_InitUserThread(Thread * thread, u32 entryAddr)
     thread->regs.ebp = thread->regs.esp;
     thread->regs.eip = entryAddr;
 
-    //thread->regs.eflags = 0x200 & 0xFFFFBFFF;
-    thread->regs.eflags = IntFlag /*| IoFlag | (IoFlag >> 1)*/;
+    thread->regs.eflags = IntFlag;
+
+    if (FlagOn(attribute, SA_IO))
+        thread->regs.eflags |= IoFlag | (IoFlag >> 1);
+
     thread->kstack.esp0 = (((u32)kernelStackPage.vAddr + PAGE_SIZE) - (u32)(sizeof(void*)));
     thread->kstack.ss0 = KERNEL_DATA_SELECTOR;
 

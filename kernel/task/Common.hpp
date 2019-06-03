@@ -12,4 +12,10 @@ enum PrivilegeLevel
     PVL_USER
 };
 
+enum SecurityAttribute
+{
+    SA_NONE = 0,
+    SA_IO,
+};
+
 /// @}
