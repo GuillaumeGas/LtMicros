@@ -34,9 +34,6 @@
     <Filter Include="Fichiers sources\kernel\task">
       <UniqueIdentifier>{049cea25-9327-4bb9-b866-45a45d9ffada}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers sources\kernel\tests">
-      <UniqueIdentifier>{1531b3c4-f987-4d82-a50f-f72e3a08f060}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Fichiers sources\boot">
       <UniqueIdentifier>{e27e74ec-edc7-4354-8a37-9fb984006a12}</UniqueIdentifier>
     </Filter>
@@ -45,6 +42,9 @@
     </Filter>
     <Filter Include="Fichiers sources\kernel\debug">
       <UniqueIdentifier>{18530ff2-6891-4850-a49e-d26f46c592b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\kernel\module">
+      <UniqueIdentifier>{0fcead88-a7fc-489c-a53c-0b7d60d2277b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -117,9 +117,6 @@
     <ClCompile Include="kernel\task\ThreadManager.cpp">
       <Filter>Fichiers sources\kernel\task</Filter>
     </ClCompile>
-    <ClCompile Include="kernel\tests\UserTest.cpp">
-      <Filter>Fichiers sources\kernel\tests</Filter>
-    </ClCompile>
     <ClCompile Include="kernel\cppsupport.cpp">
       <Filter>Fichiers sources\kernel</Filter>
     </ClCompile>
@@ -143,6 +140,12 @@
     </ClCompile>
     <ClCompile Include="kernel\debug\LtDbgCom.cpp">
       <Filter>Fichiers sources\kernel\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\module\Elf.cpp">
+      <Filter>Fichiers sources\kernel\module</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\module\Module.cpp">
+      <Filter>Fichiers sources\kernel\module</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +236,6 @@
     <ClInclude Include="kernel\task\ThreadManager.hpp">
       <Filter>Fichiers sources\kernel\task</Filter>
     </ClInclude>
-    <ClInclude Include="kernel\tests\UserTests.hpp">
-      <Filter>Fichiers sources\kernel\tests</Filter>
-    </ClInclude>
     <ClInclude Include="kernel\cppsupport.hpp">
       <Filter>Fichiers sources\kernel</Filter>
     </ClInclude>
@@ -265,6 +265,12 @@
     </ClInclude>
     <ClInclude Include="kernel\debug\Common.hpp">
       <Filter>Fichiers sources\kernel\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\module\Elf.hpp">
+      <Filter>Fichiers sources\kernel\module</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\module\Module.hpp">
+      <Filter>Fichiers sources\kernel\module</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

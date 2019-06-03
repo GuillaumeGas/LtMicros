@@ -157,11 +157,12 @@
     <ClCompile Include="kernel\Logger.cpp" />
     <ClCompile Include="kernel\mem\Heap.cpp" />
     <ClCompile Include="kernel\mem\PagePool.cpp" />
+    <ClCompile Include="kernel\module\Elf.cpp" />
+    <ClCompile Include="kernel\module\Module.cpp" />
     <ClCompile Include="kernel\syscalls\SyscallsHandler.cpp" />
     <ClCompile Include="kernel\task\ProcessManager.cpp" />
     <ClCompile Include="kernel\task\Scheduler.cpp" />
     <ClCompile Include="kernel\task\ThreadManager.cpp" />
-    <ClCompile Include="kernel\tests\UserTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kernel\arch\x86\Gdt.hpp" />
@@ -196,6 +197,8 @@
     <ClInclude Include="kernel\Logger.hpp" />
     <ClInclude Include="kernel\mem\Heap.hpp" />
     <ClInclude Include="kernel\mem\PagePool.hpp" />
+    <ClInclude Include="kernel\module\Elf.hpp" />
+    <ClInclude Include="kernel\module\Module.hpp" />
     <ClInclude Include="kernel\multiboot.hpp" />
     <ClInclude Include="kernel\syscalls\SyscallsHandler.hpp" />
     <ClInclude Include="kernel\syscalls\SyscallsList.hpp" />
@@ -203,7 +206,6 @@
     <ClInclude Include="kernel\task\ProcessManager.hpp" />
     <ClInclude Include="kernel\task\Scheduler.hpp" />
     <ClInclude Include="kernel\task\ThreadManager.hpp" />
-    <ClInclude Include="kernel\tests\UserTests.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="boot\bootsector.asm" />
