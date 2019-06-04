@@ -40,7 +40,12 @@ void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, const InterruptFromU
 /*  
     SYSCALLS Begin
 */
-void SysPrint(const InterruptFromUserlandContext * context)
+void SysPrintChar(const InterruptFromUserlandContext * context)
+{
+    kprint("%c", context->ebx);
+}
+
+void SysPrintStr(const InterruptFromUserlandContext * context)
 {
     kprint("%s", context->ebx);
 }

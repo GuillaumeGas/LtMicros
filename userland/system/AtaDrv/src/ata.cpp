@@ -106,7 +106,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     //buffer = (char *)malloc(nbBlocks * ATA_BLOCK_SIZE);
     if (buffer == nullptr)
     {
-        Print("Failed to allocate memory.\n");
+        printf("Failed to allocate memory.\n");
         return 0;
     }
     bufferPtr = buffer;
@@ -172,35 +172,36 @@ static int AtaWriteSectorPio(AtaDevice * device, u16 * buf, int lba, unsigned lo
 int AtaWrite(AtaDevice * device, void * buf, unsigned long offset, unsigned long size)
 {
     int count = (size > ATA_BLOCK_SIZE ? size / ATA_BLOCK_SIZE : 1);
-    //unsigned long block = offset / (unsigned long)ATA_BLOCK_SIZE;
+    unsigned long block = offset / (unsigned long)ATA_BLOCK_SIZE;
+    u16 * buffer = (u16 *)buf;
 
-    //if (offset % ATA_BLOCK_SIZE != 0)
-    //{
-    //    Print("ata.c!AtaRead() : invalid offset parameter, should be a multiple of 512 !\n");
-    //    return -1;
-    //}
+    if (offset % ATA_BLOCK_SIZE != 0)
+    {
+        printf("ata.c!AtaRead() : invalid offset parameter, should be a multiple of 512 !\n");
+        return -1;
+    }
 
-    //Print("count : %d, block : %d, size : %d, offset : %d\n", count, block, size, offset);
+    printf("count : %d, block : %d, size : %d, offset : %d\n", count, block, size, offset);
 
-    //DISABLE_IRQ();
-    //for (int i = 0; i < count && size > 0; i++)
-    //{
-    //    AtaWriteSectorPio(device, buf, block + i, size);
+    DISABLE_IRQ();
+    for (int i = 0; i < count && size > 0; i++)
+    {
+        AtaWriteSectorPio(device, buffer, block + i, size);
 
-    //    if (size >= ATA_BLOCK_SIZE)
-    //    {
-    //        size -= ATA_BLOCK_SIZE;
-    //        buf += ATA_BLOCK_SIZE;
-    //    }
-    //    else
-    //    {
-    //        buf += size;
-    //        size = 0;
-    //    }
+        if (size >= ATA_BLOCK_SIZE)
+        {
+            size -= ATA_BLOCK_SIZE;
+            buffer += ATA_BLOCK_SIZE;
+        }
+        else
+        {
+            buffer += size;
+            size = 0;
+        }
 
-    //    for (int j = 0; j < 1000; j++);
-    //}
-    //ENABLE_IRQ();
+        for (int j = 0; j < 1000; j++);
+    }
+    ENABLE_IRQ();
     return count;
 }
 
@@ -223,7 +224,7 @@ static int AtaIdentify(AtaDevice * device)
     }
     else
     {
-        Print("IDENTIFY error on b0d0 -> no status\n");
+        printf("IDENTIFY error on b0d0 -> no status\n");
         return 0;
     }
 }
