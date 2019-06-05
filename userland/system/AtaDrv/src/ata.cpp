@@ -123,7 +123,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
         read += ATA_BLOCK_SIZE;
     }
 
-    //MmCopy((u8 *)(buffer + offset % ATA_BLOCK_SIZE), (u8 *)buf, size);
+    MemCopy((u8 *)(buffer + offset % ATA_BLOCK_SIZE), (u8 *)buf, size);
     //free(buffer);
 
     ENABLE_IRQ();
