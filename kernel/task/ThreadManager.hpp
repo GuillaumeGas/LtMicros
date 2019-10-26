@@ -41,6 +41,10 @@ public:
     /// @warning This does not stop its execution, or erase it from the scheduler, it just frees the structure describing the thread
     /// @param[in] thread A pointer to the thread to delete
     void DeleteThread(Thread * thread);
+
+    /// @brief Retrieves the current running thread
+    /// @return A pointer to the current thread structure
+    Thread * GetCurrentThread();
 };
 
 #ifdef __THREAD_MANAGER__

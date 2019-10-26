@@ -1,15 +1,17 @@
 #include "SyscallsHandler.hpp"
 
+#include <kernel/task/ProcessManager.hpp>
+
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SYSCALLS", LOG_LEVEL, format, ##__VA_ARGS__)
 
-#define SYSCALL(_, functionName) void functionName(const InterruptFromUserlandContext *);
+#define SYSCALL(_, functionName) void functionName(InterruptFromUserlandContext *);
 #define SYSCALL_ID(x, y) SYSCALL(x, y)
     SYSCALLS_LIST
 #undef SYSCALL_ID
 #undef SYSCALL
 
-void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, const InterruptFromUserlandContext * context)
+void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, InterruptFromUserlandContext * context)
 {
     if (sysId >= SYS_INVALID)
     {
@@ -40,20 +42,48 @@ void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, const InterruptFromU
 /*  
     SYSCALLS Begin
 */
-void SysPrintChar(const InterruptFromUserlandContext * context)
+void SysPrintChar(InterruptFromUserlandContext * context)
 {
     kprint("%c", context->ebx);
 }
 
-void SysPrintStr(const InterruptFromUserlandContext * context)
+void SysPrintStr(InterruptFromUserlandContext * context)
 {
     kprint("%s", context->ebx);
 }
 
-void SysInvalid(const InterruptFromUserlandContext * context)
+void SysSbrk(InterruptFromUserlandContext * context)
+{
+    KeStatus status = STATUS_FAILURE;
+    Process * currentProcess = gProcessManager.GetCurrentProcess();
+    u32 res = 0;
+
+    KLOG(LOG_DEBUG, "process : %x", currentProcess);
+
+    if (currentProcess == nullptr)
+    {
+        KLOG(LOG_ERROR, "GetCurrentProcess() returned null");
+        goto clean;
+    }
+
+    status = currentProcess->IncreaseHeap(context->ebx, &res);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Process::IncreaseHeap() failed with code %d", status);
+        goto clean;
+    }
+
+    KLOG(LOG_DEBUG, "res : %x", res);
+
+clean:
+    context->eax = res;
+}
+
+void SysInvalid(InterruptFromUserlandContext * context)
 {
     KLOG(LOG_ERROR, "Invalid syscall called");
 }
+
 /*
     SYSCALLS End
 */

@@ -37,6 +37,10 @@ public:
     /// @param[in] process A pointer to the process to delete
     void DeleteProcess(Process * process);
 
+    /// @brief Retrieves the current running process
+    /// @return A pointer to the current process structure
+    Process * GetCurrentProcess();
+
 private:
     List * _processList;
 };

@@ -115,10 +115,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\malloc.cpp" />
     <ClCompile Include="src\stdio.cpp" />
     <ClCompile Include="src\stdlib.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\malloc.h" />
     <ClInclude Include="src\stdio.h" />
     <ClInclude Include="src\stdlib.h" />
     <ClInclude Include="src\syscalls.h" />

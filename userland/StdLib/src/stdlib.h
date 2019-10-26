@@ -1,5 +1,7 @@
 #pragma once
 
+#include "malloc.h"
+
 typedef unsigned char u8;
 typedef unsigned char uchar;
 typedef unsigned short u16;

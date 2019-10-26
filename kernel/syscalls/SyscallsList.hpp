@@ -10,7 +10,8 @@
 
 #define SYSCALLS_LIST				       \
     SYSCALL (SYS_PRINT_CHAR, SysPrintChar) \
-    SYSCALL (SYS_PRINT_STR, SysPrintStr)   \
+    SYSCALL (SYS_PRINT_STR,  SysPrintStr)  \
+    SYSCALL (SYS_SBRK,       SysSbrk)      \
     SYSCALL (SYS_INVALID, SysInvalid)
 
 
@@ -19,6 +20,7 @@
 */
 void SysPrintChar(const InterruptFromUserlandContext * context);
 void SysPrintStr(const InterruptFromUserlandContext * context);
+void SysSbrk(InterruptFromUserlandContext * context);
 void SysInvalid(const InterruptFromUserlandContext * context);
 /*
     SYSCALLS End

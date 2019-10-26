@@ -3,11 +3,14 @@
 #include "Thread.hpp"
 
 #include <kernel/arch/x86/Vmm.hpp>
+#include <kernel/arch/x86/Pmm.hpp>
 #include <kernel/Kernel.hpp>
 #include <kernel/lib/StdLib.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("ARCH", LOG_LEVEL, format, ##__VA_ARGS__)
+
+#define DEFAULT_HEAP_BASE_ADDRESS 0x80000000
 
 /// @addgroup ArchX86Group
 /// @{
@@ -28,7 +31,49 @@ void Process::AddThread(Thread * thread)
         thread->AddNeighbor(mainThread);
 }
 
+KeStatus Process::IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr)
+{
+    KeStatus status = STATUS_FAILURE;
+    u32 newBlockAddress = heapLimitAddress;
+
+    if (nbPages == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid nbPages parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (allocatedBlockAddr == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid allocatedBlockAddr parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    gVmm.SaveCurrentMemoryMapping();
+    gVmm.SetCurrentPageDirectory(pageDirectory.pdEntry);
+
+    for (unsigned int i = 0; i < nbPages; i++)
+    {
+        u32 newBlock = heapLimitAddress + (i * PAGE_SIZE);
+        u32 pHeap = (u32)gPmm.GetFreePage();
+
+        gVmm.AddPageToPageDirectory(newBlock, pHeap, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, pageDirectory);
+    }
+
+    gVmm.RestoreMemoryMapping();
+
+    heapLimitAddress += (nbPages * PAGE_SIZE);
+
+    *allocatedBlockAddr = newBlockAddress;
+
+    return STATUS_SUCCESS;
+}
+
 KeStatus Process::Create(Process ** newProcess, Process * parent)
+{
+    return Create(newProcess, DEFAULT_HEAP_BASE_ADDRESS, parent);
+}
+
+KeStatus Process::Create(Process ** newProcess, u32 heapBaseAddress, Process * parent)
 {
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
@@ -39,6 +84,12 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     {
         KLOG(LOG_ERROR, "Invalid newProcess parameter");
         return STATUS_NULL_PARAMETER;
+    }
+
+    if (heapBaseAddress == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid heapBaseAddress value");
+        return STATUS_INVALID_PARAMETER;
     }
 
     process = (Process *)HeapAlloc(sizeof(Process));
@@ -59,6 +110,10 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
         status = STATUS_FAILURE;
         goto clean;
     }
+
+    // create process heap, no memory allocated, user must call sbrk syscall to increase the heap
+    process->heapBaseAddress = heapBaseAddress;
+    process->heapLimitAddress = heapBaseAddress;
 
     process->pageDirectory = processPd;
     process->pid = s_ProcessId++;

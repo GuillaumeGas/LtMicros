@@ -28,7 +28,7 @@ public:
     ///        Its body is build using the syscalls list defined in SyscallsList.hpp
     /// @param[in] sysId The syscall id we want to execute
     /// @param[in] context A pointer to the syscall trap context
-    static void ExecuteSyscall(const SyscallId sysId, const InterruptFromUserlandContext * context);
+    static void ExecuteSyscall(const SyscallId sysId, InterruptFromUserlandContext * context);
 };
 
 /// @}

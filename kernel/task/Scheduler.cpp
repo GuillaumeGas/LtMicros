@@ -70,6 +70,28 @@ void Scheduler::Schedules(InterruptContext * context)
     }
 }
 
+Process * Scheduler::GetCurrentProcess()
+{
+    if (_currentThread == nullptr)
+    {
+        KLOG(LOG_ERROR, "_currentThread is null");
+        return nullptr;
+    }
+
+    return _currentThread->process;
+}
+
+Thread * Scheduler::GetCurrentThread()
+{
+    if (_currentThread == nullptr)
+    {
+        KLOG(LOG_ERROR, "_currentThread is null");
+        return nullptr;
+    }
+
+    return _currentThread;
+}
+
 Thread * Scheduler::_PickNextThread()
 {
     Thread * thread = nullptr;

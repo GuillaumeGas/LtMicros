@@ -2,6 +2,7 @@
 #include "ProcessManager.hpp"
 
 #include "Common.hpp"
+#include "Scheduler.hpp"
 #include <kernel/Kernel.hpp>
 
 #include <kernel/Logger.hpp>
@@ -121,4 +122,9 @@ void ProcessManager::DeleteProcess(Process * process)
     Process::Delete(process);
 
     KLOG(LOG_INFO, "Process %d deleted", pid);
+}
+
+Process * ProcessManager::GetCurrentProcess()
+{
+    return gScheduler.GetCurrentProcess();
 }

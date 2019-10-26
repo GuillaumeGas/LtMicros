@@ -2,6 +2,7 @@
 #include "ThreadManager.hpp"
 
 #include "Common.hpp"
+#include "Scheduler.hpp"
 #include <kernel/lib/StdLib.hpp>
 
 #include <kernel/Logger.hpp>
@@ -87,4 +88,9 @@ clean:
 void ThreadManager::DeleteThread(Thread * thread)
 {
     // TODO
+}
+
+Thread * ThreadManager::GetCurrentThread()
+{
+    return gScheduler.GetCurrentThread();
 }
