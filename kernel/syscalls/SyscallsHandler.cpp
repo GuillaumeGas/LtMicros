@@ -73,7 +73,7 @@ void SysSbrk(InterruptFromUserlandContext * context)
         goto clean;
     }
 
-    KLOG(LOG_DEBUG, "res : %x", res);
+    KLOG(LOG_DEBUG, "res : %x", res);   
 
 clean:
     context->eax = res;

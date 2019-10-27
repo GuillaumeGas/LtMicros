@@ -48,7 +48,7 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr)
         return STATUS_NULL_PARAMETER;
     }
 
-    gVmm.SaveCurrentMemoryMapping();
+    PageDirectoryEntry * pde = gVmm.GetCurrentPageDirectory();
     gVmm.SetCurrentPageDirectory(pageDirectory.pdEntry);
 
     for (unsigned int i = 0; i < nbPages; i++)
@@ -59,7 +59,7 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr)
         gVmm.AddPageToPageDirectory(newBlock, pHeap, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, pageDirectory);
     }
 
-    gVmm.RestoreMemoryMapping();
+    gVmm.SetCurrentPageDirectory(pde);
 
     heapLimitAddress += (nbPages * PAGE_SIZE);
 

@@ -1,5 +1,6 @@
 #include "malloc.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 #include "syscalls.h"
 
@@ -30,6 +31,10 @@ struct MemBlock
     void * data;
 };
 
+static void * _Allocate(MemBlock * block, int size);
+static void _SplitBlock(MemBlock * block, unsigned int size);
+static MemBlock * _Sbrk(int n);
+
 MemBlock * g_baseBlock = nullptr;
 MemBlock * g_limitBlock = nullptr;
 MemBlock * g_lastBlock = nullptr;
@@ -43,7 +48,9 @@ void * HeapAlloc(int size)
 
     if (g_baseBlock == nullptr)
     {
-        g_baseBlock = (MemBlock*)_sbrk(1);
+        g_baseBlock = (MemBlock*)_Sbrk(1);
+        g_baseBlock->size = PAGE_SIZE;
+        g_baseBlock->state = BLOCK_FREE;
         g_limitBlock = g_baseBlock + PAGE_SIZE;
         g_lastBlock = g_baseBlock;
     }
@@ -85,7 +92,7 @@ static void * _Allocate(MemBlock * block, int size)
 {
     void * res_ptr = nullptr;
 
-    while (block < g_lastBlock && res_ptr == nullptr)
+    while (block <= g_lastBlock && res_ptr == nullptr)
     {
         if (block->state == BLOCK_USED || size > block->size)
         {
@@ -110,10 +117,12 @@ static void * _Allocate(MemBlock * block, int size)
             {
                 n++;
             }
-            block = (MemBlock*)_sbrk(n);
+            block = (MemBlock*)_Sbrk(n);
         }
         else
-            block = (MemBlock*)_sbrk(1);
+        {
+            block = (MemBlock*)_Sbrk(1);
+        }
 
         res_ptr = _Allocate(block, size);
     }
@@ -129,4 +138,26 @@ static void _SplitBlock(MemBlock * block, unsigned int size)
     second_block->size = block->size - size;
     second_block->state = BLOCK_FREE;
     block->size = size;
+}
+
+static MemBlock * _Sbrk(int n)
+{
+    if (n <= 0)
+    {
+        printf("n <= 0\n");
+        return nullptr;
+    }
+
+    unsigned int i = 0;
+    MemBlock * newBlock = (MemBlock*)_sbrk(n);    
+
+    newBlock->size = n * PAGE_SIZE;
+    newBlock->state = BLOCK_FREE;
+
+    MemSet((&(newBlock->data)), 0, newBlock->size - BLOCK_HEADER_SIZE);
+
+    g_lastBlock = newBlock;
+    g_limitBlock = g_lastBlock + g_lastBlock->size;
+
+    return newBlock;
 }

@@ -38,54 +38,81 @@ void Module::Load(MultiBootModule * module)
         gKernel.Panic();
     }
 
+    status = _MapElfInProcess(elf, process);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "MapElfInProcess() failed with code %d", status);
+        gKernel.Panic();
+    }
+
+    gScheduler.AddThread(process->mainThread);
+}
+
+/* TODO : find a way to implemet mod */
+static unsigned int _local_mod(unsigned int a, unsigned int b)
+{
+    while (a > b)
+        a -= b;
+    return (a > 0) ? 1 : 0;
+}
+
+KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
+{
+    KeStatus status = STATUS_FAILURE;
+
     gVmm.SaveCurrentMemoryMapping();
     gVmm.SetCurrentPageDirectory(process->pageDirectory.pdEntry);
 
     for (int i = 0; i < elf.header->phnum; i++)
     {
-        u8 * vUserCodePtr = (u8 *)elf.prgHeaderTable[i].vaddr;
-        u32 size = elf.prgHeaderTable[i].memSize;
-        u32 count = 0;
-        u8 * codeAddr = (u8 *)((u32)elf.header + elf.prgHeaderTable[i].offset);
+        u8 * vUserSectionPtr = (u8 *)elf.prgHeaderTable[i].vaddr;
+        u32 sectionSize = elf.prgHeaderTable[i].memSize;
+        u8 * pSectionPtr = (u8 *)((u32)elf.header + elf.prgHeaderTable[i].offset);
+        u8 * vNewPage = nullptr;
 
-        if (vUserCodePtr == nullptr)
+        if (vUserSectionPtr == nullptr)
             break;
 
-        while (count < size)
+        if (vNewPage == nullptr || sectionSize > PAGE_SIZE)
         {
-            // pas top, il faudrait prendre en compte la taille du code, et la pile utilisateur
-            if (!gVmm.CheckUserVirtualAddressValidity((u32)vUserCodePtr))
+            unsigned int pagesToAllocate = sectionSize / PAGE_SIZE;
+            u32 offset = 0;
+
+            if (_local_mod(sectionSize, PAGE_SIZE) > 0)
             {
-                KLOG(LOG_ERROR, "Invalid user virtual address (%x), can't map code in memory\n", vUserCodePtr);
-                gKernel.Panic();
+                pagesToAllocate++;
             }
 
-            // On récupère une page physique libre dans laquelle on va y copier le code
-            u8 * pNewCodePage = (u8 *)gPmm.GetFreePage();
-
-            if (pNewCodePage == nullptr)
+            if (vNewPage == nullptr)
             {
-                KLOG(LOG_ERROR, "Couldn't find a free page\n");
-                gKernel.Panic();
+                vNewPage = vUserSectionPtr;
             }
-
-            // On ajoute la page physique dans l'espace d'adressage de la tâche utilisateur
-            gVmm.AddPageToPageDirectory((u32)vUserCodePtr, (u32)pNewCodePage, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
-
-            MemSet((u8*)vUserCodePtr, 0, PAGE_SIZE);
-
-            // Si on a de quoi copier sur une page entière, on fait ça sinon on copie seulement le reste de code à copier
-            if ((size - count) < PAGE_SIZE)
-                MemCopy(codeAddr + count, vUserCodePtr, size - count);
             else
-                MemCopy(codeAddr + count, vUserCodePtr, PAGE_SIZE);
+            {
+                vNewPage = (u8 *)((unsigned int)vNewPage + (unsigned int)PAGE_SIZE);
+            }
 
-            vUserCodePtr = (u8 *)((unsigned int)vUserCodePtr + (unsigned int)PAGE_SIZE);
-            count += (u32)PAGE_SIZE;
+            do
+            {
+                if (!gVmm.CheckUserVirtualAddressValidity((u32)vNewPage))
+                {
+                    KLOG(LOG_ERROR, "Invalid user virtual address (%x), can't map code in memory\n", vNewPage);
+                    gKernel.Panic();
+                }
+
+                gVmm.AddPageToPageDirectory((u32)vNewPage, (u32)((u32)pSectionPtr + offset), PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
+
+                pagesToAllocate--;
+
+                vNewPage = (u8 *)((unsigned int)vNewPage + (unsigned int)PAGE_SIZE);
+                offset += (u32)PAGE_SIZE;
+            } while (pagesToAllocate > 0);
         }
     }
 
     gVmm.RestoreMemoryMapping();
 
-    gScheduler.AddThread(process->mainThread);
+    status = STATUS_SUCCESS;
+
+    return status;
 }

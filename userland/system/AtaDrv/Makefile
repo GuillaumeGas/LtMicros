@@ -10,7 +10,7 @@ all: $(OBJ)
 clean:
 	rm -f $(OBJ) *.o
 
-AtaDrv.sys: main.o ata.o stdio.o stdlib.o syscalls.o
+AtaDrv.sys: main.o ata.o stdio.o stdlib.o syscalls.o malloc.o
 	$(LD) $^ -o bin/$@
 
 main.o: src/main.cpp
@@ -27,3 +27,6 @@ stdlib.o: ../../StdLib/src/stdlib.cpp
 
 syscalls.o: ../../StdLib/src/syscalls.asm
 	$(ASM) -o $@ $^
+
+malloc.o: ../../StdLib/src/malloc.cpp
+	$(CC) -c $^

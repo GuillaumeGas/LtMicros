@@ -1,9 +1,8 @@
 #include "ata.hpp"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <proc_io.h>
-
-#include <syscalls.h>
 
 void main()
 {
@@ -19,11 +18,19 @@ void main()
         printf("Ata device initialized !\n");
     }
 
-    int * res = (int*)_sbrk(1);
+    printf("Test : \n");
+    int * res = (int*)HeapAlloc(512);
     *res = 42;
-    printf("test : %d\n", *res);
-    *res = 43;
-    printf("test : %d\n", *res);
+    printf("res : %d\n", *res);
+    int * test = (int*)HeapAlloc(1000);
+    *test = 43;
+    printf("test : %d\n", *test);
+    int * test2 = (int*)HeapAlloc(10);
+    *test2 = 45;
+    printf("test2 : %d\n", *test2);
+    HeapFree(test2);
+    test2 = (int*)HeapAlloc(10);
+    printf("test2 : %d\n", *test2);
 
     while (1);
 }
