@@ -12,7 +12,7 @@
 
 #include <kernel/Logger.hpp>
 
-#define DEBUG_DEBUGGER
+//#define DEBUG_DEBUGGER
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("DBG", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -372,7 +372,6 @@ bool LtDbg::StackTraceCommand(KeDebugRequest * request, KeDebugContext * context
 
     while (ebp != nullptr)
     {
-        kprint("ptr : %x\n", (void*)ebp[1]);
         ListPush(list, (void *)ebp[1]);
         ebp = (u32 *)ebp[0];
         nbPtr++;

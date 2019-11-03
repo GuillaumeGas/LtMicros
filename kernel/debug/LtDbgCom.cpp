@@ -4,7 +4,7 @@
 
 #include <kernel/Logger.hpp>
 
-#define DEBUG_DEBUGGER
+//#define DEBUG_DEBUGGER
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("DBG", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -50,8 +50,6 @@ KeStatus LtDbgCom::RecvPacket(KeDebugPacket * packet)
     }
 
     ReadBytes((u8 *)&(packet->size), sizeof(unsigned int));
-
-    DKLOG(LOG_DEBUG, "Reading %d bytes...", packet->size);
 
     if (packet->size == 0)
         return STATUS_SUCCESS;
