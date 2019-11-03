@@ -36,7 +36,7 @@ void ScreenDriver::PrintChar(char c)
 			Line++;
 		}
 
-		if (Line > LINES) 
+		if (Line > LINES - 1) 
 		{
 			ScrollUp();
 			Line--;
@@ -53,7 +53,7 @@ void ScreenDriver::PrintChar(char c)
 		Line++;
 	}
 
-	if (Line > LINES) {
+	if (Line > LINES - 1) {
 		ScrollUp();
 		Line--;
 	}
