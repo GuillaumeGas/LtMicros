@@ -40,7 +40,7 @@ MemBlock * Heap::Sbrk(int n)
     else
     {
         unsigned int i = 0;
-        MemBlock * newBlock = baseBlock;
+        MemBlock * newBlock = lastBlock;
         u32 heap = (u32)lastBlock;
 
         for (; i < n; i++)
