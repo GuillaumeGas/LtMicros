@@ -1,6 +1,7 @@
 #include "SyscallsHandler.hpp"
 
 #include <kernel/task/ProcessManager.hpp>
+#include <kernel/task/Ipc.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SYSCALLS", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -58,8 +59,6 @@ void SysSbrk(InterruptFromUserlandContext * context)
     Process * currentProcess = gProcessManager.GetCurrentProcess();
     u32 res = 0;
 
-    KLOG(LOG_DEBUG, "process : %x", currentProcess);
-
     if (currentProcess == nullptr)
     {
         KLOG(LOG_ERROR, "GetCurrentProcess() returned null");
@@ -73,11 +72,132 @@ void SysSbrk(InterruptFromUserlandContext * context)
         goto clean;
     }
 
-    KLOG(LOG_DEBUG, "res : %x", res);   
-
 clean:
     context->eax = res;
 }
+
+void SysIpcServerCreate(InterruptFromUserlandContext* context)
+{
+    KeStatus status = STATUS_FAILURE;
+    const char * serverIdStr = (const char *)context->eax;
+    IpcHandle handle = IPC_INVALID_HANDLE;
+    Process* process = nullptr;
+
+    process = gProcessManager.GetCurrentProcess();
+    if (process == nullptr)
+    {
+        KLOG(LOG_ERROR, "GetCurrentProcess() failed !");
+        goto clean;
+    }
+
+    status = gIpcHandler.AddNewServer(serverIdStr, process, &handle);
+    if (FAILED(status))
+    {
+        KLOG(LOG_DEBUG, "IpcHandler::AddNewServerIpc() failed with code %d (Process %d)", status, process->pid);
+        goto clean;
+    }
+
+    status = IPC_STATUS_SUCCESS;
+
+clean:
+    context->eax = status;
+    context->ebx = handle;
+}
+
+void SysIpcServerConnect(InterruptFromUserlandContext* context)
+{
+    KeStatus status = STATUS_FAILURE;
+    const char* serverIdStr = (const char*)context->eax;
+    IpcHandle handle = IPC_INVALID_HANDLE;
+    Process* process = nullptr;
+
+    process = gProcessManager.GetCurrentProcess();
+    if (process == nullptr)
+    {
+        KLOG(LOG_ERROR, "GetCurrentProcess() failed !");
+        goto clean;
+    }
+
+    status = gIpcHandler.ConnectToServer(serverIdStr, process, &handle);
+    if (FAILED(status))
+    {
+        KLOG(LOG_DEBUG, "IpcHandler::ConnectToServer() failed with code %d (Process %d)", status, process->pid);
+        goto clean;
+    }
+
+    status = IPC_STATUS_SUCCESS;
+
+clean:
+    context->eax = status;
+    context->ebx = handle;
+}
+
+void SysIpcServerSend(InterruptFromUserlandContext* context)
+{
+    KeStatus status = STATUS_FAILURE;
+    IpcHandle handle = IPC_INVALID_HANDLE;
+    char* message = nullptr;
+    unsigned int size = 0;
+    Process* process = nullptr;
+
+    process = gProcessManager.GetCurrentProcess();
+    if (process == nullptr)
+    {
+        KLOG(LOG_ERROR, "GetCurrentProcess() failed !");
+        goto clean;
+    }
+
+    handle = (IpcHandle)context->eax;
+    message = (char*)context->ebx;
+    size = (unsigned int)context->ecx;
+
+    status = gIpcHandler.Send(handle, process, message, size);
+    if (FAILED(status))
+    {
+        KLOG(LOG_DEBUG, "IpcHandler::Send() failed with code %d (Process %d)", status, process->pid);
+        goto clean;
+    }
+
+    status = IPC_STATUS_SUCCESS;
+
+clean:
+    context->eax = status;
+}
+
+void SysIpcServerReceive(InterruptFromUserlandContext* context)
+{
+    KeStatus status = STATUS_FAILURE;
+    IpcHandle handle = IPC_INVALID_HANDLE;
+    char* message = nullptr;
+    unsigned int* sizePtr = 0;
+    Process* process = nullptr;
+
+    process = gProcessManager.GetCurrentProcess();
+    if (process == nullptr)
+    {
+        KLOG(LOG_ERROR, "GetCurrentProcess() failed !");
+        goto clean;
+    }
+
+    handle = (IpcHandle)context->eax;
+    message = (char*)context->ebx;
+    sizePtr = (unsigned int*)context->ecx;
+
+    status = gIpcHandler.Receive(handle, process, &message, sizePtr);
+    if (FAILED(status))
+    {
+        KLOG(LOG_DEBUG, "IpcHandler::Receive() failed with code %d (Process %d)", status, process.id);
+        goto clean;
+    }
+
+    // finir...
+
+    status = IPC_STATUS_SUCCESS;
+
+clean:
+    context->eax = status;
+}
+
 
 void SysInvalid(InterruptFromUserlandContext * context)
 {
