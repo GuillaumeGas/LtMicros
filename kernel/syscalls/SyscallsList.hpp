@@ -29,8 +29,8 @@ void SysSbrk(InterruptFromUserlandContext * context);
 
 void SysIpcServerCreate(InterruptFromUserlandContext* context);
 void SysIpcServerConnect(InterruptFromUserlandContext* context);
-void SysIpcServerSend(InterruptFromUserlandContext* context);
-void SysIpcServerReceive(InterruptFromUserlandContext* context);
+void SysIpcSend(InterruptFromUserlandContext* context);
+void SysIpcReceive(InterruptFromUserlandContext* context);
 
 void SysInvalid(InterruptFromUserlandContext * context);
 /*

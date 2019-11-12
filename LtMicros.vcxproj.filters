@@ -147,6 +147,9 @@
     <ClCompile Include="kernel\module\Module.cpp">
       <Filter>Fichiers sources\kernel\module</Filter>
     </ClCompile>
+    <ClCompile Include="kernel\task\Ipc.cpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kernel\multiboot.hpp">
@@ -271,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="kernel\module\Module.hpp">
       <Filter>Fichiers sources\kernel\module</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\Ipc.hpp">
+      <Filter>Fichiers sources\kernel\task</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

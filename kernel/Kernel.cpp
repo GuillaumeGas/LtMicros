@@ -17,6 +17,7 @@
 
 #include <kernel/task/ProcessManager.hpp>
 #include <kernel/task/Scheduler.hpp>
+#include <kernel/task/Ipc.hpp>
 
 #include <kernel/syscalls/SyscallsHandler.hpp>
 
@@ -29,15 +30,21 @@
 #include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
+
+//#define DEBUG_MODE
+#define DEBUG_PRINT_MODE
+
+#ifdef DEBUG_PRINT_MODE
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("KERNEL", LOG_LEVEL, format, ##__VA_ARGS__)
+#else
+#define KLOG(LOG_LEVEL, format, ...)
+#endif
 
 /// @brief Kernel page directory physical location
 #define KERNEL_PAGE_DIR_P_ADDR   0x1000
 
 /// @brief Kernel page tables physical location
 #define KERNEL_PAGES_TABLE_P_ADDR 0x400000
-
-//#define DEBUG_MODE
 
 Kernel::Kernel()
 {
@@ -94,8 +101,13 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     gScheduler.Init();
     //KLOG(LOG_INFO, "Scheduler initialized");
 
+    gIpcHandler.Init();
+    KLOG(LOG_INFO, "Ipc handler initialized");
+
     gSyscallsX86.Init();
     //KLOG(LOG_INFO, "X86 syscalls handler initialized");
+
+    PrintHello();
 
     if (gKernel.info.debug)
     {
@@ -117,6 +129,10 @@ void Kernel::Start()
         Panic();
         goto clean;
     }
+
+#ifdef DEBUG_MODE
+    __debugbreak();
+#endif
 
     gKernel.process = systemProcess;
 
@@ -190,3 +206,14 @@ void Kernel::Panic()
     kprint("Kernel Panic !\n");
     Pause();
 }
+
+void Kernel::PrintHello()
+{
+    kprint(" _    _   __  __ _                    \n");
+    kprint("| |  | |_|  \\/  (_) ___ _ __ ___  ___ \n");
+    kprint("| |  | __| |\\/| | |/ __| '__/ _ \\/ __|\n");
+    kprint("| |__| |_| |  | | | (__| | | (_) \\__ \\\n");
+    kprint("|_____\\__|_|  |_|_|\\___|_|  \\___/|___/\n\n");
+}
+
+

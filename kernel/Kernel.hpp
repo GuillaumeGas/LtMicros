@@ -68,6 +68,8 @@ private:
     ///@brief Checks multiboot info and magic number
     ///       https://www.gnu.org/software/grub/manual/multiboot/html_node/Boot-information-format.html#Boot-information-format
     void CheckMultibootPartialInfo(MultibootPartialInfo * mbi, u32 multibootMagicNumber);
+
+    void PrintHello();
 };
 
 #ifdef __KERNEL__

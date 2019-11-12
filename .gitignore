@@ -19,3 +19,4 @@ kernel_bin
 *.out
 *.bxrc
 *.sys
+/TODO.txt

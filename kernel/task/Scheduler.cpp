@@ -34,8 +34,6 @@ void Scheduler::AddThread(Thread * thread)
     if (_currentThread == nullptr)
         _currentThread = thread;
 
-    //__debugbreak();
-
     ListPush(_threadsList, thread);
     _nbThreads++;
 }

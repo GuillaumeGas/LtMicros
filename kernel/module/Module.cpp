@@ -100,7 +100,10 @@ KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
                     gKernel.Panic();
                 }
 
-                gVmm.AddPageToPageDirectory((u32)vNewPage, (u32)((u32)pSectionPtr + offset), PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
+                u8 * pNewPage = (u8*)gPmm.GetFreePage();
+
+                // gVmm.AddPageToPageDirectory((u32)vNewPage, (u32)((u32)pSectionPtr + offset), PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
+                gVmm.AddPageToPageDirectory((u32)vNewPage, (u32)pNewPage, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
 
                 pagesToAllocate--;
 
@@ -108,6 +111,9 @@ KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
                 offset += (u32)PAGE_SIZE;
             } while (pagesToAllocate > 0);
         }
+
+        MemSet(vUserSectionPtr, 0, sectionSize);
+        MemCopy(pSectionPtr, vUserSectionPtr, sectionSize);
     }
 
     gVmm.RestoreMemoryMapping();

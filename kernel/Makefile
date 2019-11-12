@@ -10,7 +10,7 @@ LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o
 ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr_exceptions.o InterruptContext.o Pmm.o Vmm.o vmm_utils.o Process.o Thread.o thread_utils.o Syscalls.o syscall_isr.o
 MEM=PagePool.o Heap.o
 SYSCALLS=SyscallsHandler.o
-TASK=ProcessManager.o ThreadManager.o Scheduler.o
+TASK=ProcessManager.o ThreadManager.o Scheduler.o Ipc.o
 MODULE=Module.o Elf.o
 DEBUG=LtDbg.o ltdbg_isr.o LtDbgCom.o
 
@@ -148,6 +148,9 @@ ThreadManager.o: task/ThreadManager.cpp
 	$(CC) -c $^
 
 Scheduler.o: task/Scheduler.cpp
+	$(CC) -c $^
+
+Ipc.o: task/Ipc.cpp
 	$(CC) -c $^
 
 # MODULE DIRECTORY

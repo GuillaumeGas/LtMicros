@@ -1,4 +1,9 @@
-#pragma once
+ï»¿#pragma once
+
+#include <kernel/lib/Status.hpp>
+#include <kernel/lib/List.hpp>
+
+#include <kernel/arch/x86/Process.hpp>
 
 #define IPC_INVALID_HANDLE 0
 
@@ -54,9 +59,9 @@ public:
 
 private:
     /*
-        Pour la partie alloc : on pourrait reprendre le fonctionnement du tas utilisateur, avec une adresse de base
-        et un équivalent à sbrk.
-        En fait on pourrait étendre le classe Heap actuel et créer un PoolManager qui permettrait de gérer plusieurs Heap.
+    Pour la partie alloc : on pourrait reprendre le fonctionnement du tas utilisateur, avec une adresse de base
+    et un ï¿½quivalent ï¿½ sbrk.
+    En fait on pourrait ï¿½tendre le classe Heap actuel et crï¿½er un PoolManager qui permettrait de gï¿½rer plusieurs Heap.
     */
 
     /// @brief Allocates memory in a given process address space
@@ -64,6 +69,13 @@ private:
     /// @param[in]  size The memory size in bytes that must be allocated
     /// @param[out] buffer Pointer that will hold a pointer to the allocated memory
     KeStatus _AllocateMemory(const Process* process, unsigned int size, char** const buffer);
+
+    /// @brief Checks if the given server id string is already used by the same or another process
+    /// @param[in] serverIdStr The server id string
+    /// @return true if the string is already used, else false
+    bool _IsServerIdStrAlreadyUsed(const char * serverIdStr) const;
+
+    List * _ipcObjects;
 };
 
 #ifdef __IPC_HANDLER__
