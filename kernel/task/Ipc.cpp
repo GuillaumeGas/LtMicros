@@ -29,10 +29,13 @@ struct IpcObject
 struct FIND_IPC_OBJECTS_CONTEXT
 {
     char * serverId;
+    IpcObject* ipcObject;
+    IpcHandle ipcHandle;
     bool found;
 };
 
-static void FindIpcObjectCallback(void * ipcObjectPtr, void * context);
+static void FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context);
+static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context);
 
 static IpcHandle s_IpcObjectHandleCount = IPC_INVALID_HANDLE;
 
@@ -92,7 +95,43 @@ clean:
 
 KeStatus IpcHandler::ConnectToServer(const char* serverIdStr, const Process * clientProcess, IpcHandle* const ipcHandle)
 {
-    return STATUS_SUCCESS;
+    KeStatus status = STATUS_FAILURE;
+    IpcObject* ipcObject = nullptr;
+
+    // TODO : check if the clientProcess is authorized to connect to this server
+
+    if (serverIdStr == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid serverIdStr parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (clientProcess == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid clientProcess parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (ipcHandle == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid ipcHandle parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    ipcObject = _FindIpcObjectByServerId(serverIdStr);
+    if (ipcObject == nullptr)
+    {
+        KLOG(LOG_DEBUG, "Server '%s' not found", serverIdStr);
+        status = IPC_STATUS_SERVER_NOT_FOUND;
+        goto clean;
+    }
+
+    *ipcHandle = ipcObject->handle;
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
 }
 
 KeStatus IpcHandler::Send(const IpcHandle handle, const Process* clientProcess, const char* message, const unsigned int size)
@@ -114,6 +153,46 @@ KeStatus IpcHandler::_AllocateMemory(const Process* process, unsigned int size, 
     return STATUS_SUCCESS;
 }
 
+IpcObject* IpcHandler::_FindIpcObjectByHandle(const IpcHandle handle) const
+{
+    FIND_IPC_OBJECTS_CONTEXT context;
+
+    if (handle == IPC_INVALID_HANDLE)
+    {
+        KLOG(LOG_ERROR, "Invalid handle");
+        return nullptr;
+    }
+
+    context.serverId = nullptr;
+    context.ipcObject = nullptr;
+    context.ipcHandle = handle;
+    context.found = false;
+
+    ListEnumerate(_ipcObjects, FindIpcObjectByHandleCallback, &context);
+
+    return context.ipcObject;
+}
+
+IpcObject* IpcHandler::_FindIpcObjectByServerId(const char * serverId) const
+{
+    FIND_IPC_OBJECTS_CONTEXT context;
+
+    if (serverId == nullptr)
+    {
+        KLOG(LOG_ERROR, "serverId handle");
+        return nullptr;
+    }
+
+    context.serverId = (char*)serverId;
+    context.ipcObject = nullptr;
+    context.ipcHandle = IPC_INVALID_HANDLE;
+    context.found = false;
+
+    ListEnumerate(_ipcObjects, FindIpcObjectByServerIdCallback, &context);
+
+    return context.ipcObject;
+}
+
 bool IpcHandler::_IsServerIdStrAlreadyUsed(const char * serverIdStr) const
 {
     FIND_IPC_OBJECTS_CONTEXT context;
@@ -127,12 +206,36 @@ bool IpcHandler::_IsServerIdStrAlreadyUsed(const char * serverIdStr) const
     context.serverId = (char*)serverIdStr;
     context.found = false;
 
-    ListEnumerate(_ipcObjects, FindIpcObjectCallback, &context);
+    ListEnumerate(_ipcObjects, FindIpcObjectByServerIdCallback, &context);
 
     return context.found;
 }
 
-static void FindIpcObjectCallback(void * ipcObjectPtr, void * context)
+static void FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context)
+{
+    IpcObject* ipcObject = (IpcObject*)ipcObjectPtr;
+    FIND_IPC_OBJECTS_CONTEXT* ipcContext = (FIND_IPC_OBJECTS_CONTEXT*)context;
+
+    if (ipcObjectPtr == nullptr)
+    {
+        KLOG(LOG_ERROR, "invalid ipcObjectPtr parameter");
+        return;
+    }
+
+    if (context == nullptr)
+    {
+        KLOG(LOG_ERROR, "invalid context parameter");
+        return;
+    }
+
+    if (ipcObject->handle == ipcContext->ipcHandle)
+    {
+        ipcContext->found = true;
+        ipcContext->ipcObject = ipcObject;
+    }
+}
+
+static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context)
 {
     IpcObject * ipcObject = (IpcObject*)ipcObjectPtr;
     FIND_IPC_OBJECTS_CONTEXT * ipcContext = (FIND_IPC_OBJECTS_CONTEXT*)context;
@@ -152,6 +255,7 @@ static void FindIpcObjectCallback(void * ipcObjectPtr, void * context)
     if (StrCmp(ipcObject->id, ipcContext->serverId) == 0)
     {
         ipcContext->found = true;
+        ipcContext->ipcObject = ipcObject;
     }
 }
 

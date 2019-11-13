@@ -29,8 +29,6 @@ void Module::Load(MultiBootModule * module)
         gKernel.Panic();
     }
 
-    char * pAddr = (char *)gPmm.GetFreePage();
-
     status = gProcessManager.CreateProcess(elf.header->entry, &process, SA_IO, nullptr);
     if (FAILED(status))
     {

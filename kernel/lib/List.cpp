@@ -157,6 +157,9 @@ extern "C"
             return;
         }
 
+        if (ListIsEmpty(list))
+            return;
+
         ListElem * elem = list;
         ListElem * next = list->next;
 
@@ -170,4 +173,16 @@ extern "C"
         }
     }
 
+    bool ListIsEmpty(List* list)
+    {
+        if (list == nullptr)
+        {
+            KLOG(LOG_ERROR, "Invalid list parameter");
+            return true;
+        }
+
+        if (list->data == nullptr && list->next == nullptr)
+            return true;
+        return false;
+    }
 }

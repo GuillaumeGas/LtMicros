@@ -10,15 +10,15 @@ void main()
 {
     printf("Starting Ata driver...\n");
 
-    AtaDevice device = AtaCreate(ATA_SECONDARY, ATA_MASTER);
-    if (!AtaInit(&device))
-    {
-        printf("Can't init ata device\n");
-    }
-    else
-    {
-        printf("Ata device initialized !\n");
-    }
+    //AtaDevice device = AtaCreate(ATA_SECONDARY, ATA_MASTER);
+    //if (!AtaInit(&device))
+    //{
+    //    printf("Can't init ata device\n");
+    //}
+    //else
+    //{
+    //    printf("Ata device initialized !\n");
+    //}
 
     //printf("Test : \n");
     //int * res = (int*)HeapAlloc(512);
@@ -44,6 +44,19 @@ void main()
         else
         {
             printf("Ipc server created (handle %d)\n", handle);
+        }
+    }
+
+    {
+        int handle = 0;
+        int res = _ipcServerConnect("__LtFsServer__", &handle);
+        if (res != 0)
+        {
+            printf("_ipcServerConnect() failed with code %d\n", res);
+        }
+        else
+        {
+            printf("Connected to Ipc server (handle %d)\n", handle);
         }
     }
 

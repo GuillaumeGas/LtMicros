@@ -26,6 +26,7 @@ extern "C"
     void * ListTop(List * list);
     void * ListPop(List ** list);
     void ListEnumerate(List * list, EnumerateFunPtr callback, void * Context);
+    bool ListIsEmpty(List* list);
 
 }
 /// @}

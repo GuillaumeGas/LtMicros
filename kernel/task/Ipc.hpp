@@ -14,6 +14,8 @@
 
 typedef unsigned int IpcHandle;
 
+struct IpcObject;
+
 class IpcHandler
 {
 public:
@@ -69,6 +71,16 @@ private:
     /// @param[in]  size The memory size in bytes that must be allocated
     /// @param[out] buffer Pointer that will hold a pointer to the allocated memory
     KeStatus _AllocateMemory(const Process* process, unsigned int size, char** const buffer);
+
+    /// @brief Retrieves an ipc object from its handle
+    /// @param[in] handle The ipc object handle
+    /// @return A pointer to the found ipc object, or nullptr if not found
+    IpcObject* _FindIpcObjectByHandle(const IpcHandle handle) const ;
+
+    /// @brief Retrieves an ipc object from its server id
+    /// @param[in] serverId The ipc server id
+    /// @return A pointer to the found ipc object, or nullptr if not found
+    IpcObject* _FindIpcObjectByServerId(const char * serverId) const;
 
     /// @brief Checks if the given server id string is already used by the same or another process
     /// @param[in] serverIdStr The server id string
