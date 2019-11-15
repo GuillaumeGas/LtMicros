@@ -8,7 +8,7 @@ ROOT=kmain.o Kernel.o Logger.o cppsupport.o
 DRIVERS=Screen.o Pic.o Clock.o clock_isr.o Serial.o BaseDriver.o
 LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o
 ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr_exceptions.o InterruptContext.o Pmm.o Vmm.o vmm_utils.o Process.o Thread.o thread_utils.o Syscalls.o syscall_isr.o
-MEM=PagePool.o Heap.o
+MEM=PagePool.o Heap.o Vad.o
 SYSCALLS=SyscallsHandler.o
 TASK=ProcessManager.o ThreadManager.o Scheduler.o Ipc.o
 MODULE=Module.o Elf.o
@@ -134,6 +134,9 @@ PagePool.o: mem/PagePool.cpp
 	$(CC) -c $^
 
 Heap.o: mem/Heap.cpp
+	$(CC) -c $^
+
+Vad.o: mem/Vad.cpp
 	$(CC) -c $^
 
 # SYSCALLS DIRECTORY

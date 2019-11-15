@@ -150,6 +150,9 @@
     <ClCompile Include="kernel\task\Ipc.cpp">
       <Filter>Fichiers sources\kernel\task</Filter>
     </ClCompile>
+    <ClCompile Include="kernel\mem\Vad.cpp">
+      <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kernel\multiboot.hpp">
@@ -277,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="kernel\task\Ipc.hpp">
       <Filter>Fichiers sources\kernel\task</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mem\Vad.hpp">
+      <Filter>Fichiers sources\kernel\mem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

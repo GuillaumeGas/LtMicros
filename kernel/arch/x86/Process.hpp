@@ -7,6 +7,13 @@
 /// @addgroup ArchX86Group
 /// @{
 
+/// @brief Process virtual base address
+#define V_PROCESS_BASE_ADDR  0x40000000
+#define V_PROCESS_LIMIT_ADDR 0xFFFFFFFF
+
+/// TEST : 40960 bytes for the default heap
+#define DEFAULT_HEAP_SIZE 0xA000
+
 struct Thread;
 
 /// @brief Describes a process
@@ -20,10 +27,12 @@ struct Process
     Thread * mainThread;
     /// @brief Process children list
     List * childrenList;
-    /// @brief Process heap base address
+    /// @brief General Process heap base address
     u32 heapBaseAddress;
-    /// @brief Process heap limit address
+    /// @brief General Process heap limit address
     u32 heapLimitAddress;
+    /// @brief Vads list
+    List* vadsList;
 
     /// @brief Adds a thread to the process. The mainThread is null, it is set with this thread
     void AddThread(Thread * thread);
@@ -40,14 +49,6 @@ struct Process
     /// @param[in,opt] parent A pointer to the parent process, or nullptr
     /// @return STATUS_SUCCESS on success, an error code otherwise
     static KeStatus Create(Process ** newProcess, Process * parent = nullptr);
-
-    /// @brief Creates a x86 process
-    /// @warning This does not add the process to the scheduler process list
-    /// @param[out] newProcess A pointer that will receive an pointer to the created process
-    /// @param[in] heapBaseAddress The process heap base address
-    /// @param[in,opt] parent A pointer to the parent process, or nullptr
-    /// @return STATUS_SUCCESS on success, an error code otherwise
-    static KeStatus Create(Process ** newProcess, u32 heapBaseAddress, Process * parent = nullptr);
 
     /// @brief Creates a x86 system process.
     /// @warning This does not add the process to the scheduler process list

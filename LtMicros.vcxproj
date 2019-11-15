@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath />
+    <IncludePath>C:\Users\guillaume.gas\Documents\prog\c\LtMicros;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath />
@@ -157,6 +157,7 @@
     <ClCompile Include="kernel\Logger.cpp" />
     <ClCompile Include="kernel\mem\Heap.cpp" />
     <ClCompile Include="kernel\mem\PagePool.cpp" />
+    <ClCompile Include="kernel\mem\Vad.cpp" />
     <ClCompile Include="kernel\module\Elf.cpp" />
     <ClCompile Include="kernel\module\Module.cpp" />
     <ClCompile Include="kernel\syscalls\SyscallsHandler.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="kernel\Logger.hpp" />
     <ClInclude Include="kernel\mem\Heap.hpp" />
     <ClInclude Include="kernel\mem\PagePool.hpp" />
+    <ClInclude Include="kernel\mem\Vad.hpp" />
     <ClInclude Include="kernel\module\Elf.hpp" />
     <ClInclude Include="kernel\module\Module.hpp" />
     <ClInclude Include="kernel\multiboot.hpp" />

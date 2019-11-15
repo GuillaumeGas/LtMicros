@@ -6,6 +6,7 @@
 #include <kernel/arch/x86/Pmm.hpp>
 #include <kernel/Kernel.hpp>
 #include <kernel/lib/StdLib.hpp>
+#include <kernel/mem/Vad.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("ARCH", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -70,26 +71,17 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr)
 
 KeStatus Process::Create(Process ** newProcess, Process * parent)
 {
-    return Create(newProcess, DEFAULT_HEAP_BASE_ADDRESS, parent);
-}
-
-KeStatus Process::Create(Process ** newProcess, u32 heapBaseAddress, Process * parent)
-{
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
     List * childrenList = nullptr;
     PageDirectory processPd = { 0 };
+    Vad * baseVad = nullptr;
+    Vad * heapVad = nullptr;
 
     if (newProcess == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid newProcess parameter");
         return STATUS_NULL_PARAMETER;
-    }
-
-    if (heapBaseAddress == 0)
-    {
-        KLOG(LOG_ERROR, "Invalid heapBaseAddress value");
-        return STATUS_INVALID_PARAMETER;
     }
 
     process = (Process *)HeapAlloc(sizeof(Process));
@@ -111,13 +103,25 @@ KeStatus Process::Create(Process ** newProcess, u32 heapBaseAddress, Process * p
         goto clean;
     }
 
-    // create process heap, no memory allocated, user must call sbrk syscall to increase the heap
-    process->heapBaseAddress = heapBaseAddress;
-    process->heapLimitAddress = heapBaseAddress;
+    status = Vad::Create((void*)V_PROCESS_BASE_ADDR, (V_PROCESS_LIMIT_ADDR - V_PROCESS_BASE_ADDR), true, &baseVad);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Vad::Create() failed with code %d", status);
+        goto clean;
+    }
+
+    status = baseVad->Allocate(DEFAULT_HEAP_SIZE, &heapVad);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Vad::Allocate() failed with code %d", status);
+        goto clean;
+    }
 
     process->pageDirectory = processPd;
     process->pid = s_ProcessId++;
     process->childrenList = childrenList;
+    process->heapBaseAddress = (u32)heapVad->baseAddress;
+    process->heapLimitAddress = (u32)heapVad->baseAddress + heapVad->size;
 
     *newProcess = process;
 

@@ -136,6 +136,13 @@ clean:
 
 KeStatus IpcHandler::Send(const IpcHandle handle, const Process* clientProcess, const char* message, const unsigned int size)
 {
+    /*
+        - Aller chercher l'ipc object à partir du handle
+        - Allouer la taille nécessaire dans le processus serveur
+        - Y copier les données
+        - Créer un object ipc message contenant le pointeur vers le buffer en question
+    */
+
     return STATUS_SUCCESS;
 }
 
