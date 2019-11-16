@@ -21,7 +21,7 @@ void PageFree(const Page page)
     gPagePool.Free(page);
 }
 
-void MemCopy(void * src, void * dst, unsigned int size)
+void MemCopy(const void * const src, void * dst, unsigned int size)
 {
     u8 * _dst = (u8 *)dst;
     u8 * _src = (u8 *)src;

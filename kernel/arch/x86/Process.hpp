@@ -3,6 +3,7 @@
 #include <kernel/arch/x86/Vmm.hpp>
 #include <kernel/lib/Status.hpp>
 #include <kernel/lib/List.hpp>
+#include <kernel/mem/Vad.hpp>
 
 /// @addgroup ArchX86Group
 /// @{
@@ -12,9 +13,18 @@
 #define V_PROCESS_LIMIT_ADDR 0xFFFFFFFF
 
 /// TEST : 40960 bytes for the default heap
-#define DEFAULT_HEAP_SIZE 0xA000
+#define DEFAULT_HEAP_SIZE 0x1000
 
 struct Thread;
+
+struct ProcessHeap
+{
+    u8 * baseAddress;
+
+    u8 * limitAddress;
+
+    Vad * vad;
+};
 
 /// @brief Describes a process
 struct Process
@@ -27,12 +37,10 @@ struct Process
     Thread * mainThread;
     /// @brief Process children list
     List * childrenList;
-    /// @brief General Process heap base address
-    u32 heapBaseAddress;
-    /// @brief General Process heap limit address
-    u32 heapLimitAddress;
+    /// @brief Structure describing the default process heap
+    ProcessHeap defaultHeap;
     /// @brief Vads list
-    List* vadsList;
+    Vad * baseVad;
 
     /// @brief Adds a thread to the process. The mainThread is null, it is set with this thread
     void AddThread(Thread * thread);
@@ -41,7 +49,7 @@ struct Process
     /// @param[in]  nbPages The number of pages required
     /// @param[out] allocatedBlockAddr Pointer that will hold the allocated block virtual address
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr);
+    KeStatus IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr);
 
     /// @brief Creates a x86 process
     /// @warning This does not add the process to the scheduler process list
@@ -68,6 +76,19 @@ struct Process
     /// @brief Releases resources allocated for the process page directory
     /// @param[in] pd A page directory structure
     static void ReleaseProcessPageDirectoryEntry(PageDirectory pd);
+
+    /// @brief Sets at memory area with a given byte, and copy a source area a destination
+    /// @param[in] sourceAddress A pointer to the memory we want to copy
+    /// @param[in] destAddress A pointer to the memory where to copy
+    /// @param[in] size The memory size in bytes we want to copy
+    /// @param[in] byte The byte used to set memory
+    void MemorySetAndCopy(const u8 * const sourceAddress, u8 * const destAddress, const unsigned int size, const u8 byte);
+
+    /// @brief Looks for a new vad at the asked address and allocate the required size
+    /// @param[in] address The asked address
+    /// @param[in] size The required size
+    /// @return STATUS_SUCCESS on success, an error code otherwise
+    KeStatus AllocateMemoryAtAddress(void * const address, const unsigned int size);
 };
 
 /// @}

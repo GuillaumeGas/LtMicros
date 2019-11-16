@@ -226,7 +226,7 @@ KeStatus Thread::_InitUserThread(Thread * thread, SecurityAttribute attribute, u
     if (pUserStack == 0)
     {
         KLOG(LOG_ERROR, "Couldn't find a free physical page");
-        status = STATUS_PHYSICIAL_MEMORY_FULL;
+        status = STATUS_PHYSICAL_MEMORY_FULL;
         goto clean;
     }
 

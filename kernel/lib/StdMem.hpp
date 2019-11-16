@@ -30,7 +30,7 @@ void PageFree(const Page page);
 /// @param[in] src A pointer to the source
 /// @param[in] dst A pointer to the destination
 /// @param[in] size The length in bytes
-void MemCopy(void * src, void * dst, unsigned int size);
+void MemCopy(const void * const src, void * dst, unsigned int size);
 
 /// @brief Sets a chunck of memory with a given byte
 /// @param[in] src A pointer to the data

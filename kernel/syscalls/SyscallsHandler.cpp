@@ -65,7 +65,7 @@ void SysSbrk(InterruptFromUserlandContext * context)
         goto clean;
     }
 
-    status = currentProcess->IncreaseHeap(context->ebx, &res);
+    status = currentProcess->IncreaseHeap(context->ebx, (u8**)&res);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Process::IncreaseHeap() failed with code %d", status);

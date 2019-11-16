@@ -350,7 +350,7 @@ bool LtDbg::DisassCommand(KeDebugRequest * request, KeDebugContext * context, Ke
     paramRes = (KeDebugDisassParamRes *)response->data;
     paramRes->size = paramReq->nbInst * DEFAULT_ASM_BUFFER_SIZE;
     paramRes->startingAddress = context->eip;
-    MemCopy((void *)context->eip, &paramRes->data, paramRes->size);
+    MemCopy((const void *)context->eip, &paramRes->data, paramRes->size);
 
     response->header.status = DBG_STATUS_SUCCESS;
 

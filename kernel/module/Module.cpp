@@ -58,65 +58,28 @@ KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
 {
     KeStatus status = STATUS_FAILURE;
 
-    gVmm.SaveCurrentMemoryMapping();
-    gVmm.SetCurrentPageDirectory(process->pageDirectory.pdEntry);
-
     for (int i = 0; i < elf.header->phnum; i++)
     {
         u8 * vUserSectionPtr = (u8 *)elf.prgHeaderTable[i].vaddr;
         u32 sectionSize = elf.prgHeaderTable[i].memSize;
         u8 * pSectionPtr = (u8 *)((u32)elf.header + elf.prgHeaderTable[i].offset);
-        u8 * vNewPage = nullptr;
 
         if (vUserSectionPtr == nullptr)
             break;
 
-        if (vNewPage == nullptr || sectionSize > PAGE_SIZE)
+        KLOG(LOG_DEBUG, "Allocating %d bytes at %x", sectionSize, vUserSectionPtr);
+        status = process->AllocateMemoryAtAddress(vUserSectionPtr, sectionSize);
+        if (FAILED(status))
         {
-            unsigned int pagesToAllocate = sectionSize / PAGE_SIZE;
-            u32 offset = 0;
-
-            if (_local_mod(sectionSize, PAGE_SIZE) > 0)
-            {
-                pagesToAllocate++;
-            }
-
-            if (vNewPage == nullptr)
-            {
-                vNewPage = vUserSectionPtr;
-            }
-            else
-            {
-                vNewPage = (u8 *)((unsigned int)vNewPage + (unsigned int)PAGE_SIZE);
-            }
-
-            do
-            {
-                if (!gVmm.CheckUserVirtualAddressValidity((u32)vNewPage))
-                {
-                    KLOG(LOG_ERROR, "Invalid user virtual address (%x), can't map code in memory\n", vNewPage);
-                    gKernel.Panic();
-                }
-
-                u8 * pNewPage = (u8*)gPmm.GetFreePage();
-
-                // gVmm.AddPageToPageDirectory((u32)vNewPage, (u32)((u32)pSectionPtr + offset), PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
-                gVmm.AddPageToPageDirectory((u32)vNewPage, (u32)pNewPage, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
-
-                pagesToAllocate--;
-
-                vNewPage = (u8 *)((unsigned int)vNewPage + (unsigned int)PAGE_SIZE);
-                offset += (u32)PAGE_SIZE;
-            } while (pagesToAllocate > 0);
+            KLOG(LOG_ERROR, "Process::AllocateMemory() failed with status %d", status);
+            goto clean;
         }
 
-        MemSet(vUserSectionPtr, 0, sectionSize);
-        MemCopy(pSectionPtr, vUserSectionPtr, sectionSize);
+        process->MemorySetAndCopy(pSectionPtr, vUserSectionPtr, sectionSize, 0);
     }
-
-    gVmm.RestoreMemoryMapping();
 
     status = STATUS_SUCCESS;
 
+clean:
     return status;
 }

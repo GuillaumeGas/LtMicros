@@ -32,10 +32,10 @@ void Process::AddThread(Thread * thread)
         thread->AddNeighbor(mainThread);
 }
 
-KeStatus Process::IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr)
+KeStatus Process::IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr)
 {
     KeStatus status = STATUS_FAILURE;
-    u32 newBlockAddress = heapLimitAddress;
+    u8 * newBlockAddress = defaultHeap.limitAddress;
 
     if (nbPages == 0)
     {
@@ -49,20 +49,28 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u32 * allocatedBlockAddr)
         return STATUS_NULL_PARAMETER;
     }
 
-    PageDirectoryEntry * pde = gVmm.GetCurrentPageDirectory();
-    gVmm.SetCurrentPageDirectory(pageDirectory.pdEntry);
-
-    for (unsigned int i = 0; i < nbPages; i++)
+    if ((defaultHeap.limitAddress + (nbPages * PAGE_SIZE)) > defaultHeap.vad->limitAddress)
     {
-        u32 newBlock = heapLimitAddress + (i * PAGE_SIZE);
-        u32 pHeap = (u32)gPmm.GetFreePage();
-
-        gVmm.AddPageToPageDirectory(newBlock, pHeap, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, pageDirectory);
+        KLOG(LOG_ERROR, "Avoiding process heap overflow");
+        return STATUS_PROCESS_HEAP_LIMIT_REACHED;
     }
 
-    gVmm.SetCurrentPageDirectory(pde);
+    // TODO : revoir le fonctionnement de la heap
 
-    heapLimitAddress += (nbPages * PAGE_SIZE);
+    //PageDirectoryEntry * pde = gVmm.GetCurrentPageDirectory();
+    //gVmm.SetCurrentPageDirectory(pageDirectory.pdEntry);
+
+    //for (unsigned int i = 0; i < nbPages; i++)
+    //{
+    //    u32 newBlock = heapLimitAddress + (i * PAGE_SIZE);
+    //    u32 pHeap = (u32)gPmm.GetFreePage();
+
+    //    gVmm.AddPageToPageDirectory(newBlock, pHeap, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, pageDirectory);
+    //}
+
+    //gVmm.SetCurrentPageDirectory(pde);
+
+    defaultHeap.limitAddress += (nbPages * PAGE_SIZE);
 
     *allocatedBlockAddr = newBlockAddress;
 
@@ -110,7 +118,7 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
         goto clean;
     }
 
-    status = baseVad->Allocate(DEFAULT_HEAP_SIZE, &heapVad);
+    status = baseVad->AllocateAtAddress((void*)DEFAULT_HEAP_BASE_ADDRESS, DEFAULT_HEAP_SIZE, &processPd, &heapVad);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Vad::Allocate() failed with code %d", status);
@@ -120,8 +128,12 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     process->pageDirectory = processPd;
     process->pid = s_ProcessId++;
     process->childrenList = childrenList;
-    process->heapBaseAddress = (u32)heapVad->baseAddress;
-    process->heapLimitAddress = (u32)heapVad->baseAddress + heapVad->size;
+
+    process->baseVad = baseVad;
+
+    process->defaultHeap.vad = heapVad;
+    process->defaultHeap.baseAddress = heapVad->baseAddress;
+    process->defaultHeap.limitAddress = heapVad->baseAddress;
 
     *newProcess = process;
 
@@ -279,6 +291,60 @@ void Process::ReleaseProcessPageDirectoryEntry(PageDirectory pd)
     {
         ListDestroyEx(pd.pagesList, _CleanPageListEntry);
     }
+}
+
+void Process::MemorySetAndCopy(const u8 * const sourceAddress, u8 * const destAddress, const unsigned int size, const u8 byte)
+{
+    PageDirectoryEntry * currentPd = gVmm.GetCurrentPageDirectory();
+
+    if (sourceAddress == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid sourceAddress parameter");
+        return;
+    }
+
+    if (destAddress == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid destAddress parameter");
+        return;
+    }
+
+    gVmm.SetCurrentPageDirectory(this->pageDirectory.pdEntry);
+
+    MemSet(destAddress, byte, size);
+    MemCopy(sourceAddress, destAddress, size);
+
+    gVmm.SetCurrentPageDirectory(currentPd);
+}
+
+KeStatus Process::AllocateMemoryAtAddress(void * const address, const unsigned int size)
+{
+    KeStatus status = STATUS_FAILURE;
+    Vad * newVad = nullptr;
+
+    if (address == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid address parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (size == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    status = baseVad->AllocateAtAddress(address, size, &pageDirectory, &newVad);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Vad::AllocateAt() failed with cod %d", status);
+        goto clean;
+    }
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
 }
 
 /// @}
