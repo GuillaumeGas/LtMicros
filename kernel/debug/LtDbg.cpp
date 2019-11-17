@@ -203,6 +203,10 @@ void LtDbg::WaitForPacket(KeDebugContext * context)
         case CMD_BP:
             DKLOG(LOG_DEBUG, "Breakpoint command");
             break;
+        case CMD_IDT:
+            DKLOG(LOG_DEBUG, "Idt command");
+            running = IdtCommand(&request, context, &response);
+            break;
         default:
             DKLOG(LOG_DEBUG, "Undefined debug command");
             response.header.command = request.command;
@@ -479,5 +483,32 @@ bool LtDbg::MemoryCommand(KeDebugRequest * request, KeDebugContext * context, Ke
 clean:
     gVmm.SetCurrentPageDirectory(currentPd);
 
+    return false;
+}
+
+bool LtDbg::IdtCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response)
+{
+    const unsigned int idtSize = gIdt.info.limit;
+    IdtDescriptor * descriptors = (IdtDescriptor*)HeapAlloc(idtSize);
+
+    if (descriptors == nullptr)
+    {
+        KLOG(LOG_ERROR, "HeapAlloc() failed to allocate %d bytes", idtSize);
+        response->header.dataSize = 0;
+        response->header.status = DBG_STATUS_FAILURE;
+        response->data = nullptr;
+
+        goto clean;
+    }
+
+    MemCopy((void*)gIdt.info.base, descriptors, idtSize);
+
+    response->header.command = CMD_IDT;
+    response->header.context = *context;
+    response->header.status = DBG_STATUS_SUCCESS;
+    response->header.dataSize = idtSize;
+    response->data = (char*)descriptors;
+
+clean:
     return false;
 }

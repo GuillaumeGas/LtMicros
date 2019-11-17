@@ -66,6 +66,7 @@ private:
     bool DisassCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response);
     bool StackTraceCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response);
     bool MemoryCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response);
+    bool IdtCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response);
 
 };
 

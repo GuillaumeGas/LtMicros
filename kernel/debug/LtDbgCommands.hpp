@@ -16,6 +16,7 @@
 	COMMAND(CMD_MEMORY,      "m")		  \
 	COMMAND(CMD_BP,          "bp")        \
 	COMMAND(CMD_BL,          "bl")        \
+    COMMAND(CMD_IDT,         "idt")       \
 	COMMAND(CMD_UNKNOWN,     "<unknown>") \
 	COMMAND(CMD_END,         "<end>" )    \
 
