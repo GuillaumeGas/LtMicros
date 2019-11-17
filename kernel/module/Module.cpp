@@ -67,7 +67,6 @@ KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
         if (vUserSectionPtr == nullptr)
             break;
 
-        KLOG(LOG_DEBUG, "Allocating %d bytes at %x", sectionSize, vUserSectionPtr);
         status = process->AllocateMemoryAtAddress(vUserSectionPtr, sectionSize);
         if (FAILED(status))
         {

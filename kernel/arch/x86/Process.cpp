@@ -121,7 +121,7 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     status = baseVad->AllocateAtAddress((void*)DEFAULT_HEAP_BASE_ADDRESS, DEFAULT_HEAP_SIZE, &processPd, &heapVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Vad::Allocate() failed with code %d", status);
+        KLOG(LOG_ERROR, "Vad::AllocateAtAddress() failed with code %d", status);
         goto clean;
     }
 

@@ -140,7 +140,6 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
         return STATUS_NULL_PARAMETER;
     }
 
-    KLOG(LOG_DEBUG, "test1");
     status = LookForFreeVadAtAddressOfMinimumSize(address, size, &freeVad);
     if (FAILED(status))
     {
@@ -150,7 +149,6 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
 
     if ((freeVad->size - size) > VAD_MINIMUM_DELTA)
     {
-        KLOG(LOG_DEBUG, "test2");
         status = freeVad->SplitAtAddress(address, size);
         if (FAILED(status))
         {
@@ -162,14 +160,12 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
         freeVad = freeVad->next;
     }
 
-    KLOG(LOG_DEBUG, "test3");
     status = freeVad->ReserveAndAllocateMemory(pageDirectory);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "ReserveAndAllocateMemory() failed with code %d", status);
         goto clean;
     }
-    KLOG(LOG_DEBUG, "test4");
 
     *outVad = freeVad;
     freeVad = nullptr;
@@ -248,13 +244,9 @@ KeStatus Vad::LookForFreeVadAtAddressOfMinimumSize(void * const address, const u
         return STATUS_NULL_PARAMETER;
     }
 
-    KLOG(LOG_DEBUG, "Require %x (%d bytes)", address, size);
-
     currentVad = this;
     do
     {
-        KLOG(LOG_DEBUG, "%x - %x (%d) [%c]", currentVad->baseAddress, currentVad->limitAddress, currentVad->size, currentVad->free ? 'f' : 'r');
-
         if (address >= currentVad->baseAddress && address < currentVad->limitAddress)
         {
             unsigned int innerSize = 0;
@@ -268,6 +260,8 @@ KeStatus Vad::LookForFreeVadAtAddressOfMinimumSize(void * const address, const u
                 status = STATUS_NOT_FOUND;
                 goto clean;
             }
+
+            freeVad = currentVad;
 
             break;
         }
@@ -394,7 +388,9 @@ KeStatus Vad::SplitAtAddress(void * const address, const unsigned int size)
 
     newVad->previous = this;
     newVad->next = this->next;
-    newVad->next->previous = newVad;
+    
+    if (newVad->next != nullptr)
+        newVad->next->previous = newVad;
 
     this->size -= (nbPages * PAGE_SIZE);
     this->limitAddress = this->baseAddress + this->size;

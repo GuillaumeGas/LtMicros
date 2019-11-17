@@ -32,7 +32,7 @@ static void printInt(const int x, const unsigned short base)
     char HEX[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
     int i, cpt, reste;
     char chaine[34];
-    int quotient = x;
+    unsigned int quotient = x;
 
     if (x == 0)
         printChar('0');
@@ -53,16 +53,16 @@ static void printInt(const int x, const unsigned short base)
     while (quotient != 0)
     {
         reste = quotient % base;
-        quotient = (int)quotient / base;
+        quotient = (unsigned int)quotient / base;
         chaine[cpt] = HEX[reste];
         cpt++;
     }
 
-    if (x < 0)
-    {
-        chaine[cpt] = '-';
-        cpt++;
-    }
+    //if (x < 0)
+    //{
+    //    chaine[cpt] = '-';
+    //    cpt++;
+    //}
 
     for (i = cpt - 1; i >= 0; i--)
         printChar(chaine[i]);
