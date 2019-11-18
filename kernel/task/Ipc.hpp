@@ -27,14 +27,14 @@ public:
     /// @param[in]  serverProcess The process asking to become an IPC server
     /// @param[out] ipcHandle Pointer that will hold the new IpcHandle
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus AddNewServer(const char* serverIdStr, const Process* serverProcess, IpcHandle* const ipcHandle);
+    KeStatus AddNewServer(const char* serverIdStr, Process* const serverProcess, IpcHandle* const ipcHandle);
 
     /// @brief Looks for a Ipc object given a server id string and retrieves its handle.
     /// @note This function could check if the client process is authorized to connect to this server in the futur.
     /// @param[in]  serverIdStr A string identifying the server
     /// @param[in]  clientProcess The client asking to connect to the server
     /// @param[out] ipcHandle Pointer that will hold the server IpcHandle
-    KeStatus ConnectToServer(const char* serverIdStr, const Process * clientProcess, IpcHandle* const ipcHandle);
+    KeStatus ConnectToServer(const char* serverIdStr, Process * const clientProcess, IpcHandle* const ipcHandle);
 
     /// @brief Adds a given message sent my a given process to the list of messages associated to a given handle
     /// @param[in] handle The handle on a Ipc object
@@ -42,7 +42,7 @@ public:
     /// @param[in] message A pointer to the message. The pointed memory is in the client process address space.
     /// @param[in] size The message size in bytes
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus Send(const IpcHandle handle, const Process* clientProcess, const char* message, const unsigned int size);
+    KeStatus Send(const IpcHandle handle, Process* const clientProcess, const char* message, const unsigned int size);
 
     /// @brief Pops the next stacked message in the list associated to the Ipc object
     /// @param[in] handle The handle on a Ipc object
@@ -51,13 +51,13 @@ public:
     ///             it must be released by using ReleaseMemory() function.
     /// @param[in] size A pointer that will receive the message size in bytes
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus Receive(const IpcHandle handle, const Process* serverProcess, const char** message, const unsigned int* size);
+    KeStatus Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size);
 
     /// @brief Releases memory allocated for an IPC in a process address space
     /// @param[in] process The process in which the memory must be released
     /// @param[in] ptr Pointer to the memory to be released
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus ReleaseMemory(const Process* process, void* ptr);
+    KeStatus ReleaseMemory(Process* const process, void* ptr);
 
 private:
     /*
@@ -70,7 +70,7 @@ private:
     /// @param[in]  process The process in which the memory must be allocated
     /// @param[in]  size The memory size in bytes that must be allocated
     /// @param[out] buffer Pointer that will hold a pointer to the allocated memory
-    KeStatus _AllocateMemory(const Process* process, unsigned int size, char** const buffer);
+    KeStatus _AllocateMemory(Process* processconst, unsigned int size, char** const buffer);
 
     /// @brief Retrieves an ipc object from its handle
     /// @param[in] handle The ipc object handle

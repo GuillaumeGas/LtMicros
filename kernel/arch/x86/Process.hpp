@@ -83,7 +83,13 @@ struct Process
     /// @param[in] pd A page directory structure
     static void ReleaseProcessPageDirectoryEntry(PageDirectory pd);
 
-    /// @brief Sets at memory area with a given byte, and copy a source area a destination
+    /// @brief Copies a source area to a destination
+    /// @param[in] sourceAddress A pointer to the memory we want to copy
+    /// @param[in] destAddress A pointer to the memory where to copy
+    /// @param[in] size The memory size in bytes we want to copy
+    void MemoryCopy(const u8 * const sourceAddress, u8 * const destAddress, const unsigned int size);
+
+    /// @brief Sets at memory area with a given byte, and copies a source area to a destination
     /// @param[in] sourceAddress A pointer to the memory we want to copy
     /// @param[in] destAddress A pointer to the memory where to copy
     /// @param[in] size The memory size in bytes we want to copy

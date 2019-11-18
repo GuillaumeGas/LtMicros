@@ -168,7 +168,7 @@ void SysIpcReceive(InterruptFromUserlandContext* context)
 {
     KeStatus status = STATUS_FAILURE;
     IpcHandle handle = IPC_INVALID_HANDLE;
-    char* message = nullptr;
+    char** message = nullptr;
     unsigned int* sizePtr = 0;
     Process* process = nullptr;
 
@@ -180,17 +180,15 @@ void SysIpcReceive(InterruptFromUserlandContext* context)
     }
 
     handle = (IpcHandle)context->ebx;
-    message = (char*)context->ecx;
+    message = (char**)context->ecx;
     sizePtr = (unsigned int*)context->edx;
 
-    status = gIpcHandler.Receive(handle, process, (const char**)&message, sizePtr);
+    status = gIpcHandler.Receive(handle, process, message, sizePtr);
     if (FAILED(status))
     {
         KLOG(LOG_DEBUG, "IpcHandler::Receive() failed with code %d (Process %d)", status, process->pid);
         goto clean;
     }
-
-    // finir...
 
     status = STATUS_SUCCESS;
 

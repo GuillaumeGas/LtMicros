@@ -7,12 +7,16 @@
 %define SYSCALL_SBRK           0x2
 %define SYS_IPC_SERVER_CREATE  0x3
 %define SYS_IPC_SERVER_CONNECT 0X4
+%define SYS_IPC_SEND           0x5
+%define SYS_IPC_RECEIVE        0x6
 
 global _print
 global _printChar
 global _sbrk
 global _ipcServerCreate
 global _ipcServerConnect
+global _ipcSend
+global _ipcReceive
 
 _print:
     push ebp
@@ -76,6 +80,34 @@ _ipcServerConnect:
     int SYSCALL_INTERRUPT
 
 	mov [ecx], ebx
+
+    leave
+    ret
+
+_ipcSend:
+    push ebp
+    mov ebp, esp
+
+    mov ebx, [ebp+8]  ; we retrieve the first parameter (ipcHandle) on the stack
+	mov ecx, [ebp+12] ; we retrieve the second parameter (message pointer) on the stack
+	mov edx, [ebp+16] ; we retrieve the third parameter (size) on the stack
+    mov eax, SYS_IPC_SEND
+
+    int SYSCALL_INTERRUPT
+
+    leave
+    ret
+
+_ipcReceive:
+    push ebp
+    mov ebp, esp
+
+    mov ebx, [ebp+8]  ; we retrieve the first parameter (ipcHandle) on the stack
+	mov ecx, [ebp+12] ; we retrieve the second parameter (message pointer) on the stack
+	mov edx, [ebp+16] ; we retrieve the third parameter (size pointer) on the stack
+    mov eax, SYS_IPC_RECEIVE
+
+    int SYSCALL_INTERRUPT
 
     leave
     ret

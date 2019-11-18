@@ -6,6 +6,7 @@
 #include <kernel/arch/x86/Pmm.hpp>
 #include <kernel/arch/x86/Vmm.hpp>
 #include <kernel/lib/StdLib.hpp>
+#include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("MEM", LOG_LEVEL, format, ##__VA_ARGS__)

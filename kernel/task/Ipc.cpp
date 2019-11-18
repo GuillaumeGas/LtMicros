@@ -4,6 +4,8 @@
 #include <kernel/Logger.hpp>
 #include <kernel/lib/StdMem.hpp>
 #include <kernel/lib/StdLib.hpp>
+#include <kernel/Kernel.hpp>
+#include <kernel/task/ProcessManager.hpp>
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -23,7 +25,21 @@ struct IpcObject
     /// List of messages
     List * messages;
 
-    static KeStatus Create(const char * serverIdStr, const Process * serverProcess, const IpcHandle handle, IpcObject** const ipcObject);
+    static KeStatus Create(const char * serverIdStr, Process * const serverProcess, const IpcHandle handle, IpcObject** const ipcObject);
+};
+
+struct IpcMessage
+{
+    /// The sender process
+    Process * clientProcess;
+
+    /// Pointer to the message content
+    char * message;
+
+    /// The message size
+    unsigned int size;
+
+    static KeStatus Create(Process * const clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage);
 };
 
 struct FIND_IPC_OBJECTS_CONTEXT
@@ -44,7 +60,7 @@ void IpcHandler::Init()
     _ipcObjects = ListCreate();
 }
 
-KeStatus IpcHandler::AddNewServer(const char * serverIdStr, const Process* serverProcess, IpcHandle* const handle)
+KeStatus IpcHandler::AddNewServer(const char * serverIdStr, Process* const serverProcess, IpcHandle* const handle)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
@@ -93,7 +109,7 @@ clean:
     return status;
 }
 
-KeStatus IpcHandler::ConnectToServer(const char* serverIdStr, const Process * clientProcess, IpcHandle* const ipcHandle)
+KeStatus IpcHandler::ConnectToServer(const char* serverIdStr, Process * const clientProcess, IpcHandle* const ipcHandle)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject* ipcObject = nullptr;
@@ -134,28 +150,148 @@ clean:
     return status;
 }
 
-KeStatus IpcHandler::Send(const IpcHandle handle, const Process* clientProcess, const char* message, const unsigned int size)
+KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, const char* message, const unsigned int size)
 {
-    /*
-        - Aller chercher l'ipc object à partir du handle
-        - Allouer la taille nécessaire dans le processus serveur
-        - Y copier les données
-        - Créer un object ipc message contenant le pointeur vers le buffer en question
-    */
+    KeStatus status = STATUS_FAILURE;
+    IpcObject * ipcObject = nullptr;
+    IpcMessage * ipcMessage = nullptr;
+    Process * serverProcess = nullptr;
+    u8 * serverBuffer = nullptr;
+    u8 * kernelBuffer = nullptr;
 
-    return STATUS_SUCCESS;
+    if (handle == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid handle parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (clientProcess == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid clientProcess parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (message == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid message parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (size == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    ipcObject = _FindIpcObjectByHandle(handle);
+    if (ipcObject == nullptr)
+    {
+        status = IPC_STATUS_SERVER_NOT_FOUND;
+        goto clean;
+    }
+
+    // We allocate memory into the server process address space
+    serverProcess = ipcObject->serverProcess;
+    status = serverProcess->AllocateMemory(size, (void**)&serverBuffer);
+    if (FAILED(status))
+    {
+        KLOG(LOG_DEBUG, "Process::AllocateMemory() failed with code %d", status);
+        goto clean;
+    }
+
+    // We copy the message into kernel address space
+    kernelBuffer = (u8*)HeapAlloc(size);
+    if (kernelBuffer == nullptr)
+    {
+        KLOG(LOG_ERROR, "Couldn't allocate %d bytes", size);
+        gKernel.Panic();
+    }
+
+    MemCopy(message, kernelBuffer, size);
+
+    // We copy the kernel buffer content into serveur process
+    serverProcess->MemoryCopy(kernelBuffer, serverBuffer, size);
+
+    status = IpcMessage::Create(clientProcess, (char*)serverBuffer, size, &ipcMessage);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "IpcMessage::Create() failed with code %d", status);
+        gKernel.Panic();
+    }
+
+    ListPush(ipcObject->messages, ipcMessage);
+
+    status = STATUS_SUCCESS;
+
+clean:
+    if (kernelBuffer != nullptr)
+    {
+        HeapFree(kernelBuffer);
+        kernelBuffer = nullptr;
+    }
+
+    return status;
 }
 
-KeStatus IpcHandler::Receive(const IpcHandle handle, const Process* serverProcess, const char** message, const unsigned int* size)
+KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size)
 {
+    KeStatus status = STATUS_FAILURE;
+    IpcObject * ipcObject = nullptr;
+    IpcMessage * ipcMessage = nullptr;
+
+    if (handle == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid handle parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (serverProcess == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid serverProcess parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (message == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid message parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (size == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    ipcObject = _FindIpcObjectByHandle(handle);
+    if (ipcObject == nullptr)
+    {
+        status = IPC_STATUS_SERVER_NOT_FOUND;
+        goto clean;
+    }
+
+    do {
+        ipcMessage = (IpcMessage*)ListPop(&ipcObject->messages);
+    } while (ipcMessage == nullptr);
+
+    *message = ipcMessage->message;
+    *size = ipcMessage->size;
+    // *clientProcessHandle = serverProcess->CreateHandleFromProcess(ipcMessage->clientProcess);
+
+    HeapFree(ipcMessage);
+    ipcMessage = nullptr;
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+KeStatus IpcHandler::ReleaseMemory(Process* const process, void* ptr) {
     return STATUS_SUCCESS;
 }
 
-KeStatus IpcHandler::ReleaseMemory(const Process* process, void* ptr) {
-    return STATUS_SUCCESS;
-}
-
-KeStatus IpcHandler::_AllocateMemory(const Process* process, unsigned int size, char** const buffer)
+KeStatus IpcHandler::_AllocateMemory(Process* const process, unsigned int size, char** const buffer)
 {
     return STATUS_SUCCESS;
 }
@@ -266,7 +402,7 @@ static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context)
     }
 }
 
-KeStatus IpcObject::Create(const char * serverIdStr, const Process * serverProcess, const IpcHandle handle, IpcObject** const ipcObject)
+KeStatus IpcObject::Create(const char * serverIdStr, Process * const serverProcess, const IpcHandle handle, IpcObject** const ipcObject)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * object = nullptr;
@@ -307,5 +443,53 @@ KeStatus IpcObject::Create(const char * serverIdStr, const Process * serverProce
     status = STATUS_SUCCESS;
 
 clean:
+    return status;
+}
+
+KeStatus IpcMessage::Create(Process * const clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage)
+{
+    KeStatus status = STATUS_FAILURE;
+    IpcMessage * newIpcMessage = nullptr;
+
+    if (clientProcess == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid clientProcess parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (message == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid message parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (size == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (ipcMessage == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid ipcMessage parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    newIpcMessage = (IpcMessage*)HeapAlloc(sizeof(IpcMessage));
+    if (newIpcMessage == nullptr)
+    {
+        KLOG(LOG_ERROR, "Couldn't allocate %d bytes", sizeof(IpcMessage));
+        gKernel.Panic();
+    }
+
+    newIpcMessage->clientProcess = clientProcess;
+    newIpcMessage->message = message;
+    newIpcMessage->size = size;
+
+    *ipcMessage = newIpcMessage;
+    newIpcMessage = nullptr;
+
+    status = STATUS_SUCCESS;
+
     return status;
 }

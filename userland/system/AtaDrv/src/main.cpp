@@ -57,6 +57,35 @@ void main()
         else
         {
             printf("Connected to Ipc server (handle %d)\n", handle);
+
+            const char * message = "Hello";
+            const unsigned int size = 6;
+
+            printf("Sending message...");
+            res = _ipcSend(handle, message, size);
+            if (res != 0)
+            {
+                printf("_ipcSend() failed with code %d\n", res);
+            }
+            else
+            {
+                printf("Ok !\n");
+
+                char * newMessage = nullptr;
+                unsigned int newSize = 0;
+
+                printf("Kernel should write at %x\n", &newMessage);
+
+                res = _ipcReceive(handle, &newMessage, &newSize);
+                if (res != 0)
+                {
+                    printf("_ipcReceive() failed with code %d", res);
+                }
+                else
+                {
+                    printf("Received message %s (%x) of size %d", newMessage, newMessage, newSize);
+                }
+            }
         }
     }
 

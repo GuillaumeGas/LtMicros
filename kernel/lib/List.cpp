@@ -137,6 +137,9 @@ extern "C"
             return nullptr;
         }
 
+        if ((*list)->data == nullptr)
+            return nullptr;
+
         void * data = (*list)->data;
         ListElem * next = (*list)->next;
         HeapFree(*list);

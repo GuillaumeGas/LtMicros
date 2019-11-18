@@ -74,6 +74,12 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr)
 
     defaultHeap.limitAddress += (nbPages * PAGE_SIZE);
 
+    if ((defaultHeap.limitAddress - defaultHeap.baseAddress) > PAGE_SIZE)
+    {
+        KLOG(LOG_ERROR, "IncreaseHeap not implemented");
+        gKernel.Panic();
+    }
+
     *allocatedBlockAddr = newBlockAddress;
 
     return STATUS_SUCCESS;
@@ -281,6 +287,29 @@ void Process::ReleaseProcessPageDirectoryEntry(PageDirectory pd)
     {
         ListDestroyEx(pd.pagesList, _CleanPageListEntry);
     }
+}
+
+void Process::MemoryCopy(const u8 * const sourceAddress, u8 * const destAddress, const unsigned int size)
+{
+    PageDirectoryEntry * currentPd = gVmm.GetCurrentPageDirectory();
+
+    if (sourceAddress == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid sourceAddress parameter");
+        return;
+    }
+
+    if (destAddress == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid destAddress parameter");
+        return;
+    }
+
+    gVmm.SetCurrentPageDirectory(this->pageDirectory.pdEntry);
+
+    MemCopy(sourceAddress, destAddress, size);
+
+    gVmm.SetCurrentPageDirectory(currentPd);
 }
 
 void Process::MemorySetAndCopy(const u8 * const sourceAddress, u8 * const destAddress, const unsigned int size, const u8 byte)
