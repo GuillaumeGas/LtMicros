@@ -4,6 +4,7 @@
 #include <kernel/Logger.hpp>
 #include <kernel/lib/StdMem.hpp>
 #include <kernel/lib/StdLib.hpp>
+#include <kernel/lib/CriticalSection.hpp>
 #include <kernel/Kernel.hpp>
 #include <kernel/task/ProcessManager.hpp>
 
@@ -24,6 +25,8 @@ struct IpcObject
     Process * serverProcess;
     /// List of messages
     List * messages;
+    /// Critical section used to protect the ipcObject
+    CriticalSection criticalSection;
 
     static KeStatus Create(const char * serverIdStr, Process * const serverProcess, const IpcHandle handle, IpcObject** const ipcObject);
 };
@@ -186,9 +189,10 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {
-        status = IPC_STATUS_SERVER_NOT_FOUND;
-        goto clean;
+        return IPC_STATUS_SERVER_NOT_FOUND;
     }
+
+    ipcObject->criticalSection.Enter();
 
     // We allocate memory into the server process address space
     serverProcess = ipcObject->serverProcess;
@@ -224,6 +228,8 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     status = STATUS_SUCCESS;
 
 clean:
+    ipcObject->criticalSection.Leave();
+
     if (kernelBuffer != nullptr)
     {
         HeapFree(kernelBuffer);
@@ -266,12 +272,13 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {
-        status = IPC_STATUS_SERVER_NOT_FOUND;
-        goto clean;
+        return IPC_STATUS_SERVER_NOT_FOUND;
     }
 
     do {
+        ipcObject->criticalSection.Enter();
         ipcMessage = (IpcMessage*)ListPop(&ipcObject->messages);
+        ipcObject->criticalSection.Leave();
     } while (ipcMessage == nullptr);
 
     *message = ipcMessage->message;

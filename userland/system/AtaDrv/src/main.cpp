@@ -45,88 +45,22 @@ void main()
         {
             printf("Ipc server created (handle %d)\n", handle);
         }
-    }
 
-    {
-        int handle = 0;
-        int res = _ipcServerConnect("__LtFsServer__", &handle);
-        if (res != 0)
         {
-            printf("_ipcServerConnect() failed with code %d\n", res);
-        }
-        else
-        {
-            printf("Connected to Ipc server (handle %d)\n", handle);
+            char * newMessage = nullptr;
+            unsigned int newSize = 0;
 
-            const char * message = "Hello";
-            const unsigned int size = 6;
-
-            printf("Sending message...");
-            res = _ipcSend(handle, message, size);
+            res = _ipcReceive(handle, &newMessage, &newSize);
             if (res != 0)
             {
-                printf("_ipcSend() failed with code %d\n", res);
+                printf("_ipcReceive() failed with code %d\n", res);
             }
             else
             {
-                printf("Ok !\n");
-
-                char * newMessage = nullptr;
-                unsigned int newSize = 0;
-
-                printf("Kernel should write at %x\n", &newMessage);
-
-                res = _ipcReceive(handle, &newMessage, &newSize);
-                if (res != 0)
-                {
-                    printf("_ipcReceive() failed with code %d", res);
-                }
-                else
-                {
-                    printf("Received message %s (%x) of size %d", newMessage, newMessage, newSize);
-                }
+                printf("Received message %s (%x) of size %d\n", newMessage, newMessage, newSize);
             }
         }
     }
 
     while (1);
 }
-
-
-// #####################################
-//#define IPC_INVALID_HANDLE 0
-//
-//typedef int IpcHandle;
-//typedef int IpcStatus;
-//
-//typedef enum IpcStatus
-//{
-//    IPC_STATUS_SUCCESS = 0,
-//    IPC_STATUS_ERROR
-//};
-//
-//IpcStatus IpcCreateServer(const char * IpcIdString, IpcHandle * const IpcHandle);
-//IpcStatus IpcReceiveMessage(const IpcHandle handle, void * const buffer, unsigned int * const bytesRead);
-//// #####################################
-//
-//void TestServerIpc()
-//{
-//    IpcHandle handle = IPC_INVALID_HANDLE;
-//    IpcStatus status = IPC_STATUS_ERROR;
-//    unsigned int bytes = 0;
-//    char * buffer = nullptr;
-//
-//    status = IpcCreateServer("__LtFsServer__", &handle);
-//    if (status != IPC_STATUS_SUCCESS)
-//    {
-//        printf("IpcCreateServer() failed with code %d\n", status);
-//        return;
-//    }
-//
-//    status = IpcReceiveMessage(handle, &buffer, &bytes);
-//    if (status != IPC_STATUS_SUCCESS)
-//    {
-//        printf("IpcReceiveMessage() failed with code %d\n", status);
-//        return;
-//    }
-//}

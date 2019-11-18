@@ -32,7 +32,7 @@
 #include <kernel/Logger.hpp>
 
 //#define DEBUG_MODE
-#define DEBUG_PRINT_MODE
+//#define DEBUG_PRINT_MODE
 
 #ifdef DEBUG_PRINT_MODE
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("KERNEL", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -140,7 +140,7 @@ void Kernel::Start()
 
     LoadModules();
 
-    KLOG(LOG_INFO, "Starting LtMicros...");
+    KLOG(LOG_INFO, "Starting LtMicros...\n");
 
     gScheduler.Start();
 
@@ -194,9 +194,8 @@ void Kernel::LoadModules()
 
     for (int i = 0; i < mbi->mods_count; i++)
     {
-        KLOG(LOG_INFO, "Loading module %s", module->name);
-        Module::Load(module);
-        module += sizeof(MultiBootModule);
+        KLOG(LOG_INFO, "Loading module %s (%d bytes)", module[i].name, ((int)module[i].mod_end - (int)module[i].mod_start));
+        Module::Load(&module[i]);
     }
 }
 

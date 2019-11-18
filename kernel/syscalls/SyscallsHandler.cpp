@@ -2,6 +2,7 @@
 
 #include <kernel/task/ProcessManager.hpp>
 #include <kernel/task/Ipc.hpp>
+#include <kernel/lib/CriticalSection.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SYSCALLS", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -40,6 +41,8 @@ void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, InterruptFromUserlan
     }
 }
 
+    static CriticalSection s_CriticalSection;
+
 /*  
     SYSCALLS Begin
 */
@@ -50,7 +53,10 @@ void SysPrintChar(InterruptFromUserlandContext * context)
 
 void SysPrintStr(InterruptFromUserlandContext * context)
 {
+ 
+    s_CriticalSection.Enter();
     kprint("%s", context->ebx);
+    s_CriticalSection.Leave();
 }
 
 void SysSbrk(InterruptFromUserlandContext * context)

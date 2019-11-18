@@ -34,6 +34,8 @@ void Logger::SetMode(const LoggerMode mode)
 
 void Logger::_KernelLogger(const char * fileName, const int lineNumber, const char * moduleName, const LogLevel level, const char * format, va_list args)
 {
+#ifdef DEBUG_PRINT
+
     _criticalSection.Enter();
 
     switch (level)
@@ -66,4 +68,6 @@ void Logger::_KernelLogger(const char * fileName, const int lineNumber, const ch
     ScreenDriver::SetColor(WHITE);
 
     _criticalSection.Leave();
+
+#endif
 }
