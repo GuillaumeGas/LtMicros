@@ -51,8 +51,14 @@ struct Process
     /// @return STATUS_SUCCESS on success, an error code otherwise
     KeStatus IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr);
 
+    /// @brief Creates the default process heap and main thread stack
+    /// @note This function must be called after mapping the executable code in the process address space
+    /// @return STATUS_SUCCESS on success, an error code otherwise
+    KeStatus CreateDefaultHeapAndStack();
+
     /// @brief Creates a x86 process
     /// @warning This does not add the process to the scheduler process list
+    /// @warning This does not create the process heap and stack, for this call CreateDefaultHeapAndStack() after having mapped the executable code into process address space
     /// @param[out] newProcess A pointer that will receive an pointer to the created process
     /// @param[in,opt] parent A pointer to the parent process, or nullptr
     /// @return STATUS_SUCCESS on success, an error code otherwise
@@ -64,7 +70,7 @@ struct Process
     /// @return STATUS_SUCCESS on success, an error code otherwise
     static KeStatus CreateSystem(Process ** newProcess);
 
-    /// @brief Releases process ressources
+/// @brief Releases process ressources
     /// @param[in] process A pointer to the process to be released
     static void Delete(Process * process);
 
@@ -84,11 +90,19 @@ struct Process
     /// @param[in] byte The byte used to set memory
     void MemorySetAndCopy(const u8 * const sourceAddress, u8 * const destAddress, const unsigned int size, const u8 byte);
 
-    /// @brief Looks for a new vad at the asked address and allocate the required size
+    /// @brief Looks for a new vad and allocates the required size
+    /// @param[in]  size The required size
+    /// @param[out] outAddress Pointer that will hold the new address
+    /// @return STATUS_SUCCESS on success, an error code otherwise
+    KeStatus AllocateMemory(const unsigned int size, void ** const outAddress);
+
+    /// @brief Looks for a new vad at the asked address and allocates the required size
     /// @param[in] address The asked address
     /// @param[in] size The required size
     /// @return STATUS_SUCCESS on success, an error code otherwise
     KeStatus AllocateMemoryAtAddress(void * const address, const unsigned int size);
+
+    void PrintState();
 };
 
 /// @}

@@ -8,6 +8,8 @@
 #include <kernel/lib/StdLib.hpp>
 #include <kernel/mem/Vad.hpp>
 
+#include <kernel/lib/StdIo.hpp>
+
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("ARCH", LOG_LEVEL, format, ##__VA_ARGS__)
 
@@ -84,7 +86,6 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     List * childrenList = nullptr;
     PageDirectory processPd = { 0 };
     Vad * baseVad = nullptr;
-    Vad * heapVad = nullptr;
 
     if (newProcess == nullptr)
     {
@@ -118,22 +119,11 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
         goto clean;
     }
 
-    status = baseVad->AllocateAtAddress((void*)DEFAULT_HEAP_BASE_ADDRESS, DEFAULT_HEAP_SIZE, &processPd, &heapVad);
-    if (FAILED(status))
-    {
-        KLOG(LOG_ERROR, "Vad::AllocateAtAddress() failed with code %d", status);
-        goto clean;
-    }
-
     process->pageDirectory = processPd;
     process->pid = s_ProcessId++;
     process->childrenList = childrenList;
-
+    process->mainThread = nullptr;
     process->baseVad = baseVad;
-
-    process->defaultHeap.vad = heapVad;
-    process->defaultHeap.baseAddress = heapVad->baseAddress;
-    process->defaultHeap.limitAddress = heapVad->baseAddress;
 
     *newProcess = process;
 
@@ -317,6 +307,38 @@ void Process::MemorySetAndCopy(const u8 * const sourceAddress, u8 * const destAd
     gVmm.SetCurrentPageDirectory(currentPd);
 }
 
+KeStatus Process::AllocateMemory(const unsigned int size, void ** const outAddress)
+{
+    KeStatus status = STATUS_FAILURE;
+    Vad * newVad = nullptr;
+
+    if (size == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (outAddress == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid outAddress parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    status = baseVad->Allocate(size, &pageDirectory, &newVad);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Vad::Allocate() failed with cod %d", status);
+        goto clean;
+    }
+
+    *outAddress = newVad->baseAddress;
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
 KeStatus Process::AllocateMemoryAtAddress(void * const address, const unsigned int size)
 {
     KeStatus status = STATUS_FAILURE;
@@ -337,7 +359,7 @@ KeStatus Process::AllocateMemoryAtAddress(void * const address, const unsigned i
     status = baseVad->AllocateAtAddress(address, size, &pageDirectory, &newVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Vad::AllocateAt() failed with cod %d", status);
+        KLOG(LOG_ERROR, "Vad::AllocateAtAddresss() failed with cod %d", status);
         goto clean;
     }
 
@@ -345,6 +367,45 @@ KeStatus Process::AllocateMemoryAtAddress(void * const address, const unsigned i
 
 clean:
     return status;
+}
+
+KeStatus Process::CreateDefaultHeapAndStack()
+{
+    KeStatus status = STATUS_FAILURE;
+    Vad * heapVad = nullptr;
+
+    status = baseVad->Allocate(DEFAULT_HEAP_SIZE, &this->pageDirectory, &heapVad);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Vad::Allocate() failed with code %d", status);
+        goto clean;
+    }
+
+    this->defaultHeap.vad = heapVad;
+    this->defaultHeap.baseAddress = heapVad->baseAddress;
+    this->defaultHeap.limitAddress = heapVad->limitAddress;
+
+    this->mainThread->CreateDefaultStack();
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Thread::CreateDefaultStack() failed with code %d", status);
+        goto clean;
+    }
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+void Process::PrintState()
+{
+    kprint("\nProcess %d at address %x\n", pid, this);
+    kprint("Page directory entry : %x\n", pageDirectory.pdEntry);
+    kprint("Default heap (%x - %x, %d bytes)\n", defaultHeap.baseAddress, defaultHeap.limitAddress, defaultHeap.vad->size);
+    kprint("Base vad : [%x - %x, %d bytes]\n\n", baseVad->baseAddress, baseVad->limitAddress, baseVad->size);
+
+    mainThread->PrintList();
 }
 
 /// @}

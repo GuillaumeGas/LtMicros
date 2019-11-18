@@ -71,4 +71,6 @@ struct Vad
     /// @param[in]  pageDirectory The process page directory
     /// @return STATUS_SUCCESS on success, an error code otherwise
     KeStatus ReserveAndAllocateMemory(const PageDirectory * pageDirectory);
+
+    void PrintVad();
 };

@@ -147,7 +147,10 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
         goto clean;
     }
 
-    if ((freeVad->size - size) > VAD_MINIMUM_DELTA)
+    // If the asked address is in the middle of the free vad,
+    //  or if the vad is too large, we split it
+    if (freeVad->baseAddress != address 
+        || (freeVad->baseAddress == address && ((freeVad->size - size) > VAD_MINIMUM_DELTA)))
     {
         status = freeVad->SplitAtAddress(address, size);
         if (FAILED(status))
@@ -156,8 +159,8 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
             goto clean;
         }
 
-        // Since the vad has been split, we want the next one
-        freeVad = freeVad->next;
+        if (freeVad->baseAddress != address)
+            freeVad = freeVad->next;
     }
 
     status = freeVad->ReserveAndAllocateMemory(pageDirectory);
@@ -211,6 +214,8 @@ KeStatus Vad::LookForFreeVadOfMinimumSize(const unsigned int size, Vad ** const 
         goto clean;
     }
 
+    freeVad = currentVad;
+
     *outVad = freeVad;
     freeVad = nullptr;
 
@@ -261,8 +266,6 @@ KeStatus Vad::LookForFreeVadAtAddressOfMinimumSize(void * const address, const u
                 goto clean;
             }
 
-            freeVad = currentVad;
-
             break;
         }
 
@@ -276,6 +279,8 @@ KeStatus Vad::LookForFreeVadAtAddressOfMinimumSize(void * const address, const u
         status = STATUS_NOT_FOUND;
         goto clean;
     }
+
+    freeVad = currentVad;
 
     *outVad = freeVad;
     freeVad = nullptr;
@@ -331,8 +336,9 @@ KeStatus Vad::Split(const unsigned int size)
     }
 
     newVad->previous = this;
-    newVad->next = this->next;
-    newVad->next->previous = newVad;
+
+    if (newVad->next != nullptr)
+        newVad->next->previous = newVad;
 
     this->limitAddress = this->baseAddress + (nbPages * PAGE_SIZE);
     this->size = (nbPages * PAGE_SIZE);
@@ -347,7 +353,6 @@ clean:
 KeStatus Vad::SplitAtAddress(void * const address, const unsigned int size)
 {
     KeStatus status = STATUS_FAILURE;
-    Vad * newVad = nullptr;
     unsigned int nbPages = size / PAGE_SIZE;
 
     if (address == nullptr)
@@ -379,22 +384,62 @@ KeStatus Vad::SplitAtAddress(void * const address, const unsigned int size)
         nbPages++;
     }
 
-    status = Vad::Create(address, nbPages * PAGE_SIZE, true, &newVad);
-    if (FAILED(status))
+    // The asked address is in the middle of the free block
+    if (this->baseAddress != address)
     {
-        KLOG(LOG_ERROR, "Create() failed with code %d", status);
-        goto clean;
+        Vad * newVad = nullptr;
+
+        // We create the second block starting at the asked address
+        unsigned int secondBlockSize = (unsigned int)this->limitAddress - (unsigned int)address;
+
+        // If the second block size that is going to be created won't be large enough
+        //  SplitAtAddress() shouldn't have been called
+        if (secondBlockSize < size)
+        {
+            KLOG(LOG_ERROR, "secondBlockSize < asdked size");
+            status = STATUS_FAILURE;
+            goto clean;
+        }
+
+        status = Vad::Create(address, secondBlockSize, true, &newVad);
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "Create() failed with code %d", status);
+            goto clean;
+        }
+
+        newVad->previous = this;
+        newVad->next = this->next;
+
+        if (newVad->next != nullptr)
+            newVad->next->previous = newVad;
+
+        // We update the first block size and limit address
+        this->limitAddress -= secondBlockSize;
+        this->size -= secondBlockSize;
+        this->next = newVad;
+
+        // If the second block is too big for the asked size, we split it
+        if ((newVad->size - size) > VAD_MINIMUM_DELTA)
+        {
+            status = newVad->Split(size);
+            if (FAILED(status))
+            {
+                KLOG(LOG_ERROR, "Split() failed with code %d", status);
+                goto clean;
+            }
+        }
+   }
+    else
+    {
+        // Since the asked address is the current cad base address, we can do a normal split
+        status = this->Split(size);
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "Split() failed with code %d", status);
+            goto clean;
+        }
     }
-
-    newVad->previous = this;
-    newVad->next = this->next;
-    
-    if (newVad->next != nullptr)
-        newVad->next->previous = newVad;
-
-    this->size -= (nbPages * PAGE_SIZE);
-    this->limitAddress = this->baseAddress + this->size;
-    this->next = newVad;
 
     status = STATUS_SUCCESS;
 
@@ -428,4 +473,16 @@ KeStatus Vad::ReserveAndAllocateMemory(const PageDirectory * pageDirectory)
     this->free = false;
 
     return STATUS_SUCCESS;
+}
+
+void Vad::PrintVad()
+{
+    Vad * current = this;
+    int i = 0;
+
+    while (current != nullptr)
+    {
+        KLOG(LOG_DEBUG, "vad %d [%x - %x] (%d bytes)", i++, current->baseAddress, current->limitAddress, current->size);
+        current = current->next;
+    }
 }

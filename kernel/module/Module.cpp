@@ -43,6 +43,13 @@ void Module::Load(MultiBootModule * module)
         gKernel.Panic();
     }
 
+    status = process->CreateDefaultHeapAndStack();
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Process::CreateDefaultHeapAndStack() failed with code %d", status);
+        gKernel.Panic();
+    }
+
     gScheduler.AddThread(process->mainThread);
 }
 
@@ -70,7 +77,7 @@ KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
         status = process->AllocateMemoryAtAddress(vUserSectionPtr, sectionSize);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Process::AllocateMemory() failed with status %d", status);
+            KLOG(LOG_ERROR, "Process::AllocateMemoryAtAddress() failed with status %d", status);
             goto clean;
         }
 

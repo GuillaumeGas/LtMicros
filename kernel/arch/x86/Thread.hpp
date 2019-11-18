@@ -39,8 +39,6 @@ struct Thread
     Process * process;
     /// @brief A pointer to the next thread with the same parent process
     Thread * neighbor;
-    /// @brief Describes the thread stack. When the scheduler launch a thread, it sets the process page table to map the same virtual stack address to the physical one of this thread
-    Page stackPage;
     /// @brief Indicated the thread privilege level
     PrivilegeLevel privilegeLevel;
 
@@ -72,6 +70,13 @@ struct Thread
     /// @brief Starts or resumes a thread execution by pushing all necessary registers and using iret instruction (in fact, calls a asm function to do that stuff)
     void StartOrResume();
 
+    /// @brief Creates the default user thread stack
+    /// @return STATUS_SUCCESS on success, an error code otherwise
+    KeStatus CreateDefaultStack();
+
+    void PrintList();
+    void Print();
+
     /// @brief Creates an x86 thread
     /// @param[in] entryAddr A 32bits address of the entry code of the thread
     /// @param[in] process A pointer to the process that own this thread
@@ -82,7 +87,7 @@ struct Thread
     static KeStatus CreateThread(u32 entryAddr, Process * process, PrivilegeLevel privLevel, SecurityAttribute attribute, Thread ** thread);
 
 private:
-    static KeStatus _InitUserThread(Thread * thread, SecurityAttribute attribute, u32 entryAddr);
+    static KeStatus _InitUserThread(Thread * thread, Process * process, SecurityAttribute attribute, u32 entryAddr);
     static KeStatus _InitKernelThread(Thread * thread, u32 entryAddr);
 };
 

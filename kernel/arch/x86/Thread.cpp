@@ -6,12 +6,15 @@
 
 #include <kernel/Kernel.hpp>
 #include <kernel/lib/StdLib.hpp>
+#include <kernel/lib/StdIo.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("ARCH", LOG_LEVEL, format, ##__VA_ARGS__)
 
 /// @addgroup ArchX86Group
 /// @{
+
+#define USER_STACK_DEFAULT_SIZE PAGE_SIZE
 
 static int s_ThreadId = 0;
 
@@ -90,11 +93,6 @@ void Thread::StartOrResume()
     if (privilegeLevel == PVL_USER)
     {
         pd = process->pageDirectory.pdEntry;
-
-        gVmm.SaveCurrentMemoryMapping();
-        gVmm.SetCurrentPageDirectory(pd);
-        gVmm.AddPageToPageDirectory(stackPage.vAddr, stackPage.pAddr, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, process->pageDirectory);
-        gVmm.RestoreMemoryMapping();
     }
     else
     {
@@ -168,7 +166,7 @@ KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel p
     }
     else
     {
-        status = _InitUserThread(localThread, attribute, entryAddr);
+        status = _InitUserThread(localThread, process, attribute, entryAddr);
         if (FAILED(status))
         {
             KLOG(LOG_ERROR, "_InitUserThread() failed with code %d", status);
@@ -180,6 +178,7 @@ KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel p
     localThread->state = THREAD_STATE_INIT;
     localThread->process = process;
     localThread->privilegeLevel = privLevel;
+    localThread->neighbor = nullptr;
 
     *thread = localThread;
     localThread = nullptr;
@@ -196,12 +195,10 @@ clean:
     return status;
 }
 
-KeStatus Thread::_InitUserThread(Thread * thread, SecurityAttribute attribute, u32 entryAddr)
+KeStatus Thread::_InitUserThread(Thread * thread, Process * process, SecurityAttribute attribute, u32 entryAddr)
 {
     KeStatus status = STATUS_FAILURE;
     Page kernelStackPage = { 0 };
-    u32 pUserStack = 0;
-    u32 vUserStack = 0;
 
     const u32 IntFlag = 0x200;
     const u32 IoFlag = 0x3000;
@@ -209,6 +206,12 @@ KeStatus Thread::_InitUserThread(Thread * thread, SecurityAttribute attribute, u
     if (thread == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid thread parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (process == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid process parameter");
         return STATUS_NULL_PARAMETER;
     }
 
@@ -221,23 +224,7 @@ KeStatus Thread::_InitUserThread(Thread * thread, SecurityAttribute attribute, u
     // Allocating a kernel stack to handle interrupts
     kernelStackPage = PageAlloc();
 
-    // Allocating the user stack
-    pUserStack = (u32)gPmm.GetFreePage();
-    if (pUserStack == 0)
-    {
-        KLOG(LOG_ERROR, "Couldn't find a free physical page");
-        status = STATUS_PHYSICAL_MEMORY_FULL;
-        goto clean;
-    }
-
-    // The previous physical stack address will be mapped to this virtual address
-    // This means that all threads have their stack at the same virtual address
-    vUserStack = USER_STACK_V_ADDR;
-
     // We initialize thread info
-    thread->stackPage.vAddr = vUserStack;
-    thread->stackPage.pAddr = pUserStack;
-
     thread->regs.ss = USER_DATA_SELECTOR_WITH_RPL;
     thread->regs.cs = USER_CODE_SELECTOR_WITH_RPL;
     thread->regs.ds = USER_DATA_SELECTOR_WITH_RPL;
@@ -251,7 +238,6 @@ KeStatus Thread::_InitUserThread(Thread * thread, SecurityAttribute attribute, u
     thread->regs.edi = 0;
     thread->regs.esi = 0;
 
-    thread->regs.esp = ((vUserStack + (u32)PAGE_SIZE) - (u32)(sizeof(void*)));
     thread->regs.ebp = thread->regs.esp;
     thread->regs.eip = entryAddr;
 
@@ -283,9 +269,6 @@ KeStatus Thread::_InitKernelThread(Thread * thread, u32 entryAddr)
     // Allocating a stack for the kernel thread
     kernelStackPage = PageAlloc();
 
-    thread->stackPage.vAddr = kernelStackPage.vAddr;
-    thread->stackPage.pAddr = kernelStackPage.pAddr;
-
     thread->regs.ss = KERNEL_DATA_SELECTOR;
     thread->regs.cs = KERNEL_CODE_SELECTOR;
     thread->regs.ds = KERNEL_DATA_SELECTOR;
@@ -313,6 +296,55 @@ KeStatus Thread::_InitKernelThread(Thread * thread, u32 entryAddr)
 
 clean:
     return status;
+}
+
+KeStatus Thread::CreateDefaultStack()
+{
+    KeStatus status = STATUS_FAILURE;
+    u32 vUserStack = 0;
+
+    // We create the user thread stack
+    status = this->process->AllocateMemory(USER_STACK_DEFAULT_SIZE, (void**)&vUserStack);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "Process::AllocateMemory() failed to allocate %d bytes", USER_STACK_DEFAULT_SIZE);
+        goto clean;
+    }
+
+    this->regs.esp = ((vUserStack + (u32)USER_STACK_DEFAULT_SIZE) - (u32)(sizeof(void*)));
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+void Thread::PrintList()
+{
+    Thread * current = this;
+
+    while (current != nullptr)
+    {
+        current->Print();
+        current = current->neighbor;
+    }
+}
+
+void Thread::Print()
+{
+    kprint(" - Thread %d at address %x\n", tid, this);
+    kprint("     State : %d\n", state);
+    kprint("     Process : %x\n", process);
+    kprint("     Neighbor : %x\n", neighbor);
+    kprint("     Main thread : %s\n", this == process->mainThread ? "true" : "false");
+    kprint("     PVL : %d\n", privilegeLevel);
+    kprint("     Kernel stack : esp0 = %x, ss0 = %x\n", kstack.esp0, kstack.ss0);
+    kprint("     Registers :\n");
+    kprint("      eax(%x), ebx(%x), ecx(%x), edx(%x)\n", regs.eax, regs.ebx, regs.ecx, regs.edx);
+    kprint("      ebp(%x), esp(%x), esi(%x), edi(%x)\n", regs.ebp, regs.esp, regs.esi, regs.edi);
+    kprint("      eip(%x), eflags(%x)\n", regs.eip, regs.eflags);
+    kprint("      cs(%x), ss(%x), ds(%x), es(%x), fs(%x), gs(%x)\n", regs.cs, regs.ss, regs.ds, regs.es, regs.fs, regs.gs);
+    kprint("      cr3(%x)\n\n", regs.cr3);
 }
 
 /// @}
