@@ -11,3 +11,6 @@ extern "C" int _ipcServerCreate(const char * serverId, int * handle);
 extern "C" int _ipcServerConnect(const char* serverId, int* handle);
 extern "C" int _ipcSend(const int ipcHandle, const char * message, const unsigned int size);
 extern "C" int _ipcReceive(const int ipcHandle, char ** message, unsigned int * size);
+// TMP
+extern "C" void _sysEnterScreenCriticalSection();
+extern "C" void _sysLeaveScreenCriticalSection();

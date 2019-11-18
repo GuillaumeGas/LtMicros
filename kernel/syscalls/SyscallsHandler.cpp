@@ -41,6 +41,7 @@ void SyscallsHandler::ExecuteSyscall(const SyscallId sysId, InterruptFromUserlan
     }
 }
 
+    // Test to avoid mixing output on all processes 
     static CriticalSection s_CriticalSection;
 
 /*  
@@ -53,10 +54,7 @@ void SysPrintChar(InterruptFromUserlandContext * context)
 
 void SysPrintStr(InterruptFromUserlandContext * context)
 {
- 
-    s_CriticalSection.Enter();
     kprint("%s", context->ebx);
-    s_CriticalSection.Leave();
 }
 
 void SysSbrk(InterruptFromUserlandContext * context)
@@ -202,6 +200,16 @@ clean:
     context->eax = status;
 }
 
+// Test to avoid mixing output on all processes 
+void SysEnterScreenCriticalSection(InterruptFromUserlandContext * context)
+{
+    s_CriticalSection.Enter();
+}
+
+void SysLeaveScreenCriticalSection(InterruptFromUserlandContext * context)
+{
+    s_CriticalSection.Leave();
+}
 
 void SysInvalid(InterruptFromUserlandContext * context)
 {

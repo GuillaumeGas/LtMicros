@@ -88,10 +88,14 @@ static void printBin(const int value, int nbBits)
 
 void printf(const char * format, ...)
 {
+    _sysEnterScreenCriticalSection();
+
     va_list ap;
     va_start(ap, format);
     printfEx(format, ap);
     va_end(ap);
+
+    _sysLeaveScreenCriticalSection();
 }
 
 void printfEx(const char * format, va_list ap)

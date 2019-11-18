@@ -272,6 +272,7 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {
+        KLOG(LOG_DEBUG, "Didn't found ipc object for handle %d", handle);
         return IPC_STATUS_SERVER_NOT_FOUND;
     }
 
@@ -285,7 +286,7 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
     *size = ipcMessage->size;
     // *clientProcessHandle = serverProcess->CreateHandleFromProcess(ipcMessage->clientProcess);
 
-    HeapFree(ipcMessage);
+    //HeapFree(ipcMessage);
     ipcMessage = nullptr;
 
     status = STATUS_SUCCESS;

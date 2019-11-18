@@ -20,3 +20,4 @@ kernel_bin
 *.bxrc
 *.sys
 /TODO.txt
+*.exe

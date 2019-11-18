@@ -6,7 +6,7 @@
 
 void main()
 {
-    printf("Starting Init process\n");
+    printf("# Starting Init process\n");
 
     {
         int handle = 0;
@@ -17,12 +17,12 @@ void main()
             res = _ipcServerConnect("__LtFsServer__", &handle);
             if (res == 0)
             {
-                printf("Connected to Ipc server (handle %d)\n", handle);
+                printf("[Init] Connected to Ipc server (handle %d)\n", handle);
 
                 const char * message = "Hello";
                 const unsigned int size = 6;
 
-                printf("Sending message...");
+                printf("[Init] Sending message...\n");
                 res = _ipcSend(handle, message, size);
                 if (res != 0)
                 {
@@ -30,7 +30,7 @@ void main()
                 }
                 else
                 {
-                    printf("Ok !\n");
+                    printf("[Init] Message sent !\n");
                 }
             }
         } while (res != 0);

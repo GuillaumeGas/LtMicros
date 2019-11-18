@@ -9,6 +9,8 @@
 %define SYS_IPC_SERVER_CONNECT 0X4
 %define SYS_IPC_SEND           0x5
 %define SYS_IPC_RECEIVE        0x6
+%define SYS_ENTER_SCREEN_CRITICAL_SECTION 0x7
+%define SYS_LEAVE_SCREEN_CRITICAL_SECTION 0x8
 
 global _print
 global _printChar
@@ -17,6 +19,8 @@ global _ipcServerCreate
 global _ipcServerConnect
 global _ipcSend
 global _ipcReceive
+global _sysEnterScreenCriticalSection
+global _sysLeaveScreenCriticalSection
 
 _print:
     push ebp
@@ -106,6 +110,28 @@ _ipcReceive:
 	mov ecx, [ebp+12] ; we retrieve the second parameter (message pointer) on the stack
 	mov edx, [ebp+16] ; we retrieve the third parameter (size pointer) on the stack
     mov eax, SYS_IPC_RECEIVE
+
+    int SYSCALL_INTERRUPT
+
+    leave
+    ret
+
+_sysEnterScreenCriticalSection:
+    push ebp
+    mov ebp, esp
+
+    mov eax, SYS_ENTER_SCREEN_CRITICAL_SECTION
+
+    int SYSCALL_INTERRUPT
+
+    leave
+    ret
+
+_sysLeaveScreenCriticalSection:
+    push ebp
+    mov ebp, esp
+
+    mov eax, SYS_LEAVE_SCREEN_CRITICAL_SECTION
 
     int SYSCALL_INTERRUPT
 

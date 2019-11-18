@@ -16,6 +16,8 @@
     SYSCALL (SYS_IPC_SERVER_CONNECT, SysIpcServerConnect) \
     SYSCALL (SYS_IPC_SEND,           SysIpcSend)          \
     SYSCALL (SYS_IPC_RECV,           SysIpcReceive)       \
+    SYSCALL (SYS_ENTER_SCREEN_CRITICAL_SECTION, SysIpcReceive)       \
+    SYSCALL (SYS_LEAVE_SCREEN_CRITICAL_SECTION, SysIpcReceive)       \
     SYSCALL (SYS_INVALID,            SysInvalid)
 
 
@@ -31,6 +33,8 @@ void SysIpcServerCreate(InterruptFromUserlandContext* context);
 void SysIpcServerConnect(InterruptFromUserlandContext* context);
 void SysIpcSend(InterruptFromUserlandContext* context);
 void SysIpcReceive(InterruptFromUserlandContext* context);
+void SysEnterScreenCriticalSection(InterruptFromUserlandContext* context);
+void SysLeaveScreenCriticalSection(InterruptFromUserlandContext* context);
 
 void SysInvalid(InterruptFromUserlandContext * context);
 /*
