@@ -149,7 +149,7 @@ static MemBlock * _Sbrk(int n)
     }
 
     unsigned int i = 0;
-    MemBlock * newBlock = (MemBlock*)_sbrk(n);    
+    MemBlock * newBlock = (MemBlock*)_sysSbrk(n);    
 
     newBlock->size = n * PAGE_SIZE;
     newBlock->state = BLOCK_FREE;

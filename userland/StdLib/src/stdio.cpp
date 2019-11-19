@@ -13,12 +13,12 @@ static int checkType(char type)
 
 static void printChar(char c)
 {
-    _printChar(c);
+    _sysPrintChar(c);
 }
 
 static void printStr(char * str)
 {
-    _print(str);
+    _sysPrint(str);
 }
 
 static void printInt(const int x, const unsigned short base)

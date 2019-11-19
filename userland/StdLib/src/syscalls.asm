@@ -12,17 +12,17 @@
 %define SYS_ENTER_SCREEN_CRITICAL_SECTION 0x7
 %define SYS_LEAVE_SCREEN_CRITICAL_SECTION 0x8
 
-global _print
-global _printChar
-global _sbrk
-global _ipcServerCreate
-global _ipcServerConnect
-global _ipcSend
-global _ipcReceive
+global _sysPrint
+global _sysPrintChar
+global _sysSbrk
+global _sysIpcServerCreate
+global _sysIpcServerConnect
+global _sysIpcSend
+global _sysIpcReceive
 global _sysEnterScreenCriticalSection
 global _sysLeaveScreenCriticalSection
 
-_print:
+_sysPrint:
     push ebp
     mov ebp, esp
 
@@ -34,7 +34,7 @@ _print:
     leave
     ret
 
-_printChar:
+_sysPrintChar:
     push ebp
     mov ebp, esp
 
@@ -46,7 +46,7 @@ _printChar:
     leave
     ret
 
-_sbrk:
+_sysSbrk:
     push ebp
     mov ebp, esp
 
@@ -58,7 +58,7 @@ _sbrk:
     leave
     ret
 
-_ipcServerCreate:
+_sysIpcServerCreate:
     push ebp
     mov ebp, esp
 
@@ -73,7 +73,7 @@ _ipcServerCreate:
     leave
     ret
 
-_ipcServerConnect:
+_sysIpcServerConnect:
     push ebp
     mov ebp, esp
 
@@ -88,7 +88,7 @@ _ipcServerConnect:
     leave
     ret
 
-_ipcSend:
+_sysIpcSend:
     push ebp
     mov ebp, esp
 
@@ -102,7 +102,7 @@ _ipcSend:
     leave
     ret
 
-_ipcReceive:
+_sysIpcReceive:
     push ebp
     mov ebp, esp
 

@@ -4,13 +4,13 @@
     Syscalls functions defines, implem are in syscalls.asm
 */
 
-extern "C" void _print(const char * str);
-extern "C" void _printChar(const char c);
-extern "C" void * _sbrk(const int nbBlock);
-extern "C" int _ipcServerCreate(const char * serverId, int * handle);
-extern "C" int _ipcServerConnect(const char* serverId, int* handle);
-extern "C" int _ipcSend(const int ipcHandle, const char * message, const unsigned int size);
-extern "C" int _ipcReceive(const int ipcHandle, char ** message, unsigned int * size);
+extern "C" void _sysPrint(const char * str);
+extern "C" void _sysPrintChar(const char c);
+extern "C" void * _sysSbrk(const int nbBlock);
+extern "C" int _sysIpcServerCreate(const char * serverId, int * handle);
+extern "C" int _sysIpcServerConnect(const char* serverId, int* handle);
+extern "C" int _sysIpcSend(const int ipcHandle, const char * message, const unsigned int size);
+extern "C" int _sysIpcReceive(const int ipcHandle, char ** message, unsigned int * size);
 // TMP
 extern "C" void _sysEnterScreenCriticalSection();
 extern "C" void _sysLeaveScreenCriticalSection();

@@ -20,9 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{05F522D2-1678-4EA2-B494-B7798ABA9CCB}</ProjectGuid>
-    <RootNamespace>AtaDrv</RootNamespace>
+    <ProjectGuid>{C3541EE9-74C9-4B41-880E-B19AEBC8D7A3}</ProjectGuid>
+    <RootNamespace>LtInitService</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>LtIniService</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,14 +70,24 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -85,7 +96,6 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -96,7 +106,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -111,7 +120,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\system\Common;C:\Users\Guillaume\Documents\Visual Studio 2017\Projects\LtMicros\LtMicros\userland\StdLib\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -119,15 +127,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Makefile" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\ata.cpp" />
-    <ClCompile Include="src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\Common\proc_io.h" />
-    <ClInclude Include="src\ata.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
