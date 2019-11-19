@@ -7,6 +7,7 @@
 #include <kernel/lib/CriticalSection.hpp>
 #include <kernel/Kernel.hpp>
 #include <kernel/task/ProcessManager.hpp>
+#include <kernel/drivers/Clock.hpp>
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -280,13 +281,15 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         ipcObject->criticalSection.Enter();
         ipcMessage = (IpcMessage*)ListPop(&ipcObject->messages);
         ipcObject->criticalSection.Leave();
+
+        gClockDrv.Pause(1);
     } while (ipcMessage == nullptr);
 
     *message = ipcMessage->message;
     *size = ipcMessage->size;
     // *clientProcessHandle = serverProcess->CreateHandleFromProcess(ipcMessage->clientProcess);
 
-    //HeapFree(ipcMessage);
+    HeapFree(ipcMessage);
     ipcMessage = nullptr;
 
     status = STATUS_SUCCESS;

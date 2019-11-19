@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 
 #include <kernel/drivers/Screen.hpp>
+#include <kernel/drivers/Clock.hpp>
 #include <kernel/lib/StdIo.hpp>
 #include <kernel/lib/StdLib.hpp>
 
@@ -35,6 +36,7 @@ void Logger::SetMode(const LoggerMode mode)
 void Logger::_KernelLogger(const char * fileName, const int lineNumber, const char * moduleName, const LogLevel level, const char * format, va_list args)
 {
 #ifdef DEBUG_PRINT
+    u32 clockTics = gClockDrv.tics;
 
     _criticalSection.Enter();
 
@@ -55,11 +57,11 @@ void Logger::_KernelLogger(const char * fileName, const int lineNumber, const ch
 
     if (level != LOG_INFO)
     {
-        kprint("[%s] %s (%d) : ", moduleName, fileName, lineNumber);
+        kprint("(%d) [%s] %s (%d) : ", clockTics, moduleName, fileName, lineNumber);
     }
     else
     {
-        kprint("[%s] ", moduleName);
+        kprint("(%d) [%s] ", clockTics, moduleName);
     }
 
     kprintEx(format, args);

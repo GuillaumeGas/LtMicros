@@ -16,8 +16,8 @@
     SYSCALL (SYS_IPC_SERVER_CONNECT, SysIpcServerConnect) \
     SYSCALL (SYS_IPC_SEND,           SysIpcSend)          \
     SYSCALL (SYS_IPC_RECV,           SysIpcReceive)       \
-    SYSCALL (SYS_ENTER_SCREEN_CRITICAL_SECTION, SysIpcReceive)       \
-    SYSCALL (SYS_LEAVE_SCREEN_CRITICAL_SECTION, SysIpcReceive)       \
+    SYSCALL (SYS_ENTER_SCREEN_CRITICAL_SECTION, SysEnterScreenCriticalSection)       \
+    SYSCALL (SYS_LEAVE_SCREEN_CRITICAL_SECTION, SysLeaveScreenCriticalSection)       \
     SYSCALL (SYS_INVALID,            SysInvalid)
 
 

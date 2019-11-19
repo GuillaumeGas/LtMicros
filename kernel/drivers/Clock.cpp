@@ -61,4 +61,11 @@ void ClockDriver::Init()
     isInitialized = true;
 }
 
+void ClockDriver::Pause(u32 ms)
+{
+    u32 t = this->tics;
+
+    while ((this->tics - t) < ms);
+}
+
 /// @}

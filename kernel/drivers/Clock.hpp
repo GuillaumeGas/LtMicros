@@ -19,6 +19,8 @@ public:
     /// @brief Initializes the clock driver, by setting up the right IDT entry
     void Init();
 
+    void Pause(u32 ms);
+
     /// @brief Incremented at each cpu clock interrupt
     u32 tics;
     u32 secs;
