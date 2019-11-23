@@ -37,7 +37,7 @@ static void PrintPageFaultException(ExceptionContextWithCode* context, PageFault
 void PageFaultExceptionHandler(ExceptionContextWithCode* const context)
 {
     u32 code = context->code;
-    PageFaultDetails details = { ((u8)code & 1), ((u8)code & 2), ((u8)code & 4), ((u8)code & 8), ((u8)code & 16) };
+    PageFaultDetails details = { (u8)(code & 1), (u8)(code & 2), (u8)(code & 4), (u8)(code & 8), (u8)(code & 16) };
 
     if (details.p == NON_PRESENT_PAGE)
     {
