@@ -4,6 +4,7 @@
 #include <ServiceNames.h>
 
 #include "AtaDriver.h"
+#include "FsManager.h"
 #include "ServiceCommands.h"
 #include "Common.h"
 
@@ -13,6 +14,9 @@ static void StartListening();
 void main()
 {
     LOG(LOG_INFO, "Starting LtFs service...");
+
+    // TMP !
+    InitMalloc();
 
     if (AtaDeviceCreate())
     {
@@ -35,6 +39,13 @@ static bool AtaDeviceCreate()
     else
     {
         LOG(LOG_INFO, "Ata device initialized !");
+
+        Status status = FsInit(&device);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "FsInit() failed with code %d", status);
+        }
+
         return true;
     }
 }

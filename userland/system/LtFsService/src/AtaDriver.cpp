@@ -103,7 +103,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     blockEnd = (offset + size) / ATA_BLOCK_SIZE;
     nbBlocks = blockEnd - blockBegin + 1;
 
-    //buffer = (char *)malloc(nbBlocks * ATA_BLOCK_SIZE);
+    buffer = (char *)HeapAlloc(nbBlocks * ATA_BLOCK_SIZE);
     if (buffer == nullptr)
     {
         printf("Failed to allocate memory.\n");

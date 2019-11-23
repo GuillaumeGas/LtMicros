@@ -34,7 +34,7 @@ static void _logger(const char * fileName, const int lineNumber, const char * mo
 
     if (level != LOG_INFO)
     {
-        printf("%s:%d : ", fileName, lineNumber);
+        printf(" %s:%d : ", fileName, lineNumber);
     }
     else
     {
