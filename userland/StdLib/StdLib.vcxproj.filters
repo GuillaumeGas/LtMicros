@@ -27,6 +27,9 @@
     <ClCompile Include="src\Ipc.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="src\logger.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdio.h">
@@ -45,6 +48,12 @@
       <Filter>Fichiers sources</Filter>
     </ClInclude>
     <ClInclude Include="src\Ipc.hpp">
+      <Filter>Fichiers sources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logger.h">
+      <Filter>Fichiers sources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stdarg.h">
       <Filter>Fichiers sources</Filter>
     </ClInclude>
   </ItemGroup>

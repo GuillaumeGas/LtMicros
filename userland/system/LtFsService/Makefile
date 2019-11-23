@@ -10,7 +10,7 @@ all: $(OBJ)
 clean:
 	rm -f $(OBJ) *.o
 
-LtFsService.sys: main.o AtaDriver.o ServiceCommands.o stdio.o stdlib.o syscalls.o malloc.o Ipc.o
+LtFsService.sys: main.o AtaDriver.o ServiceCommands.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o
 	$(LD) $^ -o bin/$@
 
 main.o: src/main.cpp
@@ -26,6 +26,9 @@ stdio.o: ../../StdLib/src/stdio.cpp
 	$(CC) -c $^
 
 stdlib.o: ../../StdLib/src/stdlib.cpp
+	$(CC) -c $^
+
+logger.o: ../../StdLib/src/logger.cpp
 	$(CC) -c $^
 
 syscalls.o: ../../StdLib/src/syscalls.asm

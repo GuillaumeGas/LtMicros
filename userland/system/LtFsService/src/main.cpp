@@ -5,19 +5,20 @@
 
 #include "AtaDriver.h"
 #include "ServiceCommands.h"
+#include "Common.h"
 
 static bool AtaDeviceCreate();
 static void StartListening();
 
 void main()
 {
-    printf("[FS] # Starting LtFs service...\n");
+    LOG(LOG_INFO, "Starting LtFs service...");
 
     if (AtaDeviceCreate())
     {
         StartListening();
 
-        printf("[FS] # Terminating LtFs service\n");
+        LOG(LOG_INFO, "Terminating LtFs service");
     }
 
     while (1);
@@ -28,12 +29,12 @@ static bool AtaDeviceCreate()
     AtaDevice device = AtaCreate(ATA_SECONDARY, ATA_MASTER);
     if (!AtaInit(&device))
     {
-        printf("[FS] Can't init ata device\n");
+        LOG(LOG_INFO, "Can't init ata device");
         return false;
     }
     else
     {
-        printf("[FS] Ata device initialized !\n");
+        LOG(LOG_INFO, "Ata device initialized !");
         return true;
     }
 }
@@ -47,7 +48,7 @@ static void StartListening()
     status = IpcServer::Create(LTFS_SERVICE_NAME, &server);
     if (FAILED(status))
     {
-        printf("[FS] IpcServer::Create() failed with code %d\n", status);
+        LOG(LOG_ERROR, "IpcServer::Create() failed with code %d", status);
         return;
     }
 
@@ -58,14 +59,14 @@ static void StartListening()
         status = server.Receive(&message);
         if (FAILED(status))
         {
-            printf("[FS] IpcServer::Receive() failed with code %d\n", status);
+            LOG(LOG_ERROR, "IpcServer::Receive() failed with code %d", status);
             break;
         }
 
         status = ServiceExecuteCommand((char*)message.data, message.size, &serviceTerminate);
         if (FAILED(status))
         {
-            printf("[FS] ServiceExecuteCommand() failed with code %d\n", status);
+            LOG(LOG_ERROR, "ServiceExecuteCommand() failed with code %d", status);
             break;
         }
 

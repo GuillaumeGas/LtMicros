@@ -1,4 +1,5 @@
 #include "ServiceCommands.h"
+#include "Common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +7,7 @@
 
 Status ServiceExecuteCommand(char * const message, unsigned int size, bool * serviceTerminate)
 {
-    printf("[FS] Received message '%s' of length %d\n", message, size);
+    LOG(LOG_INFO, "Received message '%s' of length %d", message, size);
 
     if (StrCmp(message, SERVICE_TERMINATE_CMD) == 0)
     {

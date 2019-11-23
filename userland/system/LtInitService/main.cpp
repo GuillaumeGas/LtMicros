@@ -5,15 +5,17 @@
 #include <LtFsCommon.h>
 #include <ServiceNames.h>
 
+#include "Common.h"
+
 static void LoadSystem();
 
 void main()
 {
-    printf("[INIT] # Starting LtInit service\n");
+    LOG(LOG_INFO, "Starting LtInit service");
 
     LoadSystem();
 
-    printf("[INIT] # Terminating LtInit service\n");
+    LOG(LOG_INFO, "Terminating LtInit service");
 
     while (1);
 }
@@ -27,22 +29,22 @@ static void LoadSystem()
     status = client.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
     if (FAILED(status))
     {
-        printf("[INIT] IpcClient::ConnectToServer() failed with code %d\n", status);
+        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %d", status);
         return;
     }
 
-    printf("[INIT] Sending message '%s'\n", SERVICE_TEST_CMD);
+    LOG(LOG_INFO, "Sending message '%s'", SERVICE_TEST_CMD);
 
     status = client.Send(serverHandle, SERVICE_TEST_CMD, StrLen(SERVICE_TEST_CMD));
     if (FAILED(status))
     {
-        printf("[INIT] IpcClient::Send() failed with code %d\n", status);
+        LOG(LOG_ERROR, "IpcClient::Send() failed with code %d", status);
         return;
     }
 
-    printf("[INIT] Testing the heap :\n");
+    LOG(LOG_INFO, "Testing the heap :");
     InitMalloc();
     int* a = (int*)HeapAlloc(sizeof(int));
     *a = 42;
-    printf("[INIT] Value : %d\n", *a);
+    LOG(LOG_INFO, "Value : %d", *a);
 }

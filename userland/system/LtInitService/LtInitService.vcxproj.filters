@@ -24,4 +24,9 @@
       <Filter>Fichiers sources</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common.h">
+      <Filter>Fichiers sources</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
