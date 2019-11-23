@@ -39,6 +39,13 @@ MemBlock * g_baseBlock = nullptr;
 MemBlock * g_limitBlock = nullptr;
 MemBlock * g_lastBlock = nullptr;
 
+void InitMalloc()
+{
+    g_baseBlock = nullptr;
+    g_limitBlock = nullptr;
+    g_lastBlock = nullptr;
+}
+
 void * HeapAlloc(int size)
 {
     if (size <= 0)

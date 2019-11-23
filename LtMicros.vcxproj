@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="kernel\arch\x86\Exceptions\PageFault.cpp" />
     <ClCompile Include="kernel\arch\x86\Gdt.cpp" />
     <ClCompile Include="kernel\arch\x86\Idt.cpp" />
     <ClCompile Include="kernel\arch\x86\InterruptContext.cpp" />
@@ -167,6 +168,7 @@
     <ClCompile Include="kernel\task\ThreadManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="kernel\arch\x86\Exceptions\PageFault.h" />
     <ClInclude Include="kernel\arch\x86\Gdt.hpp" />
     <ClInclude Include="kernel\arch\x86\Idt.hpp" />
     <ClInclude Include="kernel\arch\x86\InterruptContext.hpp" />

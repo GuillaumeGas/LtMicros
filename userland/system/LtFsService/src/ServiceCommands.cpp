@@ -6,7 +6,7 @@
 
 Status ServiceExecuteCommand(char * const message, unsigned int size, bool * serviceTerminate)
 {
-    printf("Received message '%s' of length %d\n", message, size);
+    printf("[FS] Received message '%s' of length %d\n", message, size);
 
     if (StrCmp(message, SERVICE_TERMINATE_CMD) == 0)
     {

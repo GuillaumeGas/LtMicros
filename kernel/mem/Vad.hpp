@@ -31,17 +31,25 @@ struct Vad
     /// @brief Looks for an available vad, split it if necessary, reserves it, and allocates memory
     /// @param[in]  size The required size
     /// @param[in]  pageDirectory The process page directory
+    /// @param[in]  reservePhysicalPages Boolean telling if the physical pages must be reserved immediately
     /// @param[out] outVad Pointer that will hold the new vad
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus Allocate(const unsigned int size, const PageDirectory * pageDirectory, Vad** const outVad);
+    KeStatus Allocate(const unsigned int size, const PageDirectory * pageDirectory, const bool reservePhysicalPages, Vad** const outVad);
 
     /// @brief Looks for a new vad at the asked address and allocate the required size
-    /// @param[in] address The asked address
-    /// @param[in] size The required size
-    /// @param[in] pageDirectory The process page directory
-    /// @param[out] OutVad Pointer that will hold a pointer to the newly allocated vad
+    /// @param[in]  address The asked address
+    /// @param[in]  size The required size
+    /// @param[in]  pageDirectory The process page directory
+    /// @param[in]  reservePhysicalPages Boolean telling if the physical pages must be reserved immediately
+    /// @param[out] outVad Pointer that will hold a pointer to the newly allocated vad
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus AllocateAtAddress(void * const address, const unsigned int size, const PageDirectory * pageDirectory, Vad ** const OutVad);
+    KeStatus AllocateAtAddress(void * const address, const unsigned int size, const PageDirectory * pageDirectory, const bool reservePhysicalPages, Vad ** const outVad);
+
+    /// @brief Looks for a vad given an address
+    /// @param[in]  address Address that must be containd in the vad we are looking for
+    /// @param[out] outVad Pointer that will hold a pointer to the found VAD
+    /// @return STATUS_SUCCESS on success, an error code otherwise
+    KeStatus LookForVadFromAddress(void* const address, Vad** const outVad);
 
     /// @brief Looks for an available vad with a minimum required size
     /// @param[in]  size The required size
@@ -69,8 +77,9 @@ struct Vad
 
     /// @brief Set the current vad as reserved, allocates physical memory and map it into the given address space
     /// @param[in]  pageDirectory The process page directory
+    /// @param[in]  reservePhysicalPages Boolean telling if the physical pages must be reserved immediately
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus ReserveAndAllocateMemory(const PageDirectory * pageDirectory);
+    KeStatus ReservePages(const PageDirectory * pageDirectory, const bool reservePhysicalPages);
 
     void PrintVad();
 };

@@ -41,6 +41,8 @@ struct Thread
     Thread * neighbor;
     /// @brief Indicated the thread privilege level
     PrivilegeLevel privilegeLevel;
+    /// @brief Value of the tics member of ClockDrv when the thread is started or resumed
+    u32 ticsOnResume;
 
     /// @brief Describes the kernel stack that will be used if an interrupt occured with this thread running
     struct
@@ -93,6 +95,6 @@ private:
 
 extern "C" void _startOrResumeThread(PageDirectoryEntry * pd, u32 ss, u32 esp, u32 eflags, u32 cs, u32 eip,
     u32 eax, u32 ecx, u32 edx, u32 ebx, u32 ebp, u32 esi, u32 edi, u32 ds, u32 es, u32 fs, u32 gs,
-    PrivilegeLevel privLevel);
+    PrivilegeLevel privLevel, u16 kss, u32 kesp);
 
 /// @}

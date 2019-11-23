@@ -4,9 +4,12 @@
 #include <kernel/arch/x86/InterruptContext.hpp>
 #include <kernel/debug/LtDbg.hpp>
 #include <kernel/Kernel.hpp>
+#include <kernel/drivers/Clock.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SCHEDULER", LOG_LEVEL, format, ##__VA_ARGS__)
+
+#define DEFAULT_THREAD_LIMIT_WORKING_TIME 100
 
 void Scheduler::Init()
 {
@@ -62,8 +65,11 @@ void Scheduler::Schedules(InterruptContext * context)
 
         if (nextThread != nullptr && nextThread != _currentThread)
         {
-            _SwitchToThread(context, nextThread);
-            _currentThread = nextThread;
+            if (gClockDrv.tics - _currentThread->ticsOnResume > DEFAULT_THREAD_LIMIT_WORKING_TIME)
+            {
+                _SwitchToThread(context, nextThread);
+                _currentThread = nextThread;
+            }
         }
     }
 }

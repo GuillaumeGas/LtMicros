@@ -53,7 +53,7 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr)
 
     if ((defaultHeap.limitAddress + (nbPages * PAGE_SIZE)) > defaultHeap.vad->limitAddress)
     {
-        KLOG(LOG_ERROR, "Avoiding process heap overflow");
+        KLOG(LOG_ERROR, "Avoiding process heap overflow (limitAddress : %x, nbPages : %d)", defaultHeap.limitAddress, nbPages);
         return STATUS_PROCESS_HEAP_LIMIT_REACHED;
     }
 
@@ -74,11 +74,11 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr)
 
     defaultHeap.limitAddress += (nbPages * PAGE_SIZE);
 
-    if ((defaultHeap.limitAddress - defaultHeap.baseAddress) > PAGE_SIZE)
-    {
-        KLOG(LOG_ERROR, "IncreaseHeap not implemented");
-        gKernel.Panic();
-    }
+    //if ((defaultHeap.limitAddress - defaultHeap.baseAddress) > PAGE_SIZE)
+    //{
+    //    KLOG(LOG_ERROR, "IncreaseHeap not implemented");
+    //    gKernel.Panic();
+    //}
 
     *allocatedBlockAddr = newBlockAddress;
 
@@ -336,7 +336,7 @@ void Process::MemorySetAndCopy(const u8 * const sourceAddress, u8 * const destAd
     gVmm.SetCurrentPageDirectory(currentPd);
 }
 
-KeStatus Process::AllocateMemory(const unsigned int size, void ** const outAddress)
+KeStatus Process::AllocateMemory(const unsigned int size, const bool reservePhysicalPages, void ** const outAddress)
 {
     KeStatus status = STATUS_FAILURE;
     Vad * newVad = nullptr;
@@ -353,7 +353,7 @@ KeStatus Process::AllocateMemory(const unsigned int size, void ** const outAddre
         return STATUS_NULL_PARAMETER;
     }
 
-    status = baseVad->Allocate(size, &pageDirectory, &newVad);
+    status = baseVad->Allocate(size, &pageDirectory, reservePhysicalPages, &newVad);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Vad::Allocate() failed with cod %d", status);
@@ -368,7 +368,7 @@ clean:
     return status;
 }
 
-KeStatus Process::AllocateMemoryAtAddress(void * const address, const unsigned int size)
+KeStatus Process::AllocateMemoryAtAddress(void * const address, const bool reservePhysicalPages, const unsigned int size)
 {
     KeStatus status = STATUS_FAILURE;
     Vad * newVad = nullptr;
@@ -385,7 +385,7 @@ KeStatus Process::AllocateMemoryAtAddress(void * const address, const unsigned i
         return STATUS_INVALID_PARAMETER;
     }
 
-    status = baseVad->AllocateAtAddress(address, size, &pageDirectory, &newVad);
+    status = baseVad->AllocateAtAddress(address, size, &pageDirectory, reservePhysicalPages, &newVad);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Vad::AllocateAtAddresss() failed with cod %d", status);
@@ -403,7 +403,7 @@ KeStatus Process::CreateDefaultHeapAndStack()
     KeStatus status = STATUS_FAILURE;
     Vad * heapVad = nullptr;
 
-    status = baseVad->Allocate(DEFAULT_HEAP_SIZE, &this->pageDirectory, &heapVad);
+    status = baseVad->Allocate(DEFAULT_HEAP_SIZE, &this->pageDirectory, false, &heapVad);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Vad::Allocate() failed with code %d", status);
@@ -412,13 +412,64 @@ KeStatus Process::CreateDefaultHeapAndStack()
 
     this->defaultHeap.vad = heapVad;
     this->defaultHeap.baseAddress = heapVad->baseAddress;
-    this->defaultHeap.limitAddress = heapVad->limitAddress;
+    this->defaultHeap.limitAddress = heapVad->baseAddress;
 
     this->mainThread->CreateDefaultStack();
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Thread::CreateDefaultStack() failed with code %d", status);
         goto clean;
+    }
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+KeStatus Process::ResolvePageFault(void* const address)
+{
+    KeStatus status = STATUS_FAILURE;
+    Vad* vad = nullptr;
+
+    if (address == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid address parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    status = this->baseVad->LookForVadFromAddress(address, &vad);
+    // If the vad is found but not in use, the user process shouldn't access it
+    if (FAILED(status) || vad->free)
+    {
+        if (status == STATUS_NOT_FOUND)
+        {
+            // A page fault occured in a user process, no vad in use was found, the process should be killed and a user log generated
+            // TODO : kill process
+        }
+        else
+        {
+            KLOG(LOG_ERROR, "Vad::LookForVadFromAddress() failed with code %d", status);
+        }
+
+        goto clean;
+    }
+
+    {
+        void* pNewPage = gPmm.GetFreePage();
+        if (pNewPage == nullptr)
+        {
+            // TODO : we should kill the process or something like that... but not have a kernel panic if it is related to a user process
+            KLOG(LOG_ERROR, "Pmm::GetFreePage() failed to find an available physical page");
+            goto clean;
+        }
+
+        PageDirectoryEntry* currentPd = gVmm.GetCurrentPageDirectory();
+        gVmm.SetCurrentPageDirectory(this->pageDirectory.pdEntry);
+
+        gVmm.AddPageToPageDirectory((u32)address, (u32)pNewPage, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, this->pageDirectory);
+
+        gVmm.SetCurrentPageDirectory(currentPd);
     }
 
     status = STATUS_SUCCESS;

@@ -12,8 +12,8 @@
 #define V_PROCESS_BASE_ADDR  0x40000000
 #define V_PROCESS_LIMIT_ADDR 0xFFFFFFFF
 
-/// TEST : 40960 bytes for the default heap
-#define DEFAULT_HEAP_SIZE 0x1000
+/// TEST : 4 pages
+#define DEFAULT_HEAP_SIZE 0x1000 * 0x4
 
 struct Thread;
 
@@ -70,7 +70,7 @@ struct Process
     /// @return STATUS_SUCCESS on success, an error code otherwise
     static KeStatus CreateSystem(Process ** newProcess);
 
-/// @brief Releases process ressources
+    /// @brief Releases process ressources
     /// @param[in] process A pointer to the process to be released
     static void Delete(Process * process);
 
@@ -98,15 +98,21 @@ struct Process
 
     /// @brief Looks for a new vad and allocates the required size
     /// @param[in]  size The required size
+    /// @param[in]  reservePhysicalPages Boolean telling if the physical pages must be reserved immediately
     /// @param[out] outAddress Pointer that will hold the new address
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus AllocateMemory(const unsigned int size, void ** const outAddress);
+    KeStatus AllocateMemory(const unsigned int size, const bool reservePhysicalPages, void ** const outAddress);
 
     /// @brief Looks for a new vad at the asked address and allocates the required size
     /// @param[in] address The asked address
+    /// @param[in] reservePhysicalPages Boolean telling if the physical pages must be reserved immediately
     /// @param[in] size The required size
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    KeStatus AllocateMemoryAtAddress(void * const address, const unsigned int size);
+    KeStatus AllocateMemoryAtAddress(void * const address, const bool reservePhysicalPages, const unsigned int size);
+
+    /// @brief Try to resolve the page fault given an address by looking for the related VAD in process
+    ///        If a VAD in use is found, a new physical page is reserved, and the PTE is updated to set the page as in memory.
+    KeStatus ResolvePageFault(void* const address);
 
     void PrintState();
 };

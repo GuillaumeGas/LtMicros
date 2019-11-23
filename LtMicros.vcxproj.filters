@@ -46,6 +46,9 @@
     <Filter Include="Fichiers sources\kernel\module">
       <UniqueIdentifier>{0fcead88-a7fc-489c-a53c-0b7d60d2277b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\kernel\arch\x86\Exceptions">
+      <UniqueIdentifier>{ce24e231-f655-4d1c-a132-917217f4460a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kernel\kmain.cpp">
@@ -152,6 +155,9 @@
     </ClCompile>
     <ClCompile Include="kernel\mem\Vad.cpp">
       <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Exceptions\PageFault.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86\Exceptions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -283,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="kernel\mem\Vad.hpp">
       <Filter>Fichiers sources\kernel\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Exceptions\PageFault.h">
+      <Filter>Fichiers sources\kernel\arch\x86\Exceptions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

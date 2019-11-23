@@ -2,6 +2,9 @@
 #include <kernel/drivers/Screen.hpp>
 #include <kernel/lib/StdLib.hpp>
 #include <kernel/lib/StdIo.hpp>
+#include <kernel/task/ProcessManager.hpp>
+
+#include "Exceptions/PageFault.h"
 
 #define EXCEPTION_SCREEN               \
 	ScreenDriver::Clear();             \
@@ -124,39 +127,7 @@ extern "C" void general_protection_fault_isr(ExceptionContextWithCode * context)
 
 extern "C" void page_fault_isr(ExceptionContextWithCode * context)
 {
-    u32 code = context->code;
-
-    EXCEPTION_SCREEN
-
-        ScreenDriver::SetColorEx(BLUE, RED, 0, 1);
-    kprint(">> [Fault] Page fault ! \n\n");
-
-    ScreenDriver::SetColorEx(BLUE, WHITE, 0, 1);
-
-    u8 p = (code & 1);
-    u8 wr = (code & 2);
-    u8 us = (code & 4);
-    u8 rsvd = (code & 8);
-    u8 id = (code & 16);
-
-    kprint("Error code : %x (%b)\n", code, code);
-    kprint(" - P : %d (%s)\n", p ? 1 : 0, p ? "protection violation" : "non-present page");
-    kprint(" - W/R : %d (%s)\n", wr ? 1 : 0, wr ? "write access" : "read access");
-    kprint(" - U/S : %d (%s)\n", us ? 1 : 0, us ? "user mode" : "supervisor mode");
-    kprint(" - RSVD : %d (%s)\n", rsvd ? 1 : 0, rsvd ? "one or more page directory entries contain reserved bits which are set to 1" : "PSE or PAE flags in CR4 are set to 1");
-    kprint(" - I/D : %d (%s)\n\n", id ? 1 : 0, id ? "instruction fetch (applies when the No-Execute bit is supported and enabled" : "-");
-    kprint("Linear address : %x, %b*\n\n", context->cr2, context->cr2, 32);
-
-    if (us == 1)
-    {
-        PrintExceptionContextWithCode(context);
-    }
-    else
-    {
-        PrintExceptionUserContextWithCode((ExceptionContextUserWithCode *)context);
-    }
-
-    Pause();
+    PageFaultExceptionHandler(context);
 }
 
 extern "C" void x87_floating_point_isr(ExceptionContext * context)

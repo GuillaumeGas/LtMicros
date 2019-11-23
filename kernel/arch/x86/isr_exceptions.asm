@@ -55,9 +55,9 @@ global _asm_virtualization_isr
 global _asm_security_isr
 
 _asm_default_isr:
-	INT_PROLOG_EXCEPTION
+	INT_PROLOG
 	call default_isr
-	INT_EPILOG_EXCEPTION
+	INT_EPILOG
 
 _asm_divided_by_zero_isr:
 	INT_PROLOG_EXCEPTION

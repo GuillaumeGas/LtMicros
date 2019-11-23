@@ -8,7 +8,6 @@
 
 extern "C"
 {
-
     extern "C" List * ListCreate()
     {
         ListElem * list = (ListElem *)HeapAlloc(sizeof(ListElem));
@@ -142,8 +141,15 @@ extern "C"
 
         void * data = (*list)->data;
         ListElem * next = (*list)->next;
-        HeapFree(*list);
-        *list = (List *)next;
+        if (next != nullptr)
+        {
+            HeapFree(*list);
+            *list = (List *)next;
+        }
+        else
+        {
+            (*list)->data = nullptr;
+        }
         return data;
     }
 

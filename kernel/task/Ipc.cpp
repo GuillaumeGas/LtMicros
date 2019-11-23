@@ -197,7 +197,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
 
     // We allocate memory into the server process address space
     serverProcess = ipcObject->serverProcess;
-    status = serverProcess->AllocateMemory(size, (void**)&serverBuffer);
+    status = serverProcess->AllocateMemory(size, true, (void**)&serverBuffer);
     if (FAILED(status))
     {
         KLOG(LOG_DEBUG, "Process::AllocateMemory() failed with code %d", status);

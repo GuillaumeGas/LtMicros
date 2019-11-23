@@ -7,6 +7,7 @@
 #include <kernel/Kernel.hpp>
 #include <kernel/lib/StdLib.hpp>
 #include <kernel/lib/StdIo.hpp>
+#include <kernel/drivers/Clock.hpp>
 
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("ARCH", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -67,7 +68,10 @@ void Thread::SaveState(InterruptContext * context)
         InterruptFromUserlandContext * uContext = (InterruptFromUserlandContext *)context;
 
         regs.ss = uContext->ss;
-        regs.esp = uContext->esp;
+        regs.esp = uContext->esp_i;
+
+        if (regs.cs != KERNEL_CODE_SELECTOR && regs.esp < 0x40000000)
+            KLOG(LOG_ERROR, "!! Thread %d, cs = %x, esp = %x", tid, regs.cs, regs.esp);
     }
     else
     {
@@ -87,17 +91,30 @@ void Thread::SaveState(InterruptContext * context)
 void Thread::StartOrResume()
 {
     PageDirectoryEntry * pd = nullptr;
+    u16 kss = 0;
+    u32 kesp = 0;
 
     state = THREAD_STATE_RUNNING;
 
-    if (privilegeLevel == PVL_USER)
+    ticsOnResume = gClockDrv.tics;
+
+    pd = process->pageDirectory.pdEntry;
+
+    if (regs.cs == USER_CODE_SELECTOR_WITH_RPL)
     {
-        pd = process->pageDirectory.pdEntry;
+        /*pd = process->pageDirectory.pdEntry;*/
+        kss = kstack.ss0;
+        kesp = kstack.esp0;
     }
     else
     {
-        pd = gKernel.info.pPageDirectory.pdEntry;
+        //pd = gKernel.info.pPageDirectory.pdEntry;
+        kss = regs.ss;
+        kesp = regs.esp;
     }
+
+    if (regs.cs != KERNEL_CODE_SELECTOR && regs.esp < 0x40000000)
+        KLOG(LOG_ERROR, "?? Thread %d, cs = %x, esp = %x", tid, regs.cs, regs.esp);
 
     gTss.esp0 = kstack.esp0;
     gTss.ss0 = kstack.ss0;
@@ -120,7 +137,8 @@ void Thread::StartOrResume()
         regs.es,
         regs.fs,
         regs.gs,
-        regs.cs == KERNEL_CODE_SELECTOR ? PVL_KERNEL : PVL_USER
+        regs.cs == KERNEL_CODE_SELECTOR ? PVL_KERNEL : PVL_USER,
+        kss, kesp
     );
 }
 
@@ -304,7 +322,7 @@ KeStatus Thread::CreateDefaultStack()
     u32 vUserStack = 0;
 
     // We create the user thread stack
-    status = this->process->AllocateMemory(USER_STACK_DEFAULT_SIZE, (void**)&vUserStack);
+    status = this->process->AllocateMemory(USER_STACK_DEFAULT_SIZE, true, (void**)&vUserStack);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Process::AllocateMemory() failed to allocate %d bytes", USER_STACK_DEFAULT_SIZE);

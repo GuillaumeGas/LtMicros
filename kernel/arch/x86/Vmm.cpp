@@ -238,7 +238,7 @@ void Vmm::AddPageToPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags, PageDire
 
     pte = (u32 *)(0xFFC00000 | ((vAddr & 0xFFFFF000) >> 10));
 
-    SetPageTableEntry((PageTableEntry *)pte, pAddr, (PAGE_PRESENT | PAGE_WRITEABLE | flags));
+    SetPageTableEntry((PageTableEntry *)pte, pAddr, flags);
 }
 
 PageTableEntry Vmm::GetPageTableFromVirtualAddress(u32 vAddr) const

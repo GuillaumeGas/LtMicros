@@ -71,42 +71,21 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     CheckMultibootPartialInfo(mbi, multibootMagicNumber);
 
     gIdt.Init();
-    //KLOG(LOG_INFO, "IDT initialized");
-
     gPicDrv.Init();
-    //KLOG(LOG_INFO, "PIC initialized");
-
     gClockDrv.Init();
-    //KLOG(LOG_INFO, "Clock driver initialized");
-
     gSerialDrv.Init();
-    //KLOG(LOG_INFO, "Serial driver initialized");
 
     gLogger.SetMode(LOG_SCREEN | LOG_SERIAL);
 
     gPmm.Init();
-    //KLOG(LOG_INFO, "Physical Memory Manager intialized");
-
     gVmm.Init();
-    //KLOG(LOG_INFO, "Virtual Memory Manager intialized");
-
     gHeap.Init();
     gPagePool.Init();
-
-    //KLOG(LOG_INFO, "Kernel heap initialized");
-
     gProcessManager.Init();
-    //KLOG(LOG_INFO, "Process manager initialized");
-
     gScheduler.Init();
-    //KLOG(LOG_INFO, "Scheduler initialized");
-
     gIpcHandler.Init();
-    KLOG(LOG_INFO, "Ipc handler initialized");
-
     gSyscallsX86.Init();
-    //KLOG(LOG_INFO, "X86 syscalls handler initialized");
-
+    
     PrintHello();
 
     if (gKernel.info.debug)

@@ -74,6 +74,7 @@
 	; pop eflags
 	pop ebx
     popad
+	add esp, 4
 %endmacro
 
 %macro  EOI 0 		; EOI (End Of Interrupt)

@@ -12,6 +12,9 @@ _startOrResumeThread:
 	push ebp
 	mov esi, esp
 
+	mov ss, [esi+80]
+	mov esp, [esi+84]
+
 	mov eax, [esi+8]
 	mov cr3, eax
 
@@ -20,9 +23,6 @@ _startOrResumeThread:
 	jne user_mode
 
 kernel_mode:
-	mov ebx, [esi+16]
-	mov esp, ebx
-
 	; eflags
 	push dword [esi+20]
 	; cs

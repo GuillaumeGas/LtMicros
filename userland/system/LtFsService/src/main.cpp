@@ -11,13 +11,13 @@ static void StartListening();
 
 void main()
 {
-    printf("# Starting LtFs service...\n");
+    printf("[FS] # Starting LtFs service...\n");
 
     if (AtaDeviceCreate())
     {
         StartListening();
 
-        printf("# Terminating LtFs service\n");
+        printf("[FS] # Terminating LtFs service\n");
     }
 
     while (1);
@@ -28,7 +28,7 @@ static bool AtaDeviceCreate()
     AtaDevice device = AtaCreate(ATA_SECONDARY, ATA_MASTER);
     if (!AtaInit(&device))
     {
-        printf("Can't init ata device\n");
+        printf("[FS] Can't init ata device\n");
         return false;
     }
     else
@@ -47,7 +47,7 @@ static void StartListening()
     status = IpcServer::Create(LTFS_SERVICE_NAME, &server);
     if (FAILED(status))
     {
-        printf("IpcServer::Create() failed with code %d\n", status);
+        printf("[FS] IpcServer::Create() failed with code %d\n", status);
         return;
     }
 
@@ -58,14 +58,14 @@ static void StartListening()
         status = server.Receive(&message);
         if (FAILED(status))
         {
-            printf("IpcServer::Receive() failed with code %d\n", status);
+            printf("[FS] IpcServer::Receive() failed with code %d\n", status);
             break;
         }
 
         status = ServiceExecuteCommand((char*)message.data, message.size, &serviceTerminate);
         if (FAILED(status))
         {
-            printf("ServiceExecuteCommand() failed with code %d\n", status);
+            printf("[FS] ServiceExecuteCommand() failed with code %d\n", status);
             break;
         }
 

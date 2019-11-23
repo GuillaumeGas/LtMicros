@@ -55,7 +55,7 @@ clean:
     return status;
 }
 
-KeStatus Vad::Allocate(const unsigned int size, const PageDirectory * pageDirectory, Vad** const outVad)
+KeStatus Vad::Allocate(const unsigned int size, const PageDirectory * pageDirectory, const bool reservePhysicalPages, Vad** const outVad)
 {
     KeStatus status = STATUS_FAILURE;
     Vad * freeVad = nullptr;
@@ -95,10 +95,10 @@ KeStatus Vad::Allocate(const unsigned int size, const PageDirectory * pageDirect
         }
     }
 
-    status = freeVad->ReserveAndAllocateMemory(pageDirectory);
+    status = freeVad->ReservePages(pageDirectory, reservePhysicalPages);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "ReserveAndAllocateMemory() failed with code %d", status);
+        KLOG(LOG_ERROR, "ReservePages() failed with code %d", status);
         goto clean;
     }
 
@@ -111,7 +111,7 @@ clean:
     return status;
 }
 
-KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, const PageDirectory * pageDirectory, Vad** const outVad)
+KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, const PageDirectory * pageDirectory, const bool reservePhysicalPages, Vad** const outVad)
 {
     KeStatus status = STATUS_FAILURE;
     Vad * freeVad = nullptr;
@@ -163,15 +163,57 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
             freeVad = freeVad->next;
     }
 
-    status = freeVad->ReserveAndAllocateMemory(pageDirectory);
+    status = freeVad->ReservePages(pageDirectory, reservePhysicalPages);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "ReserveAndAllocateMemory() failed with code %d", status);
+        KLOG(LOG_ERROR, "ReservePages() failed with code %d", status);
         goto clean;
     }
 
     *outVad = freeVad;
     freeVad = nullptr;
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+KeStatus Vad::LookForVadFromAddress(void* const address, Vad** const outVad)
+{
+    KeStatus status = STATUS_FAILURE;
+    Vad* vad = nullptr;
+
+    if (address == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid address parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (outVad == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid outVad parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    vad = this;
+    do
+    {
+        if (address >= vad->baseAddress && address < vad->limitAddress)
+            break;
+
+        vad = vad->next;
+
+    } while (vad != nullptr);
+
+    if (vad == nullptr)
+    {
+        status = STATUS_NOT_FOUND;
+        goto clean;
+    }
+
+    *outVad = vad;
+    vad = nullptr;
 
     status = STATUS_SUCCESS;
 
@@ -447,7 +489,7 @@ clean:
     return status;
 }
 
-KeStatus Vad::ReserveAndAllocateMemory(const PageDirectory * pageDirectory)
+KeStatus Vad::ReservePages(const PageDirectory * pageDirectory, const bool reservePhysicalPages)
 {
     u8 * vAddr = this->baseAddress;
     PageDirectoryEntry * currentPd = gVmm.GetCurrentPageDirectory();
@@ -456,14 +498,23 @@ KeStatus Vad::ReserveAndAllocateMemory(const PageDirectory * pageDirectory)
 
     while (vAddr < this->limitAddress)
     {
-        u8 * pAddr = (u8*)gPmm.GetFreePage();
-        if (pAddr == nullptr)
+        if (reservePhysicalPages)
         {
-            KLOG(LOG_ERROR, "Pmm::GetFreePage() returned null");
-            return STATUS_PHYSICAL_MEMORY_FULL;
-        }
+            u8* pAddr = (u8*)gPmm.GetFreePage();
+            if (pAddr == nullptr)
+            {
+                KLOG(LOG_ERROR, "Pmm::GetFreePage() returned null");
+                return STATUS_PHYSICAL_MEMORY_FULL;
+            }
 
-        gVmm.AddPageToPageDirectory((u32)vAddr, (u32)pAddr, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, *pageDirectory);
+            gVmm.AddPageToPageDirectory((u32)vAddr, (u32)pAddr, PAGE_PRESENT | PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, *pageDirectory);
+        }
+        else
+        {
+            // The virtual address doesn't point to any physical address
+            // The page is set as not present in memory, so if we try to access it, a page fault will occured and a physical page will be reserved
+            gVmm.AddPageToPageDirectory((u32)vAddr, 0, PAGE_WRITEABLE | PAGE_NON_PRIVILEGED_ACCESS, *pageDirectory);
+        }
 
         vAddr = (u8 *)((unsigned int)vAddr + (unsigned int)PAGE_SIZE);
     }
