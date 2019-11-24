@@ -189,6 +189,8 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
         return STATUS_INVALID_PARAMETER;
     }
 
+    KLOG(LOG_DEBUG, "Handling message from %d, msg addr : %x, size : %d", clientProcess->pid, message, size);
+
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {

@@ -44,6 +44,7 @@ static bool AtaDeviceCreate()
         if (FAILED(status))
         {
             LOG(LOG_ERROR, "FsInit() failed with code %d", status);
+            return false;
         }
 
         return true;
@@ -74,8 +75,6 @@ static void StartListening()
             LOG(LOG_ERROR, "IpcServer::Receive() failed with code %d", status);
             break;
         }
-
-        LOG(LOG_DEBUG, "Client %d", clientHandle);
 
         status = ServiceExecuteCommand((char*)message.data, message.size, &serviceTerminate);
         if (FAILED(status))

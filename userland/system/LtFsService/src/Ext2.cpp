@@ -137,6 +137,7 @@ Status Ext2ReadInode(Ext2Disk * disk, int num, Ext2Inode ** inode)
 
     offset = disk->groupDec[inodeGroupIndex].inodeTable * disk->blockSize + inodeIndex * disk->superBlock->inodeSize;
 
+    LOG(LOG_DEBUG, "AtaRead() : localInode(%x), offset(%d), inodeSize(%d)");
     ret = AtaRead(disk->device, localInode, offset, disk->superBlock->inodeSize);
 
     if (ret < 0)

@@ -76,6 +76,7 @@ Status OpenFile(File * file)
 
     if (file->inode == nullptr)
     {
+        LOG(LOG_DEBUG, "inum : %d, inode : %d", file->inum, file->inode);
         status = Ext2ReadInode(gExt2Disk, file->inum, &file->inode);
         if (FAILED(status))
         {

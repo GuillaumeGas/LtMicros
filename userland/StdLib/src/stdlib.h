@@ -1,12 +1,8 @@
 #pragma once
 
 #include "malloc.h"
-
-typedef unsigned char u8;
-typedef unsigned char uchar;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
+#include "FileSystem.h"
+#include "types.h"
 
 /// @brief Copies a string into another
 /// @param[in] src A pointer to the source string, must be nullptr terminated

@@ -11,7 +11,7 @@ all: $(OBJ)
 clean:
 	rm -f $(OBJ) *.o
 
-LtInitService.sys: main.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o
+LtInitService.sys: main.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o FileSystem.o LtFsCommon.o
 	$(LD) $^ -o bin/$@
 
 main.o: main.cpp
@@ -33,4 +33,10 @@ malloc.o: ../../StdLib/src/malloc.cpp
 	$(CC) -c $^
 
 Ipc.o: ../../StdLib/src/Ipc.cpp
+	$(CC) -c $^
+
+FileSystem.o: ../../StdLib/src/FileSystem.cpp
+	$(CC) -c $^
+
+LtFsCommon.o: ../Common/LtFsCommon.cpp
 	$(CC) -c $^
