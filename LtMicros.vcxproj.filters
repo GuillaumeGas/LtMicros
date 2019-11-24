@@ -49,6 +49,9 @@
     <Filter Include="Fichiers sources\kernel\arch\x86\Exceptions">
       <UniqueIdentifier>{ce24e231-f655-4d1c-a132-917217f4460a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\kernel\handle">
+      <UniqueIdentifier>{0d226b35-91df-4b8e-a15d-15d3b9add963}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kernel\kmain.cpp">
@@ -158,6 +161,9 @@
     </ClCompile>
     <ClCompile Include="kernel\arch\x86\Exceptions\PageFault.cpp">
       <Filter>Fichiers sources\kernel\arch\x86\Exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\handle\HandleManager.cpp">
+      <Filter>Fichiers sources\kernel\handle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -292,6 +298,12 @@
     </ClInclude>
     <ClInclude Include="kernel\arch\x86\Exceptions\PageFault.h">
       <Filter>Fichiers sources\kernel\arch\x86\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\handle\HandleManager.h">
+      <Filter>Fichiers sources\kernel\handle</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\syscalls\UKSyscallsCommon.h">
+      <Filter>Fichiers sources\kernel\syscalls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

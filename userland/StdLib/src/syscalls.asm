@@ -106,9 +106,7 @@ _sysIpcReceive:
     push ebp
     mov ebp, esp
 
-    mov ebx, [ebp+8]  ; we retrieve the first parameter (ipcHandle) on the stack
-	mov ecx, [ebp+12] ; we retrieve the second parameter (message pointer) on the stack
-	mov edx, [ebp+16] ; we retrieve the third parameter (size pointer) on the stack
+    mov ebx, [ebp+8]  ; we retrieve the ipc receive syscall parameter pointer on the stack
     mov eax, SYS_IPC_RECEIVE
 
     int SYSCALL_INTERRUPT

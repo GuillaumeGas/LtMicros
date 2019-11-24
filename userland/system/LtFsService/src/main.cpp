@@ -66,13 +66,16 @@ static void StartListening()
     do
     {
         IpcMessage message;
+        ProcessHandle clientHandle = INVALID_HANDLE_VALUE;
 
-        status = server.Receive(&message);
+        status = server.Receive(&message, &clientHandle);
         if (FAILED(status))
         {
             LOG(LOG_ERROR, "IpcServer::Receive() failed with code %d", status);
             break;
         }
+
+        LOG(LOG_DEBUG, "Client %d", clientHandle);
 
         status = ServiceExecuteCommand((char*)message.data, message.size, &serviceTerminate);
         if (FAILED(status))

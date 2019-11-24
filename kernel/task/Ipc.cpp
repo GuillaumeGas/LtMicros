@@ -8,6 +8,7 @@
 #include <kernel/Kernel.hpp>
 #include <kernel/task/ProcessManager.hpp>
 #include <kernel/drivers/Clock.hpp>
+#include <kernel/handle/HandleManager.h>
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -35,7 +36,7 @@ struct IpcObject
 struct IpcMessage
 {
     /// The sender process
-    Process * clientProcess;
+    Handle clientProcess;
 
     /// Pointer to the message content
     char * message;
@@ -43,7 +44,7 @@ struct IpcMessage
     /// The message size
     unsigned int size;
 
-    static KeStatus Create(Process * const clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage);
+    static KeStatus Create(const Handle clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage);
 };
 
 struct FIND_IPC_OBJECTS_CONTEXT
@@ -57,7 +58,7 @@ struct FIND_IPC_OBJECTS_CONTEXT
 static void FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context);
 static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context);
 
-static IpcHandle s_IpcObjectHandleCount = IPC_INVALID_HANDLE;
+static IpcHandle s_IpcObjectHandleCount = INVALID_HANDLE_VALUE;
 
 void IpcHandler::Init()
 {
@@ -68,7 +69,7 @@ KeStatus IpcHandler::AddNewServer(const char * serverIdStr, Process* const serve
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
-    IpcHandle ipcObjectHandle = IPC_INVALID_HANDLE;
+    IpcHandle ipcObjectHandle = INVALID_HANDLE_VALUE;
 
     if (serverIdStr == nullptr)
     {
@@ -162,6 +163,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     Process * serverProcess = nullptr;
     u8 * serverBuffer = nullptr;
     u8 * kernelBuffer = nullptr;
+    Handle clientProcessHandle = INVALID_HANDLE_VALUE;
 
     if (handle == 0)
     {
@@ -195,6 +197,13 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
 
     ipcObject->criticalSection.Enter();
 
+    status = gHandleManager.FindOrCreate(PROCESS_HANDLE, clientProcess, &clientProcessHandle);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "HandleManager::FindOrCreate() failed with code %d", status);
+        goto clean;
+    }
+
     // We allocate memory into the server process address space
     serverProcess = ipcObject->serverProcess;
     status = serverProcess->AllocateMemory(size, true, (void**)&serverBuffer);
@@ -217,7 +226,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     // We copy the kernel buffer content into serveur process
     serverProcess->MemoryCopy(kernelBuffer, serverBuffer, size);
 
-    status = IpcMessage::Create(clientProcess, (char*)serverBuffer, size, &ipcMessage);
+    status = IpcMessage::Create(clientProcessHandle, (char*)serverBuffer, size, &ipcMessage);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "IpcMessage::Create() failed with code %d", status);
@@ -240,7 +249,7 @@ clean:
     return status;
 }
 
-KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size)
+KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size, Handle * const clientHandle)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
@@ -270,6 +279,12 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         return STATUS_NULL_PARAMETER;
     }
 
+    if (clientHandle == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid clientHandle parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {
@@ -287,7 +302,7 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
 
     *message = ipcMessage->message;
     *size = ipcMessage->size;
-    // *clientProcessHandle = serverProcess->CreateHandleFromProcess(ipcMessage->clientProcess);
+    *clientHandle = ipcMessage->clientProcess;
 
     HeapFree(ipcMessage);
     ipcMessage = nullptr;
@@ -311,7 +326,7 @@ IpcObject* IpcHandler::_FindIpcObjectByHandle(const IpcHandle handle) const
 {
     FIND_IPC_OBJECTS_CONTEXT context;
 
-    if (handle == IPC_INVALID_HANDLE)
+    if (handle == INVALID_HANDLE_VALUE)
     {
         KLOG(LOG_ERROR, "Invalid handle");
         return nullptr;
@@ -339,7 +354,7 @@ IpcObject* IpcHandler::_FindIpcObjectByServerId(const char * serverId) const
 
     context.serverId = (char*)serverId;
     context.ipcObject = nullptr;
-    context.ipcHandle = IPC_INVALID_HANDLE;
+    context.ipcHandle = INVALID_HANDLE_VALUE;
     context.found = false;
 
     ListEnumerate(_ipcObjects, FindIpcObjectByServerIdCallback, &context);
@@ -457,15 +472,15 @@ clean:
     return status;
 }
 
-KeStatus IpcMessage::Create(Process * const clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage)
+KeStatus IpcMessage::Create(const Handle clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage)
 {
     KeStatus status = STATUS_FAILURE;
     IpcMessage * newIpcMessage = nullptr;
 
-    if (clientProcess == nullptr)
+    if (clientProcess == INVALID_HANDLE_VALUE)
     {
         KLOG(LOG_ERROR, "Invalid clientProcess parameter");
-        return STATUS_NULL_PARAMETER;
+        return STATUS_INAVLID_HANDLE;
     }
 
     if (message == nullptr)

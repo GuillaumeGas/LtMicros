@@ -2,10 +2,12 @@
 #include "syscalls.h"
 #include "stdio.h"
 
+#include <kernel/syscalls/UKSyscallsCommon.h>
+
 IpcStatus IpcServer::Create(const char * const serverName, IpcServer * const server)
 {
     IpcStatus status = STATUS_FAILURE;
-    IpcHandle handle = IPC_INVALID_HANDLE;
+    IpcHandle handle = INVALID_HANDLE_VALUE;
 
     if (serverName == nullptr)
     {
@@ -27,7 +29,7 @@ IpcStatus IpcServer::Create(const char * const serverName, IpcServer * const ser
     }
 
     server->_serverHandle = handle;
-    handle = IPC_INVALID_HANDLE;
+    handle = INVALID_HANDLE_VALUE;
 
     status = STATUS_SUCCESS;
 
@@ -35,9 +37,10 @@ clean:
     return status;
 }
 
-IpcStatus IpcServer::Receive(IpcMessage * const message)
+IpcStatus IpcServer::Receive(IpcMessage * const message, ProcessHandle * clientHandle)
 {
     IpcStatus status = STATUS_FAILURE;
+    SysIpcReceiveParameter parameters;
 
     if (message == nullptr)
     {
@@ -45,7 +48,18 @@ IpcStatus IpcServer::Receive(IpcMessage * const message)
         return STATUS_NULL_PARAMETER;
     }
 
-    status = (IpcStatus)_sysIpcReceive(_serverHandle, (char**)&message->data, &message->size);
+    if (clientHandle == nullptr)
+    {
+        printf("Invalid clientHandle parameter\n");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    parameters.ipcHandle = _serverHandle;
+    parameters.message = (char**)&message->data;
+    parameters.sizePtr = &message->size;
+    parameters.clientHandlePtr = (unsigned int*)clientHandle;
+
+    status = (IpcStatus)_sysIpcReceive(&parameters);
     if (FAILED(status))
     {
         printf("_sysIpcReceive() failed with code %d\n", status);
@@ -87,7 +101,7 @@ IpcStatus IpcClient::Send(const IpcServerHandle serverHandle, const char * messa
 {
     IpcStatus status = STATUS_FAILURE;
 
-    if (serverHandle == IPC_INVALID_HANDLE)
+    if (serverHandle == INVALID_HANDLE_VALUE)
     {
         printf("Invalid serverHandle parameter\n");
         return STATUS_INVALID_PARAMETER;

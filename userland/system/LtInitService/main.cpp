@@ -23,7 +23,7 @@ void main()
 static void LoadSystem()
 {
     IpcClient client;
-    IpcServerHandle serverHandle = IPC_INVALID_HANDLE;
+    IpcServerHandle serverHandle = INVALID_HANDLE_VALUE;
     IpcStatus status = STATUS_FAILURE;
 
     status = client.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
@@ -34,6 +34,13 @@ static void LoadSystem()
     }
 
     LOG(LOG_INFO, "Sending message '%s'", SERVICE_TEST_CMD);
+
+    status = client.Send(serverHandle, SERVICE_TEST_CMD, StrLen(SERVICE_TEST_CMD));
+    if (FAILED(status))
+    {
+        LOG(LOG_ERROR, "IpcClient::Send() failed with code %d", status);
+        return;
+    }
 
     status = client.Send(serverHandle, SERVICE_TEST_CMD, StrLen(SERVICE_TEST_CMD));
     if (FAILED(status))

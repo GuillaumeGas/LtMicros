@@ -12,6 +12,7 @@ MEM=PagePool.o Heap.o Vad.o
 SYSCALLS=SyscallsHandler.o
 TASK=ProcessManager.o ThreadManager.o Scheduler.o Ipc.o
 MODULE=Module.o Elf.o
+HANDLE=HandleManager.o
 DEBUG=LtDbg.o ltdbg_isr.o LtDbgCom.o
 
 all: $(OBJ) 
@@ -26,7 +27,7 @@ clean:
 doc:
 	doxygen doc/doxyConf
 
-kernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(MODULE) $(DEBUG)
+kernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(MODULE) $(HANDLE) $(DEBUG)
 	$(LD) $^ -o $@
 
 # ROOT
@@ -164,6 +165,10 @@ Module.o: module/Module.cpp
 	$(CC) -c $^
 
 Elf.o: module/Elf.cpp
+	$(CC) -c $^
+
+# HANDLE DIRECTORY
+HandleManager.o: handle/HandleManager.cpp
 	$(CC) -c $^
 
 # DEBUG DIRECTORY

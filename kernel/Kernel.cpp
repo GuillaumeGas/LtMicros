@@ -27,6 +27,8 @@
 
 #include <kernel/module/Module.hpp>
 
+#include <kernel/handle/HandleManager.h>
+
 #include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
@@ -82,6 +84,7 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     gHeap.Init();
     gPagePool.Init();
     gProcessManager.Init();
+    gHandleManager.Init();
     gScheduler.Init();
     gIpcHandler.Init();
     gSyscallsX86.Init();

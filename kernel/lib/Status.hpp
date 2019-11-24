@@ -12,6 +12,7 @@ enum KeStatus
     /* Function parameters */
     STATUS_INVALID_PARAMETER,
     STATUS_NULL_PARAMETER,
+    STATUS_INAVLID_HANDLE,
 
     /* Memory */
     STATUS_ALLOC_FAILED,
@@ -22,6 +23,9 @@ enum KeStatus
     /* IPC */
     IPC_STATUS_ID_STRING_ALREADY_USED,
     IPC_STATUS_SERVER_NOT_FOUND,
+
+    /* HANDLE */
+    STATUS_HANDLE_ALREADY_EXIST,
 
     STATUS_UNEXPECTED,
 };
