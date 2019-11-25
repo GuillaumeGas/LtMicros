@@ -72,6 +72,8 @@ Status FsOpenFile(const char * filePath, const FileAccess access, Handle * const
 
     MemCopy((void*)filePath, &(parameters.filePath), StrLen(filePath) + 1);
 
+    printf("source : %x, dest : %x\n", filePath, &(parameters.filePath));
+
     status = LtFsRequest::Create(LTFS_REQUEST_OPEN_FILE, &parameters, sizeof(LtFsOpenFileParameters), &request);
     if (FAILED(status))
     {

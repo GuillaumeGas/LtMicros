@@ -103,6 +103,9 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     blockEnd = (offset + size) / ATA_BLOCK_SIZE;
     nbBlocks = blockEnd - blockBegin + 1;
 
+    printf("nbBlocks : %d\n", nbBlocks);
+    printf("blockBegin : %d, end : %d\n", blockBegin, blockEnd);
+
     buffer = (char *)HeapAlloc(nbBlocks * ATA_BLOCK_SIZE);
     if (buffer == nullptr)
     {
@@ -116,6 +119,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     for (int i = 0; i < nbBlocks; i++)
     {
         rc = AtaReadSectorPio(dev, bufferPtr, blockBegin + i);
+        printf("rc : %d\n", rc);
         if (rc == -EIO)
             return -EIO;
 
@@ -124,7 +128,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     }
 
     MemCopy((u8 *)(buffer + offset % ATA_BLOCK_SIZE), (u8 *)buf, size);
-    //free(buffer);
+    HeapFree(buffer);
 
     ENABLE_IRQ();
     return size;

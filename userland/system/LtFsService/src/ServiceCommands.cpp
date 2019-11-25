@@ -2,6 +2,7 @@
 #include "Common.h"
 
 #include "File.h"
+#include "FsManager.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +54,7 @@ static Status RequestOpenFile(LtFsOpenFileParameters * const parameters)
     status = OpenFileFromName(parameters->filePath, &file);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "OpenFileFromName() failed with code %d", status);
+        LOG(LOG_ERROR, "OpenFileFromName() failed with code %t", status);
         goto clean;
     }
 

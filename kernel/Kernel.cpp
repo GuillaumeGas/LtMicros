@@ -89,8 +89,6 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     gIpcHandler.Init();
     gSyscallsX86.Init();
     
-    KLOG(LOG_ERROR, "test %t", STATUS_ALLOC_FAILED);
-
     PrintHello();
 
     if (gKernel.info.debug)

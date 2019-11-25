@@ -47,7 +47,7 @@ void PageFaultExceptionHandler(ExceptionContextWithCode* const context)
         status = process->ResolvePageFault((void*)context->cr2);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Process::ResolvePageFault() failed with code %t", status);
+            KLOG(LOG_ERROR, "Process::ResolvePageFault() failed with code %t (addr : %x)", status, context->cr2);
 
             if (gLtDbg.IsConnected())
             {
@@ -56,6 +56,11 @@ void PageFaultExceptionHandler(ExceptionContextWithCode* const context)
             else
             {
                 PrintPageFaultException(context, &details);
+                if (process != nullptr)
+                {
+                    kprint("Process %d\n", process->pid);
+                }
+
                 Pause();
             }
         }

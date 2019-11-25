@@ -80,7 +80,7 @@ Status OpenFile(File * file)
         status = Ext2ReadInode(gExt2Disk, file->inum, &file->inode);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "Ext2ReadInode() failed with code %d", status);
+            LOG(LOG_ERROR, "Ext2ReadInode() failed with code %t", status);
             goto clean;
         }
     }
@@ -88,7 +88,7 @@ Status OpenFile(File * file)
     status = Ext2ReadFile(file->disk, file->inode, file->inum, (char **)&file->content);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "Ext2ReadFile() failed with code %d", status);
+        LOG(LOG_ERROR, "Ext2ReadFile() failed with code %t", status);
         goto clean;
     }
 
@@ -153,7 +153,7 @@ Status OpenFileFromName(const char * filePath, File ** file)
                     status = OpenFile(localFile);
                     if (FAILED(status))
                     {
-                        LOG(LOG_ERROR, "OpenFile() failed with code %d", status);
+                        LOG(LOG_ERROR, "OpenFile() failed with code %t", status);
                         goto clean;
                     }
                 }
@@ -198,7 +198,7 @@ Status OpenFileFromName(const char * filePath, File ** file)
                     if (FAILED(status))
                     {
                         // TODO : il faudra sans doute mieux gérer cette erreur... (accès interdit par exemple ?)
-                        LOG(LOG_ERROR, "OpenFile() failed with code %d", status);
+                        LOG(LOG_ERROR, "OpenFile() failed with code %t", status);
                         goto clean;
                     }
                 }
@@ -237,14 +237,14 @@ Status ReadFileFromInode(int inodeNumber, File ** file)
     status = CreateFile(gExt2Disk, inode, inodeNumber, file);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "CreateFile() failed with code %d", status);
+        LOG(LOG_ERROR, "CreateFile() failed with code %t", status);
         goto clean;
     }
 
     status = OpenFile(*file);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "OpenFile() failed with code %d", status);
+        LOG(LOG_ERROR, "OpenFile() failed with code %t", status);
         goto clean;
     }
 
@@ -282,7 +282,7 @@ Status BrowseAndCacheDirectory(File * directory)
         status = Ext2ReadInode(gExt2Disk, directory->inum, &directory->inode);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "Ext2ReadInode() failed with code %d", status);
+            LOG(LOG_ERROR, "Ext2ReadInode() failed with code %t", status);
             goto clean;
         }
     }
@@ -293,7 +293,7 @@ Status BrowseAndCacheDirectory(File * directory)
         status = OpenFile(directory);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "OpenFile() failed with code %d", status);
+            LOG(LOG_ERROR, "OpenFile() failed with code %t", status);
             goto clean;
         }
     }
@@ -419,7 +419,7 @@ bool IsDirectory(File * file)
         Status status = Ext2ReadInode(gExt2Disk, file->inum, &file->inode);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "Ext2ReadInode() failed with code %d", status);
+            LOG(LOG_ERROR, "Ext2ReadInode() failed with code %t", status);
             return false;
         }
     }

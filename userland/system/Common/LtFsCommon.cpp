@@ -38,9 +38,13 @@ Status LtFsRequest::Create(const LtFsRequestType type, void * const parameters, 
         goto clean;
     }
 
+    printf("request : %x\n", request);
+
     request->type = type;
     
     MemCopy(parameters, &(request->parameters), size);
+
+    printf("(2) source : %x, dest : %x\n", parameters, &(request->parameters));
 
     *outRequest = request;
     request = nullptr;
