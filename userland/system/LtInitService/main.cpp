@@ -32,7 +32,7 @@ static void LoadSystem()
     status = client.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %d", status);
+        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %t", status);
         return;
     }
 
@@ -48,7 +48,7 @@ static void TestFile()
     status = FsOpenFile("test.txt", FILE_READ, &fileHandle);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "FsOpenFile() failed with code %d", status);
+        LOG(LOG_ERROR, "FsOpenFile() failed with code %t", status);
         return;
     }
 

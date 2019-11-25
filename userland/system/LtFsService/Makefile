@@ -11,7 +11,7 @@ all: $(OBJ)
 clean:
 	rm -f $(OBJ) *.o
 
-LtFsService.sys: main.o AtaDriver.o ServiceCommands.o Ext2.o File.o FsManager.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o
+LtFsService.sys: main.o AtaDriver.o ServiceCommands.o Ext2.o File.o FsManager.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o status.o
 	$(LD) $^ -o bin/$@
 
 main.o: src/main.cpp
@@ -48,4 +48,7 @@ malloc.o: ../../StdLib/src/malloc.cpp
 	$(CC) -c $^
 
 Ipc.o: ../../StdLib/src/Ipc.cpp
+	$(CC) -c $^
+
+status.o: ../../StdLib/src/status.cpp
 	$(CC) -c $^

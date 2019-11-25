@@ -15,6 +15,8 @@ void main()
 {
     LOG(LOG_INFO, "Starting LtFs service...");
 
+    LOG(LOG_ERROR, "test : %t", STATUS_NULL_PARAMETER);
+
     // TMP !
     InitMalloc();
 
@@ -43,7 +45,7 @@ static bool AtaDeviceCreate()
         Status status = FsInit(&device);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "FsInit() failed with code %d", status);
+            LOG(LOG_ERROR, "FsInit() failed with code %t", status);
             return false;
         }
 
@@ -60,7 +62,7 @@ static void StartListening()
     status = IpcServer::Create(LTFS_SERVICE_NAME, &server);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "IpcServer::Create() failed with code %d", status);
+        LOG(LOG_ERROR, "IpcServer::Create() failed with code %t", status);
         return;
     }
 
@@ -72,14 +74,14 @@ static void StartListening()
         status = server.Receive(&message, &clientHandle);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "IpcServer::Receive() failed with code %d", status);
+            LOG(LOG_ERROR, "IpcServer::Receive() failed with code %t", status);
             break;
         }
 
         status = ServiceExecuteCommand((char*)message.data, message.size, &serviceTerminate);
         if (FAILED(status))
         {
-            LOG(LOG_ERROR, "ServiceExecuteCommand() failed with code %d", status);
+            LOG(LOG_ERROR, "ServiceExecuteCommand() failed with code %t", status);
             break;
         }
 
