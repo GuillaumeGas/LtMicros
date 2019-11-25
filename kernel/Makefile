@@ -6,7 +6,7 @@ LD=ld -m elf_i386 -nostdlib -T linker.ld
 BOOT=../boot/bootsector.o
 ROOT=kmain.o Kernel.o Logger.o cppsupport.o
 DRIVERS=Screen.o Pic.o Clock.o clock_isr.o Serial.o BaseDriver.o
-LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o
+LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o Status.o
 ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr_exceptions.o InterruptContext.o Pmm.o Vmm.o vmm_utils.o Process.o Thread.o thread_utils.o Syscalls.o syscall_isr.o PageFault.o
 MEM=PagePool.o Heap.o Vad.o
 SYSCALLS=SyscallsHandler.o
@@ -79,6 +79,9 @@ List.o: lib/List.cpp
 	$(CC) -c $^
 
 CriticalSection.o: lib/CriticalSection.cpp
+	$(CC) -c $^
+
+Status.o: lib/Status.cpp
 	$(CC) -c $^
 
 # X86 ARCH DIRECTORY

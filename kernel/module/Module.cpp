@@ -32,21 +32,21 @@ void Module::Load(MultiBootModule * module)
     status = gProcessManager.CreateProcess(elf.header->entry, &process, SA_IO, nullptr);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "ProcessManager::CreateProcess() failed with code %d", status);
+        KLOG(LOG_ERROR, "ProcessManager::CreateProcess() failed with code %t", status);
         gKernel.Panic();
     }
 
     status = _MapElfInProcess(elf, process);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "MapElfInProcess() failed with code %d", status);
+        KLOG(LOG_ERROR, "MapElfInProcess() failed with code %t", status);
         gKernel.Panic();
     }
 
     status = process->CreateDefaultHeapAndStack();
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Process::CreateDefaultHeapAndStack() failed with code %d", status);
+        KLOG(LOG_ERROR, "Process::CreateDefaultHeapAndStack() failed with code %t", status);
         gKernel.Panic();
     }
 
@@ -77,7 +77,7 @@ KeStatus Module::_MapElfInProcess(ElfFile elf, Process * process)
         status = process->AllocateMemoryAtAddress(vUserSectionPtr, true, sectionSize);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Process::AllocateMemoryAtAddress() failed with status %d", status);
+            KLOG(LOG_ERROR, "Process::AllocateMemoryAtAddress() failed with status %t", status);
             goto clean;
         }
 

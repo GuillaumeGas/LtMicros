@@ -125,7 +125,7 @@ void LtDbg::WaitForConnectCommand(KeDebugContext * context)
     status = _com.RecvRequest(&request);
     if (status != STATUS_SUCCESS)
     {
-        KLOG(LOG_ERROR, "RecvRequest() failed, status = %d", status);
+        KLOG(LOG_ERROR, "RecvRequest() failed, status = %t", status);
         return;
     }
 
@@ -166,7 +166,7 @@ void LtDbg::WaitForPacket(KeDebugContext * context)
         status = _com.RecvRequest(&request);
         if (status != STATUS_SUCCESS)
         {
-            KLOG(LOG_ERROR, "RecvRequest() failed (status = %d)", status);
+            KLOG(LOG_ERROR, "RecvRequest() failed (status = %t)", status);
             return;
         }
 
@@ -222,7 +222,7 @@ void LtDbg::WaitForPacket(KeDebugContext * context)
 
             if (status != STATUS_SUCCESS)
             {
-                DKLOG(LOG_DEBUG, "SendResponse() failed with code : %d", status);
+                DKLOG(LOG_DEBUG, "SendResponse() failed with code : %t", status);
             }
         }
         else

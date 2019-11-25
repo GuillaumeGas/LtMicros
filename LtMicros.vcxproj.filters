@@ -165,6 +165,9 @@
     <ClCompile Include="kernel\handle\HandleManager.cpp">
       <Filter>Fichiers sources\kernel\handle</Filter>
     </ClCompile>
+    <ClCompile Include="kernel\lib\Status.cpp">
+      <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kernel\multiboot.hpp">

@@ -178,7 +178,7 @@ KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel p
         status = _InitKernelThread(localThread, entryAddr);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "_InitKernelThread() failed with code %d", status);
+            KLOG(LOG_ERROR, "_InitKernelThread() failed with code %t", status);
             goto clean;
         }
     }
@@ -187,7 +187,7 @@ KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel p
         status = _InitUserThread(localThread, process, attribute, entryAddr);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "_InitUserThread() failed with code %d", status);
+            KLOG(LOG_ERROR, "_InitUserThread() failed with code %t", status);
             goto clean;
         }
     }

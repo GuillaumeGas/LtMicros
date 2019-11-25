@@ -34,7 +34,7 @@
 #include <kernel/Logger.hpp>
 
 //#define DEBUG_MODE
-//#define DEBUG_PRINT_MODE
+#define DEBUG_PRINT_MODE
 
 #ifdef DEBUG_PRINT_MODE
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("KERNEL", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -89,6 +89,8 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     gIpcHandler.Init();
     gSyscallsX86.Init();
     
+    KLOG(LOG_ERROR, "test %t", STATUS_ALLOC_FAILED);
+
     PrintHello();
 
     if (gKernel.info.debug)
@@ -107,7 +109,7 @@ void Kernel::Start()
     KeStatus status = gProcessManager.CreateSystemProcess(&systemProcess);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "gProcessManager::Create() failed with code %d", status);
+        KLOG(LOG_ERROR, "gProcessManager::Create() failed with code %t", status);
         Panic();
         goto clean;
     }

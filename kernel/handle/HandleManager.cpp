@@ -54,7 +54,7 @@ KeStatus HandleManager::FindOrCreate(const HandleType type, void * object, Handl
     status = FindFromObjectPtr(type, object, &localHandle);
     if (FAILED(status) && status != STATUS_NOT_FOUND)
     {
-        KLOG(LOG_ERROR, "FindFromObjectPtr() failed with code %d", status);
+        KLOG(LOG_ERROR, "FindFromObjectPtr() failed with code %t", status);
         goto clean;
     }
 
@@ -63,7 +63,7 @@ KeStatus HandleManager::FindOrCreate(const HandleType type, void * object, Handl
         status = CreateHandle(type, object, &localHandle);
         if (status)
         {
-            KLOG(LOG_ERROR, "CreateHandle() failed with code %d", status);
+            KLOG(LOG_ERROR, "CreateHandle() failed with code %t", status);
             goto clean;
         }
     }
@@ -153,7 +153,7 @@ KeStatus HandleManager::CreateHandle(const HandleType type, void * object, Handl
     status = FindFromObjectPtr(type, object, &localHandle);
     if (FAILED(status) && status != STATUS_NOT_FOUND)
     {
-        KLOG(LOG_ERROR, "FindFromObjectPtr() failed with code %d", status);
+        KLOG(LOG_ERROR, "FindFromObjectPtr() failed with code %t", status);
         goto clean;
     }
 
@@ -166,7 +166,7 @@ KeStatus HandleManager::CreateHandle(const HandleType type, void * object, Handl
     status = _CreateHandle(type, object, &localHandle);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "_CreateHandle() failed with code %d", status);
+        KLOG(LOG_ERROR, "_CreateHandle() failed with code %t", status);
         goto clean;
     }
 

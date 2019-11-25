@@ -100,7 +100,7 @@ KeStatus IpcHandler::AddNewServer(const char * serverIdStr, Process* const serve
     status = IpcObject::Create(serverIdStr, serverProcess, ipcObjectHandle, &ipcObject);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "IpcObject::Create() failed with code %d", status);
+        KLOG(LOG_ERROR, "IpcObject::Create() failed with code %t", status);
         goto clean;
     }
 
@@ -202,7 +202,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     status = gHandleManager.FindOrCreate(PROCESS_HANDLE, clientProcess, &clientProcessHandle);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "HandleManager::FindOrCreate() failed with code %d", status);
+        KLOG(LOG_ERROR, "HandleManager::FindOrCreate() failed with code %t", status);
         goto clean;
     }
 
@@ -211,7 +211,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     status = serverProcess->AllocateMemory(size, true, (void**)&serverBuffer);
     if (FAILED(status))
     {
-        KLOG(LOG_DEBUG, "Process::AllocateMemory() failed with code %d", status);
+        KLOG(LOG_DEBUG, "Process::AllocateMemory() failed with code %t", status);
         goto clean;
     }
 
@@ -231,7 +231,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     status = IpcMessage::Create(clientProcessHandle, (char*)serverBuffer, size, &ipcMessage);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "IpcMessage::Create() failed with code %d", status);
+        KLOG(LOG_ERROR, "IpcMessage::Create() failed with code %t", status);
         gKernel.Panic();
     }
 

@@ -116,7 +116,7 @@ KeStatus LtDbgCom::RecvRequest(KeDebugRequest * request)
     status = RecvPacket(&packet);
     if (status != STATUS_SUCCESS)
     {
-        KLOG(LOG_ERROR, "RecvPacket() failed with status : %d", status);
+        KLOG(LOG_ERROR, "RecvPacket() failed with status : %t", status);
         return status;
     }
 
