@@ -1,16 +1,18 @@
 [BITS 32]
 
-%define SYSCALL_INTERRUPT 0x30
+%define SYSCALL_INTERRUPT                 0x30
 
-%define SYSCALL_PRINT_CHAR     0x0
-%define SYSCALL_PRINT_STR      0x1
-%define SYSCALL_SBRK           0x2
-%define SYS_IPC_SERVER_CREATE  0x3
-%define SYS_IPC_SERVER_CONNECT 0X4
-%define SYS_IPC_SEND           0x5
-%define SYS_IPC_RECEIVE        0x6
+%define SYSCALL_PRINT_CHAR                0x0
+%define SYSCALL_PRINT_STR                 0x1
+%define SYSCALL_SBRK                      0x2
+%define SYS_IPC_SERVER_CREATE             0x3
+%define SYS_IPC_SERVER_CONNECT            0X4
+%define SYS_IPC_SEND                      0x5
+%define SYS_IPC_RECEIVE                   0x6
 %define SYS_ENTER_SCREEN_CRITICAL_SECTION 0x7
 %define SYS_LEAVE_SCREEN_CRITICAL_SECTION 0x8
+%define SYS_RAISE_THREAD_PRIORITY         0x9
+%define SYS_LOWER_THREAD_PRIORITY         0xA
 
 global _sysPrint
 global _sysPrintChar
@@ -21,6 +23,8 @@ global _sysIpcSend
 global _sysIpcReceive
 global _sysEnterScreenCriticalSection
 global _sysLeaveScreenCriticalSection
+global _sysRaiseThreadPriority
+global _sysLowerThreadPriority
 
 _sysPrint:
     push ebp
@@ -130,6 +134,28 @@ _sysLeaveScreenCriticalSection:
     mov ebp, esp
 
     mov eax, SYS_LEAVE_SCREEN_CRITICAL_SECTION
+
+    int SYSCALL_INTERRUPT
+
+    leave
+    ret
+
+_sysRaiseThreadPriority:
+    push ebp
+    mov ebp, esp
+
+    mov eax, SYS_RAISE_THREAD_PRIORITY
+
+    int SYSCALL_INTERRUPT
+
+    leave
+    ret
+
+_sysLowerThreadPriority:
+    push ebp
+    mov ebp, esp
+
+    mov eax, SYS_LOWER_THREAD_PRIORITY
 
     int SYSCALL_INTERRUPT
 

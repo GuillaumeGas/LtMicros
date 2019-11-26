@@ -208,6 +208,30 @@ void SysLeaveScreenCriticalSection(InterruptFromUserlandContext * context)
     s_CriticalSection.Leave();
 }
 
+void SysRaiseThreadPriority(InterruptFromUserlandContext* context)
+{
+    Thread* currentThread = gThreadManager.GetCurrentThread();
+    if (currentThread == nullptr)
+    {
+        KLOG(LOG_ERROR, "ThreadManager::GetCurrentThread() returned nullptr");
+        return;
+    }
+
+    currentThread->RaisePriorityLevel();
+}
+
+void SysLowerThreadPriority(InterruptFromUserlandContext* context)
+{
+    Thread* currentThread = gThreadManager.GetCurrentThread();
+    if (currentThread == nullptr)
+    {
+        KLOG(LOG_ERROR, "ThreadManager::GetCurrentThread() returned nullptr");
+        return;
+    }
+
+    currentThread->LowerPriorityLevel();
+}
+
 void SysInvalid(InterruptFromUserlandContext * context)
 {
     KLOG(LOG_ERROR, "Invalid syscall called");

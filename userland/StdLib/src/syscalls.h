@@ -13,6 +13,8 @@ extern "C" int _sysIpcServerCreate(const char * serverId, int * handle);
 extern "C" int _sysIpcServerConnect(const char* serverId, int* handle);
 extern "C" int _sysIpcSend(const int ipcHandle, const char * message, const unsigned int size);
 extern "C" int _sysIpcReceive(SysIpcReceiveParameter * const parameters);
+extern "C" void _sysRaiseThreadPriority();
+extern "C" void _sysLowerThreadPriority();
 // TMP
 extern "C" void _sysEnterScreenCriticalSection();
 extern "C" void _sysLeaveScreenCriticalSection();

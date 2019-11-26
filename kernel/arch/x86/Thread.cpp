@@ -197,6 +197,7 @@ KeStatus Thread::CreateThread(u32 entryAddr, Process * process, PrivilegeLevel p
     localThread->process = process;
     localThread->privilegeLevel = privLevel;
     localThread->neighbor = nullptr;
+    localThread->threadPriority = THREAD_PRIORITY_NORMAL;
 
     *thread = localThread;
     localThread = nullptr;
@@ -335,6 +336,18 @@ KeStatus Thread::CreateDefaultStack()
 
 clean:
     return status;
+}
+
+void Thread::RaisePriorityLevel()
+{
+    if (threadPriority < THREAD_PRIORITY_MAX)
+        threadPriority = (ThreadPriorityLevel)(((unsigned int )threadPriority) + 1);
+}
+
+void Thread::LowerPriorityLevel()
+{
+    if (threadPriority > THREAD_PRIORITY_NORMAL)
+        threadPriority = (ThreadPriorityLevel)(((unsigned int)threadPriority) - 1);
 }
 
 void Thread::PrintList()

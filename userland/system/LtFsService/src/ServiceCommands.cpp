@@ -51,6 +51,8 @@ static Status RequestOpenFile(LtFsOpenFileParameters * const parameters)
 
     LOG(LOG_DEBUG, "Openning %s", parameters->filePath);
 
+    RaiseThreadPriority();
+
     status = OpenFileFromName(parameters->filePath, &file);
     if (FAILED(status))
     {
@@ -58,10 +60,13 @@ static Status RequestOpenFile(LtFsOpenFileParameters * const parameters)
         goto clean;
     }
 
+
     LOG(LOG_INFO, "File openned !");
 
     status = STATUS_SUCCESS;
 
 clean:
+    LowerThreadPriority();
+
     return status;
 }

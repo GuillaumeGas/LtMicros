@@ -30,11 +30,16 @@ void main()
 
 static bool AtaDeviceCreate()
 {
+    bool result = false;
+
+    RaiseThreadPriority();
+
     AtaDevice device = AtaCreate(ATA_SECONDARY, ATA_MASTER);
     if (!AtaInit(&device))
     {
         LOG(LOG_INFO, "Can't init ata device");
-        return false;
+        result = false;
+        goto clean;
     }
     else
     {
@@ -44,10 +49,11 @@ static bool AtaDeviceCreate()
         if (FAILED(status))
         {
             LOG(LOG_ERROR, "FsInit() failed with code %t", status);
-            return false;
+            result = false;
+            goto clean;
         }
 
-        File * file = nullptr;
+        File* file = nullptr;
         status = OpenFileFromName("test.txt", &file);
         if (FAILED(status))
         {
@@ -55,9 +61,14 @@ static bool AtaDeviceCreate()
         }
 
         LOG(LOG_DEBUG, "file opened !");
-
-        return true;
     }
+
+    result = true;
+
+clean:
+    LowerThreadPriority();
+
+    return result;
 }
 
 static void StartListening()

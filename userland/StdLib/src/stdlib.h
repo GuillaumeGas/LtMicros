@@ -37,3 +37,7 @@ void MemCopy(void * src, void * dst, unsigned int size);
 /// @param[in] byte A byte used to fill the data with
 /// @param[in] size The length in bytes
 void MemSet(void * src, u8 byte, unsigned int size);
+
+// TODO : put that somewhere else
+void RaiseThreadPriority();
+void LowerThreadPriority();
