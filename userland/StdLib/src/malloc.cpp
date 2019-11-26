@@ -39,6 +39,20 @@ MemBlock * g_baseBlock = nullptr;
 MemBlock * g_limitBlock = nullptr;
 MemBlock * g_lastBlock = nullptr;
 
+void DumpHeap()
+{
+    MemBlock * currentBlock = g_baseBlock;
+    printf("limit is %x\n", g_limitBlock);
+    printf("last is %x\n", g_lastBlock);
+    while (currentBlock <= g_limitBlock)
+    {
+        printf("[%x, %d, %s]\n", currentBlock, currentBlock->size, currentBlock->state == BLOCK_FREE ? "free" : "used");
+        currentBlock = (MemBlock*)((unsigned int)currentBlock + currentBlock->size);
+        if (currentBlock->size == 0)
+            break;
+    }
+}
+
 void InitMalloc()
 {
     g_baseBlock = nullptr;
@@ -50,6 +64,7 @@ void * HeapAlloc(int size)
 {
     if (size <= 0)
     {
+        printf("wtf %d\n", size);
         return nullptr;
     }
 
@@ -64,6 +79,12 @@ void * HeapAlloc(int size)
 
     void * res = nullptr;
     res = _Allocate(g_baseBlock, size + BLOCK_HEADER_SIZE);
+    if (res == nullptr)
+    {
+        printf("Dumping heap\n");
+        DumpHeap();
+        while (1);
+    }
     return res;
 }
 

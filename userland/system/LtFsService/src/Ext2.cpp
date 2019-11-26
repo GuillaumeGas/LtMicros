@@ -299,10 +299,12 @@ Status Ext2ReadFile(Ext2Disk * disk, Ext2Inode * inode, int inum, char ** conten
 
     fileSize = inode->size;
 
+    printf("inode %x\n", inode);
+
     fileContent = (char *)HeapAlloc(fileSize);
     if (fileContent == nullptr)
     {
-        LOG(LOG_ERROR, "Couldn't allocate %d bytes", sizeof(size));
+        LOG(LOG_ERROR, "Couldn't allocate %d bytes", fileSize);
         status = STATUS_ALLOC_FAILED;
         goto clean;
     }
