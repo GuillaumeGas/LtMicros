@@ -14,6 +14,24 @@
 /// @addgroup Memory
 /// @{
 
+/* TODO : find a way to implemet mod */
+static unsigned int _local_mod(unsigned int a, unsigned int b)
+{
+    while (a > b)
+        a -= b;
+    return (a < b) ? 1 : 0;
+}
+
+static unsigned int ClosestPow(unsigned int x, unsigned int y)
+{
+    unsigned int val = (unsigned int)x;
+    while (_local_mod(val, y) != 0)
+    {
+        val++;
+    }
+    return val;
+}
+
 void Heap::Init()
 {
     baseBlock = (MemBlock *)gKernel.info.vHeapBase;
@@ -72,13 +90,17 @@ MemBlock * Heap::Sbrk(int n)
 
 void * Heap::Allocate(int size)
 {
+    unsigned int blockSize = 0;
+    void* res = nullptr;
+
     if (size <= 0)
     {
         KLOG(LOG_WARNING, "Kernel allocation with size <= 0");
         return nullptr;
     }
 
-    void * res = nullptr;
+    blockSize = ClosestPow((unsigned int)size + BLOCK_HEADER_SIZE, 4);
+
     res = _Allocate(baseBlock, size + BLOCK_HEADER_SIZE);
     return res;
 }
@@ -105,15 +127,7 @@ void Heap::Free(void * ptr)
     //_Defrag(); // TODO : fix it
 }
 
-/* TODO : find a way to implemet mod */
-static unsigned int _local_mod(unsigned int a, unsigned int b)
-{
-    while (a > b)
-        a -= b;
-    return (a > 0) ? 1 : 0;
-}
-
-void * Heap::_Allocate(MemBlock * block, int size)
+void * Heap::_Allocate(MemBlock * block, unsigned int size)
 {
     void * res_ptr = nullptr;
 
@@ -135,7 +149,7 @@ void * Heap::_Allocate(MemBlock * block, int size)
     {
         if (size > DEFAULT_BLOCK_SIZE)
         {
-            unsigned int usize = (unsigned int)size;
+            unsigned int usize = size;
             const unsigned int ubsize = (unsigned int)DEFAULT_BLOCK_SIZE;
             unsigned int n = usize / ubsize;
             if (_local_mod(usize, ubsize) > 0)

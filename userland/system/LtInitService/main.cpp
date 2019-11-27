@@ -16,6 +16,7 @@ void main()
 {
     LOG(LOG_INFO, "Starting LtInit service");
 
+    InitMalloc();
     LoadSystem();
 
     LOG(LOG_INFO, "Terminating LtInit service");
@@ -43,7 +44,7 @@ static void TestFile()
 {
     Status status = STATUS_FAILURE;
     Handle fileHandle = INVALID_HANDLE_VALUE;
-    unsigned int fileSize = 0;
+    //unsigned int fileSize = 0;
 
     status = FsOpenFile("test.txt", FILE_READ, &fileHandle);
     if (FAILED(status))

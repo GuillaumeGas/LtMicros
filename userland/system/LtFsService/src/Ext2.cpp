@@ -304,6 +304,7 @@ Status Ext2ReadFile(Ext2Disk * disk, Ext2Inode * inode, int inum, char ** conten
     fileContent = (char *)HeapAlloc(fileSize);
     if (fileContent == nullptr)
     {
+        DumpHeap();
         LOG(LOG_ERROR, "Couldn't allocate %d bytes", fileSize);
         status = STATUS_ALLOC_FAILED;
         goto clean;
@@ -358,7 +359,7 @@ Status Ext2ReadFile(Ext2Disk * disk, Ext2Inode * inode, int inum, char ** conten
             goto clean;
         }
 
-        for (int i = 0; i < disk->blockSize / sizeof(u32) && singlyBlock[i]; i++)
+        for (unsigned int i = 0; i < disk->blockSize / sizeof(u32) && singlyBlock[i]; i++)
         {
             offset = singlyBlock[i] * disk->blockSize;
             int ret = AtaRead(disk->device, block, offset, disk->blockSize);
@@ -409,7 +410,7 @@ Status Ext2ReadFile(Ext2Disk * disk, Ext2Inode * inode, int inum, char ** conten
             goto clean;
         }
 
-        for (int i = 0; i < disk->blockSize / sizeof(u32) && singlyBlock[i]; i++)
+        for (unsigned int i = 0; i < disk->blockSize / sizeof(u32) && singlyBlock[i]; i++)
         {
             offset = singlyBlock[i] * disk->blockSize;
             ret = AtaRead(disk->device, doublyBlock, offset, disk->blockSize);
@@ -421,7 +422,7 @@ Status Ext2ReadFile(Ext2Disk * disk, Ext2Inode * inode, int inum, char ** conten
                 goto clean;
             }
 
-            for (int j = 0; j < disk->blockSize / sizeof(u32) && doublyBlock[j]; j++)
+            for (unsigned int j = 0; j < disk->blockSize / sizeof(u32) && doublyBlock[j]; j++)
             {
                 offset = doublyBlock[i] * disk->blockSize;
                 int ret = AtaRead(disk->device, block, offset, disk->blockSize);

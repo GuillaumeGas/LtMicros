@@ -108,6 +108,8 @@ void printfEx(const char * format, va_list ap)
     int nbBits = 8;
     int value;
 
+    const char* HEX_STRING = "0x";
+
     while (*format != '\0')
     {
         char c = *format;
@@ -128,7 +130,7 @@ void printfEx(const char * format, va_list ap)
                         break;
                     case 'x':
                     case 'p':
-                        printStr("0x");
+                        printStr((char *)HEX_STRING);
                         printInt(va_arg(ap, int), 16);
                         break;
                     case 'b':

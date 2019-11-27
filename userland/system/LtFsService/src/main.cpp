@@ -53,14 +53,14 @@ static bool AtaDeviceCreate()
             goto clean;
         }
 
-        //File* file = nullptr;
-        //status = OpenFileFromName("test.txt", &file);
-        //if (FAILED(status))
-        //{
-        //    LOG(LOG_ERROR, "OpenFileFromName() failed with code %t", status);
-        //}
+        File* file = nullptr;
+        status = OpenFileFromName("test.txt", &file);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "OpenFileFromName() failed with code %t", status);
+        }
 
-        //LOG(LOG_DEBUG, "file opened !");
+        LOG(LOG_DEBUG, "file opened !");
     }
 
     result = true;

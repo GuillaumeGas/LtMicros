@@ -70,7 +70,7 @@ public:
     int freeCount;
 
 private:
-    void * _Allocate(MemBlock * block, int size);
+    void * _Allocate(MemBlock * block, unsigned int size);
     void _SplitBlock(MemBlock * block, unsigned int size);
     void _Defrag();
 };
