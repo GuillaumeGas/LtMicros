@@ -169,7 +169,7 @@ extern "C"
         }
 
         if (ListIsEmpty(list))
-            return STATUS_INVALID_PARAMETER;
+            return STATUS_SUCCESS;
 
         ListElem * elem = list;
         ListElem * next = list->next;
