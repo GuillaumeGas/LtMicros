@@ -21,7 +21,7 @@ struct HandleObject
     void * object;
 };
 
-static void _FindHandleCallback(void * object, void * context);
+static KeStatus _FindHandleCallback(void * object, void * context);
 
 void HandleManager::Init()
 {
@@ -107,7 +107,12 @@ KeStatus HandleManager::FindFromObjectPtr(const HandleType type, void * object, 
     switch (type)
     {
     case PROCESS_HANDLE:
-        ListEnumerate(_processHandleList, _FindHandleCallback, &context);
+        status = ListEnumerate(_processHandleList, _FindHandleCallback, &context);
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "ListEnumerate() failed with code %t", status);
+            goto clean;
+        }
         break;
     default:
         KLOG(LOG_ERROR, "Invalid type %d !", type);
@@ -230,7 +235,7 @@ clean:
     return status;
 }
 
-static void _FindHandleCallback(void * data, void * context)
+static KeStatus _FindHandleCallback(void * data, void * context)
 {
     HandleObject * handleObject = (HandleObject*)data;
     FIND_HANDLE_CONTEXT * findContext = (FIND_HANDLE_CONTEXT*)context;
@@ -238,18 +243,22 @@ static void _FindHandleCallback(void * data, void * context)
     if (data == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid data parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid context parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (handleObject->object == findContext->object)
     {
         findContext->found = true;
         findContext->foundHandle = handleObject->handle;
+
+        return STATUS_LIST_STOP_ITERATING;
     }
+
+    return STATUS_SUCCESS;
 }

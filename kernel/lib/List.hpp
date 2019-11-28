@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Status.hpp"
+
 /// @defgroup KernelLibGroup Kernel lib group
 /// @{
 
@@ -16,7 +18,7 @@ extern "C"
     typedef ListElem List;
 
     typedef void(*CleanFunPtr)(void*);
-    typedef void(*EnumerateFunPtr)(void*, void*);
+    typedef KeStatus(*EnumerateFunPtr)(void*, void*);
 
     extern "C" List * ListCreate();
     void ListDestroy(List * list);
@@ -25,7 +27,7 @@ extern "C"
     void * ListGet(List * list, unsigned int index);
     void * ListTop(List * list);
     void * ListPop(List ** list);
-    void ListEnumerate(List * list, EnumerateFunPtr callback, void * Context);
+    KeStatus ListEnumerate(List * list, EnumerateFunPtr callback, void * Context);
     bool ListIsEmpty(List* list);
 
 }

@@ -55,8 +55,8 @@ struct FIND_IPC_OBJECTS_CONTEXT
     bool found;
 };
 
-static void FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context);
-static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context);
+static KeStatus FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context);
+static KeStatus FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context);
 
 static IpcHandle s_IpcObjectHandleCount = INVALID_HANDLE_VALUE;
 
@@ -382,7 +382,7 @@ bool IpcHandler::_IsServerIdStrAlreadyUsed(const char * serverIdStr) const
     return context.found;
 }
 
-static void FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context)
+static KeStatus FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context)
 {
     IpcObject* ipcObject = (IpcObject*)ipcObjectPtr;
     FIND_IPC_OBJECTS_CONTEXT* ipcContext = (FIND_IPC_OBJECTS_CONTEXT*)context;
@@ -390,23 +390,27 @@ static void FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context)
     if (ipcObjectPtr == nullptr)
     {
         KLOG(LOG_ERROR, "invalid ipcObjectPtr parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "invalid context parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (ipcObject->handle == ipcContext->ipcHandle)
     {
         ipcContext->found = true;
         ipcContext->ipcObject = ipcObject;
+
+        return STATUS_LIST_STOP_ITERATING;
     }
+
+    return STATUS_SUCCESS;
 }
 
-static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context)
+static KeStatus FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context)
 {
     IpcObject * ipcObject = (IpcObject*)ipcObjectPtr;
     FIND_IPC_OBJECTS_CONTEXT * ipcContext = (FIND_IPC_OBJECTS_CONTEXT*)context;
@@ -414,20 +418,24 @@ static void FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context)
     if (ipcObjectPtr == nullptr)
     {
         KLOG(LOG_ERROR, "invalid ipcObjectPtr parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "invalid context parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (StrCmp(ipcObject->id, ipcContext->serverId) == 0)
     {
         ipcContext->found = true;
         ipcContext->ipcObject = ipcObject;
+
+        return STATUS_LIST_STOP_ITERATING;
     }
+
+    return STATUS_SUCCESS;
 }
 
 KeStatus IpcObject::Create(const char * serverIdStr, Process * const serverProcess, const IpcHandle handle, IpcObject** const ipcObject)

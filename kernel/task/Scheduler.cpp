@@ -18,7 +18,7 @@ struct LOOK_FOR_THREAD_CONTEXT
     Thread* thread;
 };
 
-static void LookForThreadWithHigherPriorityCallback(void* data, void* context);
+static KeStatus LookForThreadWithHigherPriorityCallback(void* data, void* context);
 
 void Scheduler::Init()
 {
@@ -204,7 +204,7 @@ bool Scheduler::HasHigherThreadPriority(Thread* thread)
     return Context.found;
 }
 
-static void LookForThreadWithHigherPriorityCallback(void* data, void* context)
+static KeStatus LookForThreadWithHigherPriorityCallback(void* data, void* context)
 {
     LOOK_FOR_THREAD_CONTEXT* foundContext = (LOOK_FOR_THREAD_CONTEXT*)context;
     Thread* thread = (Thread*)data;
@@ -212,18 +212,22 @@ static void LookForThreadWithHigherPriorityCallback(void* data, void* context)
     if (data == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid data parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (context == nullptr)
     {
         KLOG(LOG_ERROR, "Invalid context parameter");
-        return;
+        return STATUS_NULL_PARAMETER;
     }
 
     if (thread->threadPriority > foundContext->thread->threadPriority)
     {
         foundContext->found = true;
         foundContext->foundThread = thread;
+
+        return STATUS_LIST_STOP_ITERATING;
     }
+
+    return STATUS_SUCCESS;
 }
