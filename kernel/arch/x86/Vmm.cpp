@@ -208,6 +208,9 @@ void Vmm::AddPageToKernelPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags)
     pte = (u32 *)(0xFFC00000 | ((vAddr & 0xFFFFF000) >> 10));
 
     SetPageTableEntry((PageTableEntry *)pte, pAddr, PAGE_PRESENT | PAGE_WRITEABLE);
+
+    asm("invlpg %0"::"m"(pte));
+    asm("invlpg %0"::"m"(vAddr));
 }
 
 void Vmm::AddPageToPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags, PageDirectory pd)
@@ -228,6 +231,7 @@ void Vmm::AddPageToPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags, PageDire
         pt = (u32 *)new_page.vAddr;
 
         SetPageDirectoryEntry((PageDirectoryEntry *)pde, (u32)new_page.pAddr, PAGE_PRESENT | PAGE_WRITEABLE | flags);
+        asm("invlpg %0"::"m"(pde));
 
         // TODO : Is it necessary ?
         CleanPageTable((PageTableEntry *)pt);
@@ -239,6 +243,8 @@ void Vmm::AddPageToPageDirectory(u32 vAddr, u32 pAddr, PAGE_FLAG flags, PageDire
     pte = (u32 *)(0xFFC00000 | ((vAddr & 0xFFFFF000) >> 10));
 
     SetPageTableEntry((PageTableEntry *)pte, pAddr, flags);
+    asm("invlpg %0"::"m"(pte));
+    asm("invlpg %0"::"m"(vAddr));
 }
 
 PageTableEntry Vmm::GetPageTableFromVirtualAddress(u32 vAddr) const
@@ -275,6 +281,9 @@ void Vmm::SetPageTableFromVirtualAddress(u32 vAddr, const PageTableEntry & pageT
     // We do the same with the page table entry
     pte = (u32 *)(0xFFC00000 | ((vAddr & 0xFFFFF000) >> 10));
     *((PageTableEntry *)pte) = pageTableEntry;
+
+    asm("invlpg %0"::"m"(pte));
+    asm("invlpg %0"::"m"(vAddr));
 }
 
 bool Vmm::IsVirtualAddressAvailable(u32 vAddr)
