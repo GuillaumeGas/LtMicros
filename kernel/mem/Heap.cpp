@@ -6,6 +6,7 @@
 #include <kernel/arch/x86/Pmm.hpp>
 #include <kernel/arch/x86/Vmm.hpp>
 #include <kernel/lib/StdLib.hpp>
+#include <kernel/lib/StdIo.hpp>
 #include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
@@ -124,12 +125,25 @@ void Heap::Free(void * ptr)
 
     block->state = BLOCK_FREE;
     MemSet(&(block->data), 0, block->size - BLOCK_HEADER_SIZE);
-    //_Defrag(); // TODO : fix it
+    
+    _MergeBlocksFrom(block);
 }
 
 void * Heap::_Allocate(MemBlock * block, unsigned int size)
 {
     void * res_ptr = nullptr;
+
+    if (block == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid block parameter");
+        return nullptr;
+    }
+
+    if (size == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return nullptr;
+    }
 
     while (block < lastBlock && res_ptr == nullptr)
     {
@@ -171,29 +185,69 @@ void * Heap::_Allocate(MemBlock * block, unsigned int size)
 
 void Heap::_SplitBlock(MemBlock * block, unsigned int size)
 {
+    if (block == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid block parameter");
+        return;
+    }
+
+    if (size == 0)
+    {
+        KLOG(LOG_ERROR, "Invalid size parameter");
+        return;
+    }
+
     MemBlock * second_block = (MemBlock *)((unsigned int)block + size);
     second_block->size = block->size - size;
     second_block->state = BLOCK_FREE;
     block->size = size;
 }
 
-void Heap::_Defrag()
+void Heap::_MergeBlocksFrom(MemBlock * block)
 {
-    MemBlock * block = baseBlock;
+    if (block == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid block parameter");
+        return;
+    }
 
     while (block < lastBlock)
     {
-        MemBlock * next = (MemBlock *)((unsigned int)block + block->size);
+        MemBlock * nextBlock = (MemBlock*)((unsigned int)block + block->size);
 
-        if (next < lastBlock)
+        if (nextBlock->size == 0)
         {
-            if (block->state == BLOCK_FREE && next->state == BLOCK_FREE)
-            {
-                block->size += next->size;
-                MemSet(next, 0, BLOCK_HEADER_SIZE);
-            }
+            KLOG(LOG_WARNING, "Unexpected block size == 0 (addr : %x)", nextBlock);
+            break;
         }
-        block = (MemBlock *)((unsigned int)(block)+block->size);
+        else if (nextBlock->state != BLOCK_FREE)
+        {
+            break;
+        }
+
+        // The block is free, we can merge
+        block->size += nextBlock->size;
+        MemSet(nextBlock, BLOCK_HEADER_SIZE, 0);
+
+        if (nextBlock == lastBlock)
+        {
+            lastBlock = block;
+        }
+    }
+}
+
+void Heap::Dump()
+{
+    MemBlock * currentBlock = baseBlock;
+
+    kprint("Heap base : %x\n",  baseBlock);
+    kprint("     last : %x\n",  lastBlock);
+    kprint("     limit : %x\n", limitBlock);
+
+    while (currentBlock < lastBlock)
+    {
+        kprint("[%x, %d, %s]\n", currentBlock, currentBlock->size, currentBlock->state == BLOCK_FREE ? "free" : "reserved");
+        currentBlock = (MemBlock*)((unsigned int)currentBlock + currentBlock->size);
     }
 }
 
