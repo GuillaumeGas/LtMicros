@@ -12,7 +12,7 @@
 
 #include <kernel/Logger.hpp>
 
-//#define DEBUG_DEBUGGER
+#define DEBUG_DEBUGGER
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("DBG", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -160,6 +160,8 @@ void LtDbg::WaitForPacket(KeDebugContext * context)
         KLOG(LOG_ERROR, "Invalid context parameter");
         return;
     }
+
+    KLOG(LOG_DEBUG, "WaitForPacket()");
 
     while (running == false)
     {
@@ -370,6 +372,7 @@ bool LtDbg::StackTraceCommand(KeDebugRequest * request, KeDebugContext * context
     unsigned int bufferSize = 0;
     unsigned int index = 0;
     unsigned int * addresses = nullptr;
+    unsigned int addr = 0;
 
     ListPush(list, (void *)context->eip);
     nbPtr++;
@@ -391,9 +394,9 @@ bool LtDbg::StackTraceCommand(KeDebugRequest * request, KeDebugContext * context
     }
 
     addresses = (unsigned int *)buffer;
-    while (list != nullptr)
+    while ((addr = (unsigned int)ListPop(&list)) != 0)
     {
-        addresses[index++] = (unsigned int)ListPop(&list);
+        addresses[index++] = addr;
     }
 
     response->header.command = CMD_STACK_TRACE;
