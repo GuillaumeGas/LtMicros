@@ -58,6 +58,7 @@ private:
 
     void CleanupKeDebugResponse(KeDebugResponse * response);
     void CleanupKeDebugRequest(KeDebugRequest * request);
+    KeStatus UpdateKeDebugResponseWithProcessInfo(KeDebugContext * context, KeDebugResponse * response);
 
     bool ContinueCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response);
     bool QuitCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response);

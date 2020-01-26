@@ -15,6 +15,10 @@ void main()
 {
     LOG(LOG_INFO, "Starting LtFs service...");
 
+    LOG(LOG_DEBUG, "debug...");
+    __debugbreak();
+    LOG(LOG_DEBUG, "break !");
+
     // TMP !
     InitMalloc();
 
@@ -52,15 +56,6 @@ static bool AtaDeviceCreate()
             result = false;
             goto clean;
         }
-
-        File* file = nullptr;
-        status = OpenFileFromName("test.txt", &file);
-        if (FAILED(status))
-        {
-            LOG(LOG_ERROR, "OpenFileFromName() failed with code %t", status);
-        }
-
-        LOG(LOG_DEBUG, "file opened !");
     }
 
     result = true;

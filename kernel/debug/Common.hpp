@@ -61,6 +61,7 @@ struct KeDebugResponseHeader
     CommandId command;
     KeDebugStatus status;
     KeDebugContext context;
+    char processName[512];
     unsigned int dataSize;
 } typedef KeDebugResponseHeader;
 

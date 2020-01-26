@@ -5,10 +5,14 @@
 #include "Common.hpp"
 
 #include <kernel/arch/x86/Idt.hpp>
+#include <kernel/arch/x86/Gdt.hpp>
 #include <kernel/arch/x86/Vmm.hpp>
+#include <kernel/arch/x86/Process.hpp>
 #include <kernel/lib/Status.hpp>
 #include <kernel/lib/StdLib.hpp>
 #include <kernel/lib/StdIo.hpp>
+#include <kernel/task/ProcessManager.hpp>
+#include <kernel/Kernel.hpp>
 
 #include <kernel/Logger.hpp>
 
@@ -70,9 +74,8 @@ LtDbg::LtDbg() : _isInitialized(false), _isConnected(false) {}
 
 void LtDbg::Init()
 {
-    // TODO : replace 1 and 2 by idt entry macro/enum
-    gIdt.InitDescriptor((u32)_asm_debug_isr, CPU_GATE, ISR_INDEX_DEBUG);
-    gIdt.InitDescriptor((u32)_asm_breakpoint_isr, CPU_GATE, ISR_INDEX_BREAKPOINT);
+    gIdt.InitDescriptor((u32)_asm_debug_isr, DEBUG_GATE, ISR_INDEX_DEBUG);
+    gIdt.InitDescriptor((u32)_asm_breakpoint_isr, DEBUG_GATE, ISR_INDEX_BREAKPOINT);
     gIdt.Reload();
 
     _isInitialized = true;
@@ -96,6 +99,12 @@ void LtDbg::BreakpointHit(KeDebugContext * context)
     response.header.dataSize = 0;
     response.header.status = DBG_STATUS_BREAKPOINT_REACHED;
     response.data = nullptr;
+
+    KeStatus status = UpdateKeDebugResponseWithProcessInfo(context, &response);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "UpdateResponseWithProcessInfo() failed with code %t", status);
+    }
 
     _com.SendResponse(&response);
 }
@@ -141,6 +150,13 @@ void LtDbg::WaitForConnectCommand(KeDebugContext * context)
     response.header.context = *context;
     response.data = nullptr;
 
+//    MemCopy(gKernel.info.imageName, response.header.processName, 512);
+    status = UpdateKeDebugResponseWithProcessInfo(context, &response);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "UpdateResponseWithProcessInfo() failed with code %t", status);
+    }
+
     _com.SendResponse(&response);
 
     _isConnected = true;
@@ -160,8 +176,6 @@ void LtDbg::WaitForPacket(KeDebugContext * context)
         KLOG(LOG_ERROR, "Invalid context parameter");
         return;
     }
-
-    KLOG(LOG_DEBUG, "WaitForPacket()");
 
     while (running == false)
     {
@@ -218,13 +232,19 @@ void LtDbg::WaitForPacket(KeDebugContext * context)
             response.data = nullptr;
         }
 
+        status = UpdateKeDebugResponseWithProcessInfo(context, &response);
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "UpdateResponseWithProcessInfo() failed with code %t", status);
+        }
+
         if (running == false)
         {
             status = _com.SendResponse(&response);
 
             if (status != STATUS_SUCCESS)
             {
-                DKLOG(LOG_DEBUG, "SendResponse() failed with code : %t", status);
+                KLOG(LOG_ERROR, "SendResponse() failed with code : %t", status);
             }
         }
         else
@@ -267,6 +287,39 @@ void LtDbg::CleanupKeDebugRequest(KeDebugRequest * request)
     }
 
     HeapFree(request->param);
+}
+
+KeStatus LtDbg::UpdateKeDebugResponseWithProcessInfo(KeDebugContext * context, KeDebugResponse * response)
+{
+    KeStatus status = STATUS_FAILURE;
+    Process * currentProcess = nullptr;
+
+    if (context == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid context parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (response == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid response parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    currentProcess = gProcessManager.GetCurrentProcess();
+    if (currentProcess == nullptr)
+    {
+        KLOG(LOG_ERROR, "ProcessManager::GetCurrentProcess() returned null");
+        goto clean;
+    }
+
+    KLOG(LOG_DEBUG, "name : %s", currentProcess->name);
+    MemCopy(currentProcess->name, &response->header.processName, 512);
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
 }
 
 bool LtDbg::StepCommand(KeDebugRequest * request, KeDebugContext * context, KeDebugResponse * response)

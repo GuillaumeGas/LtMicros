@@ -53,6 +53,8 @@ static Status RequestOpenFile(LtFsOpenFileParameters * const parameters)
 
     RaiseThreadPriority();
 
+    __debugbreak();
+
     status = OpenFileFromName(parameters->filePath, &file);
     if (FAILED(status))
     {

@@ -1,12 +1,13 @@
-OBJ=ltMicrosImg
+OBJ=ltMicros
 
 all: $(OBJ) 
 
-ltMicrosImg: bootsect kern
-	cp kernel/kernel iso/boot/ltmicros.img
+ltMicros: bootsect kern
+	rm -f userland/*.lock
+	cp kernel/ltkernel iso/boot/ltkernel.img
 	cp userland/system/LtFsService/bin/LtFsService.sys iso/boot/LtFsService.sys
 	cp userland/system/LtInitService/bin/LtInitService.sys iso/boot/LtInitService.sys
-	grub-mkrescue -o ltmicros.iso iso
+	grub-mkrescue -o ltkernel.iso iso
 
 bootsect: 
 	make -C boot
@@ -15,7 +16,7 @@ kern:
 	make -C kernel
 
 clean:
-	rm -f $(OBJ) kernel.bin iso/boot/ltmicros.img iso/boot/LtFsService.sys iso/boot/LtInitService.sys *.o ltmicros.iso
+	rm -f $(OBJ) kernel.bin iso/boot/ltkernel.img iso/boot/LtFsService.sys iso/boot/LtInitService.sys *.o ltkernel.iso
 	make -C boot clean
 	make -C kernel clean
 

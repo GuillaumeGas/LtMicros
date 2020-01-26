@@ -19,11 +19,17 @@ void ProcessManager::Init()
     }
 }
 
-KeStatus ProcessManager::CreateProcess(u32 entryAddr, Process ** newProcess, SecurityAttribute attribute, Process * parent)
+KeStatus ProcessManager::CreateProcess(const char * name, u32 entryAddr, Process ** newProcess, SecurityAttribute attribute, Process * parent)
 {
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
     Thread * mainThread = nullptr;
+
+    if (name == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid name parameter");
+        return STATUS_NULL_PARAMETER;
+    }
 
     if (entryAddr == 0)
     {
@@ -37,7 +43,7 @@ KeStatus ProcessManager::CreateProcess(u32 entryAddr, Process ** newProcess, Sec
         return STATUS_NULL_PARAMETER;
     }
 
-    status = Process::Create(&process, parent);
+    status = Process::Create(name, &process, parent);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "Process::Create() failed with code %t", status);

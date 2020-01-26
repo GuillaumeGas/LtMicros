@@ -29,7 +29,7 @@ void Module::Load(MultiBootModule * module)
         gKernel.Panic();
     }
 
-    status = gProcessManager.CreateProcess(elf.header->entry, &process, SA_IO, nullptr);
+    status = gProcessManager.CreateProcess(module->name, elf.header->entry, &process, SA_IO, nullptr);
     if (FAILED(status))
     {
         KLOG(LOG_ERROR, "ProcessManager::CreateProcess() failed with code %t", status);

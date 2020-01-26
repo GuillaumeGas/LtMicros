@@ -33,7 +33,7 @@
 
 #include <kernel/Logger.hpp>
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 #define DEBUG_PRINT_MODE
 
 #ifdef DEBUG_PRINT_MODE
@@ -43,7 +43,7 @@
 #endif
 
 /// @brief Kernel page directory physical location
-#define KERNEL_PAGE_DIR_P_ADDR   0x1000
+#define KERNEL_PAGE_DIR_P_ADDR    0x1000
 
 /// @brief Kernel page tables physical location
 #define KERNEL_PAGES_TABLE_P_ADDR 0x400000
@@ -58,6 +58,8 @@ Kernel::Kernel()
     info.vPagePoolLimit = KERNEL_PAGE_POOL_V_LIMIT_ADDR;
     info.vHeapBase = KERNEL_HEAP_V_BASE_ADDR;
     info.vHeapLimit = KERNEL_HEAP_V_LIMIT_ADDR;
+
+    StrCpy((char*)KERNEL_IMAGE_NAME, (char*)&info.imageName);
 
 #ifdef DEBUG_MODE
     info.debug = true;
@@ -74,6 +76,13 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
 
     gIdt.Init();
     gPicDrv.Init();
+
+    if (gKernel.info.debug)
+    {
+        gLtDbg.Init();
+        KLOG(LOG_INFO, "Kernel debugger initialized");
+    }
+
     gClockDrv.Init();
     gSerialDrv.Init();
 
@@ -90,13 +99,6 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     gSyscallsX86.Init();
     
     PrintHello();
-
-    if (gKernel.info.debug)
-    {
-        gLtDbg.Init();
-        KLOG(LOG_INFO, "Kernel debugger initialized");
-        __debugbreak();
-    }
 }
 
 void Kernel::Start()
@@ -112,13 +114,13 @@ void Kernel::Start()
         goto clean;
     }
 
-#ifdef DEBUG_MODE
-    __debugbreak();
-#endif
-
     gKernel.process = systemProcess;
 
     gScheduler.AddThread(systemProcess->mainThread);
+
+#ifdef DEBUG_MODE
+    __debugbreak();
+#endif
 
     LoadModules();
 

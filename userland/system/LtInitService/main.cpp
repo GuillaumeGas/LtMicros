@@ -44,7 +44,7 @@ static void TestFile()
 {
     Status status = STATUS_FAILURE;
     Handle fileHandle = INVALID_HANDLE_VALUE;
-    //unsigned int fileSize = 0;
+    unsigned int fileSize = 0;
 
     status = FsOpenFile("test.txt", FILE_READ, &fileHandle);
     if (FAILED(status))
@@ -53,25 +53,25 @@ static void TestFile()
         return;
     }
 
-    //status = FsGetFileSize(fileHandle, &fileSize);
-    //if (FAILED(status))
-    //{
-    //    LOG(LOG_ERROR, "FsGetFileSize() failed with code %d", status);
-    //    return;
-    //}
+    status = FsGetFileSize(fileHandle, &fileSize);
+    if (FAILED(status))
+    {
+        LOG(LOG_ERROR, "FsGetFileSize() failed with code %d", status);
+        return;
+    }
 
-    //{
-    //    char * fileContent = nullptr;
-    //    unsigned int bytesRead = 0;
-    //    status = FsReadFile(fileHandle, fileContent, fileSize, &bytesRead);
-    //    if (FAILED(status))
-    //    {
-    //        LOG(LOG_ERROR, "FsReadFile() failed with code %d", status);
-    //        return;
-    //    }
+    {
+        char * fileContent = nullptr;
+        unsigned int bytesRead = 0;
+        status = FsReadFile(fileHandle, fileContent, fileSize, &bytesRead);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "FsReadFile() failed with code %d", status);
+            return;
+        }
 
-    //    LOG(LOG_INFO, "File content : %s", fileContent);
+        LOG(LOG_INFO, "File content : %s", fileContent);
 
-    //    FsCloseFile(fileHandle);
-    //}
+        FsCloseFile(fileHandle);
+    }
 }

@@ -85,13 +85,19 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr)
     return STATUS_SUCCESS;
 }
 
-KeStatus Process::Create(Process ** newProcess, Process * parent)
+KeStatus Process::Create(const char * name, Process ** newProcess, Process * parent)
 {
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
     List * childrenList = nullptr;
     PageDirectory processPd = { 0 };
     Vad * baseVad = nullptr;
+
+    if (name == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid name parameter");
+        return STATUS_NULL_PARAMETER;
+    }
 
     if (newProcess == nullptr)
     {
@@ -130,6 +136,8 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     process->childrenList = childrenList;
     process->mainThread = nullptr;
     process->baseVad = baseVad;
+
+    MemCopy(name, &process->name, 512);
 
     *newProcess = process;
 
@@ -186,6 +194,8 @@ KeStatus Process::CreateSystem(Process ** newProcess)
     process->pageDirectory = gKernel.info.pPageDirectory;
     process->pid = 0;
     process->childrenList = childrenList;
+
+    MemCopy(gKernel.info.imageName, &process->name, 512);
 
     *newProcess = process;
 

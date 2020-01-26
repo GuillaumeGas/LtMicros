@@ -1,4 +1,4 @@
-OBJ=kernel
+OBJ=ltkernel
 CC=g++ -nostdlib -nostdinc -fno-builtin -fno-exceptions -fno-rtti -m32 -Wno-write-strings -I ../
 ASM=nasm -f elf32
 LD=ld -m elf_i386 -nostdlib -T linker.ld
@@ -27,7 +27,7 @@ clean:
 doc:
 	doxygen doc/doxyConf
 
-kernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(MODULE) $(HANDLE) $(DEBUG)
+ltkernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(MODULE) $(HANDLE) $(DEBUG)
 	$(LD) $^ -o $@
 
 # ROOT
