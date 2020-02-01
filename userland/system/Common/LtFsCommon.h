@@ -17,6 +17,7 @@ enum FileAccess
 enum LtFsRequestType
 {
     LTFS_REQUEST_TERMINATE,
+    LTFS_REQUEST_CONNECT,
     LTFS_REQUEST_OPEN_FILE,
     LTFS_REQUEST_MAX
 };
@@ -33,5 +34,9 @@ struct LtFsOpenFileParameters
 {
     char filePath[MAX_FULL_PATH_SIZE];
     FileAccess access;
-    Handle * fileHandlePtr;
+};
+
+struct LtFsConnectParameter
+{
+    char ipcServerId[MAX_FULL_PATH_SIZE];
 };

@@ -26,16 +26,16 @@ void main()
 
 static void LoadSystem()
 {
-    IpcClient client;
-    IpcServerHandle serverHandle = INVALID_HANDLE_VALUE;
-    IpcStatus status = STATUS_FAILURE;
+    //IpcClient client;
+    //IpcServerHandle serverHandle = INVALID_HANDLE_VALUE;
+    //IpcStatus status = STATUS_FAILURE;
 
-    status = client.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
-    if (FAILED(status))
-    {
-        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %t", status);
-        return;
-    }
+    //status = client.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
+    //if (FAILED(status))
+    //{
+    //    LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %t", status);
+    //    return;
+    //}
 
     TestFile();
 }
@@ -70,7 +70,7 @@ static void TestFile()
             return;
         }
 
-        LOG(LOG_INFO, "File content : %s", fileContent);
+        //LOG(LOG_INFO, "File content : %s", fileContent);
 
         FsCloseFile(fileHandle);
     }

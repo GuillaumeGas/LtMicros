@@ -16,7 +16,7 @@
 
 #include <kernel/Logger.hpp>
 
-#define DEBUG_DEBUGGER
+//#define DEBUG_DEBUGGER
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("DBG", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -150,7 +150,6 @@ void LtDbg::WaitForConnectCommand(KeDebugContext * context)
     response.header.context = *context;
     response.data = nullptr;
 
-//    MemCopy(gKernel.info.imageName, response.header.processName, 512);
     status = UpdateKeDebugResponseWithProcessInfo(context, &response);
     if (FAILED(status))
     {
@@ -313,7 +312,6 @@ KeStatus LtDbg::UpdateKeDebugResponseWithProcessInfo(KeDebugContext * context, K
         goto clean;
     }
 
-    KLOG(LOG_DEBUG, "name : %s", currentProcess->name);
     MemCopy(currentProcess->name, &response->header.processName, 512);
 
     status = STATUS_SUCCESS;

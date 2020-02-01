@@ -163,3 +163,13 @@ void printfEx(const char * format, va_list ap)
         format++;
     }
 }
+/*
+extern "C" void PrintHelloWorld()
+{
+	printf("Hello world from a Ymir program running in userland !\n");
+}*/
+
+extern "C" void PrintHelloWorld(const char * str)
+{
+	printf(str);
+}

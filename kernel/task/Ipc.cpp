@@ -60,6 +60,22 @@ static KeStatus FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * cont
 
 static IpcHandle s_IpcObjectHandleCount = INVALID_HANDLE_VALUE;
 
+//static KeStatus TestCb(void * data, void * ctx)
+//{
+//    IpcObject* ipcObject = (IpcObject*)data;
+//    if (ipcObject == nullptr)
+//    {
+//        KLOG(LOG_DEBUG, "NUllll");
+//        return STATUS_SUCCESS;
+//    }
+//    KLOG(LOG_DEBUG, "%x %s", ipcObject, ipcObject->id);
+//    return STATUS_SUCCESS;
+//}
+//static void DumpListIpc(List * list)
+//{
+//    ListEnumerate(list, TestCb, nullptr);
+//}
+
 void IpcHandler::Init()
 {
     _ipcObjects = ListCreate();
@@ -105,6 +121,8 @@ KeStatus IpcHandler::AddNewServer(const char * serverIdStr, Process* const serve
     }
 
     ListPush(_ipcObjects, ipcObject);
+
+    //DumpListIpc(_ipcObjects);
 
     *handle = ipcObjectHandle;
 
@@ -189,15 +207,15 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
         return STATUS_INVALID_PARAMETER;
     }
 
-    KLOG(LOG_DEBUG, "Handling message from %d, msg addr : %x, size : %d", clientProcess->pid, message, size);
+    //KLOG(LOG_DEBUG, "Handling message from %d, msg addr : %x, size : %d", clientProcess->pid, message, size);
+
+    ipcObject->criticalSection.Enter();
 
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {
         return IPC_STATUS_SERVER_NOT_FOUND;
     }
-
-    ipcObject->criticalSection.Enter();
 
     status = gHandleManager.FindOrCreate(PROCESS_HANDLE, clientProcess, &clientProcessHandle);
     if (FAILED(status))
@@ -399,6 +417,8 @@ static KeStatus FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context)
         return STATUS_NULL_PARAMETER;
     }
 
+    //KLOG(LOG_DEBUG, "[%d - %d]", ipcObject->handle, ipcContext->ipcHandle);
+
     if (ipcObject->handle == ipcContext->ipcHandle)
     {
         ipcContext->found = true;
@@ -429,6 +449,8 @@ static KeStatus FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * cont
 
     if (StrCmp(ipcObject->id, ipcContext->serverId) == 0)
     {
+        //KLOG(LOG_DEBUG, "found %x - %x", ipcObject->id, ipcContext->serverId);
+
         ipcContext->found = true;
         ipcContext->ipcObject = ipcObject;
 
@@ -442,6 +464,7 @@ KeStatus IpcObject::Create(const char * serverIdStr, Process * const serverProce
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * object = nullptr;
+    char * serverIdStrCopy = nullptr;
 
     if (serverIdStr == nullptr)
     {
@@ -468,8 +491,17 @@ KeStatus IpcObject::Create(const char * serverIdStr, Process * const serverProce
         goto clean;
     }
 
+    serverIdStrCopy = (char*)HeapAlloc(StrLen(serverIdStr) + 1);
+    if (object == nullptr)
+    {
+        status = STATUS_ALLOC_FAILED;
+        goto clean;
+    }
+
+    StrCpy(serverIdStr, serverIdStrCopy);
+
     object->handle = handle;
-    object->id = (char *)serverIdStr;
+    object->id = serverIdStrCopy;
     object->messages = ListCreate();
     object->serverProcess = (Process *)serverProcess;
 

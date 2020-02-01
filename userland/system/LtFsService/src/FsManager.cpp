@@ -28,7 +28,7 @@ Status FsInit(AtaDevice * device)
         return status;
     }
 
-    PrintDirectory(gRootFile);
+    //PrintDirectory(gRootFile);
 
     return STATUS_SUCCESS;
 }

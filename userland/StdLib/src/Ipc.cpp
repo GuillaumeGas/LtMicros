@@ -21,6 +21,8 @@ IpcStatus IpcServer::Create(const char * const serverName, IpcServer * const ser
         return STATUS_NULL_PARAMETER;
     }
 
+    printf("Creating server for %s\n", serverName);
+
     status = (IpcStatus)_sysIpcServerCreate(serverName, &handle);
     if (FAILED(status))
     {

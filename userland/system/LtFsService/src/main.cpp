@@ -11,13 +11,11 @@
 static bool AtaDeviceCreate();
 static void StartListening();
 
+AtaDevice gDevice = { 0 };
+
 void main()
 {
     LOG(LOG_INFO, "Starting LtFs service...");
-
-    LOG(LOG_DEBUG, "debug...");
-    __debugbreak();
-    LOG(LOG_DEBUG, "break !");
 
     // TMP !
     InitMalloc();
@@ -38,8 +36,8 @@ static bool AtaDeviceCreate()
 
     RaiseThreadPriority();
 
-    AtaDevice device = AtaCreate(ATA_SECONDARY, ATA_MASTER);
-    if (!AtaInit(&device))
+    gDevice = AtaCreate(ATA_SECONDARY, ATA_MASTER);
+    if (!AtaInit(&gDevice))
     {
         LOG(LOG_INFO, "Can't init ata device");
         result = false;
@@ -49,13 +47,15 @@ static bool AtaDeviceCreate()
     {
         LOG(LOG_INFO, "Ata device initialized !");
 
-        Status status = FsInit(&device);
+        Status status = FsInit(&gDevice);
         if (FAILED(status))
         {
             LOG(LOG_ERROR, "FsInit() failed with code %t", status);
             result = false;
             goto clean;
         }
+
+        ServiceCommandInit();
     }
 
     result = true;
@@ -91,7 +91,7 @@ static void StartListening()
             break;
         }
 
-        status = ServiceExecuteCommand((char*)message.data, message.size, &serviceTerminate);
+        status = ServiceExecuteCommand(clientHandle, (char*)message.data, message.size, &serviceTerminate);
         if (FAILED(status))
         {
             LOG(LOG_ERROR, "ServiceExecuteCommand() failed with code %t", status);

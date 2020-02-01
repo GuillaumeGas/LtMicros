@@ -33,8 +33,8 @@
 
 #include <kernel/Logger.hpp>
 
-#define DEBUG_MODE
-#define DEBUG_PRINT_MODE
+//#define DEBUG_MODE
+//#define DEBUG_PRINT_MODE
 
 #ifdef DEBUG_PRINT_MODE
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("KERNEL", LOG_LEVEL, format, ##__VA_ARGS__)

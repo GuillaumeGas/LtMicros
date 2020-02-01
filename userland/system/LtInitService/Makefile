@@ -9,7 +9,7 @@ ASM=nasm -f elf32
 all: $(OBJ)
 
 clean:
-	rm -f $(OBJ) *.o
+	rm -f bin/$(OBJ) *.o
 
 LtInitService.sys: main.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o FileSystem.o LtFsCommon.o status.o
 	$(LD) $^ -o bin/$@

@@ -76,7 +76,7 @@ Status OpenFile(File * file)
 
     if (file->inode == nullptr)
     {
-        LOG(LOG_DEBUG, "inum : %d, inode : %d", file->inum, file->inode);
+        //LOG(LOG_DEBUG, "inum : %d, inode : %d", file->inum, file->inode);
         status = Ext2ReadInode(gExt2Disk, file->inum, &file->inode);
         if (FAILED(status))
         {
@@ -142,7 +142,7 @@ Status OpenFileFromName(const char * filePath, File ** file)
 
     while (*path != '\0')
     {
-        // Si on se trouve à la fin du chemin, ce soit être le nom du fichier
+        // Si on se trouve à la fin du chemin, ce doit être le nom du fichier
         int indexSlash = 0;
         if ((indexSlash = FirstIndexOf(path, '/')) < 0)
         {
@@ -150,6 +150,7 @@ Status OpenFileFromName(const char * filePath, File ** file)
             {
                 if (localFile->opened == false)
                 {
+                    //LOG(LOG_DEBUG, "Open here");
                     status = OpenFile(localFile);
                     if (FAILED(status))
                     {
