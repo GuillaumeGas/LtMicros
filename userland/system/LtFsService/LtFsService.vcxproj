@@ -135,6 +135,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AtaDriver.cpp" />
+    <ClCompile Include="src\Ext2.cpp" />
+    <ClCompile Include="src\File.cpp" />
+    <ClCompile Include="src\FsManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ServiceCommands.cpp" />
   </ItemGroup>
@@ -144,6 +147,9 @@
     <ClInclude Include="..\Common\ServiceNames.h" />
     <ClInclude Include="src\AtaDriver.h" />
     <ClInclude Include="src\Common.h" />
+    <ClInclude Include="src\Ext2.h" />
+    <ClInclude Include="src\File.h" />
+    <ClInclude Include="src\FsManager.h" />
     <ClInclude Include="src\ServiceCommands.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

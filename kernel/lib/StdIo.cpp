@@ -10,7 +10,7 @@
 
 static int checkType(char type)
 {
-    return (type == 'd' || type == 'c' || type == 's' || type == 'x' || type == 'b');
+    return (type == 'd' || type == 'c' || type == 's' || type == 'x' || type == 'b' || type == 't');
 }
 
 static void printChar(char c)
@@ -68,6 +68,11 @@ static void printInt(const int x, const unsigned short base)
         printChar(chaine[i]);
 }
 
+
+static void printStatus(const int x)
+{
+    printStr((char*)StatusGetStringFromInt((KeStatus)x));
+}
 
 static void printBin(const int value, int nbBits)
 {
@@ -138,6 +143,9 @@ void kprintEx(const char * format, va_list ap)
                     break;
                 case 's':
                     printStr((char*)va_arg(ap, char *));
+                    break;
+                case 't':
+                    printStatus(va_arg(ap, int));
                     break;
                 case 'c':
                 default:

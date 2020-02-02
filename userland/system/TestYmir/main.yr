@@ -1,0 +1,7 @@
+extern (C) def PrintHelloWorld(str : &(c8)) -> void;
+
+extern (C) def _yrt_run_main() -> void
+{
+	PrintHelloWorld(("Hello world from a Ymir program running in userland !!"s8).ptr);
+	while(true){}
+}

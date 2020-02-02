@@ -21,3 +21,5 @@ kernel_bin
 *.sys
 /TODO.txt
 *.exe
+*Copie.img
+*test.txt

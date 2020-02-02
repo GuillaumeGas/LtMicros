@@ -10,6 +10,22 @@
 /// @addgroup ArchX86Group
 /// @{
 
+/*
+
+    General virtual address space organisation
+
+           0x0 - 0x40000000  Kernel address space (1Go)
+    0x40000000 - 0x100000000 User address space (3Go)
+
+    Kernel virtual address space organisation
+
+           0x0 - 0x800000    Identity mapping
+      0x800000 - 0x1000000   Page Heap
+     0x1000000 - 0x40000000  Heap
+    0x40000000 - 0x100000000 User space
+
+*/
+
 #define NB_PAGES_TABLE_PER_DIRECTORY 1024
 #define NB_PAGES_PER_TABLE           1024
 

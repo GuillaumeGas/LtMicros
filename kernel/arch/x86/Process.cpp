@@ -85,13 +85,19 @@ KeStatus Process::IncreaseHeap(unsigned int nbPages, u8 ** allocatedBlockAddr)
     return STATUS_SUCCESS;
 }
 
-KeStatus Process::Create(Process ** newProcess, Process * parent)
+KeStatus Process::Create(const char * name, Process ** newProcess, Process * parent)
 {
     KeStatus status = STATUS_FAILURE;
     Process * process = nullptr;
     List * childrenList = nullptr;
     PageDirectory processPd = { 0 };
     Vad * baseVad = nullptr;
+
+    if (name == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid name parameter");
+        return STATUS_NULL_PARAMETER;
+    }
 
     if (newProcess == nullptr)
     {
@@ -121,7 +127,7 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     status = Vad::Create((void*)V_PROCESS_BASE_ADDR, (V_PROCESS_LIMIT_ADDR - V_PROCESS_BASE_ADDR), true, &baseVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Vad::Create() failed with code %d", status);
+        KLOG(LOG_ERROR, "Vad::Create() failed with code %t", status);
         goto clean;
     }
 
@@ -130,6 +136,8 @@ KeStatus Process::Create(Process ** newProcess, Process * parent)
     process->childrenList = childrenList;
     process->mainThread = nullptr;
     process->baseVad = baseVad;
+
+    MemCopy(name, &process->name, 512);
 
     *newProcess = process;
 
@@ -186,6 +194,8 @@ KeStatus Process::CreateSystem(Process ** newProcess)
     process->pageDirectory = gKernel.info.pPageDirectory;
     process->pid = 0;
     process->childrenList = childrenList;
+
+    MemCopy(gKernel.info.imageName, &process->name, 512);
 
     *newProcess = process;
 
@@ -356,7 +366,7 @@ KeStatus Process::AllocateMemory(const unsigned int size, const bool reservePhys
     status = baseVad->Allocate(size, &pageDirectory, reservePhysicalPages, &newVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Vad::Allocate() failed with cod %d", status);
+        KLOG(LOG_ERROR, "Vad::Allocate() failed with cod %t", status);
         goto clean;
     }
 
@@ -388,7 +398,7 @@ KeStatus Process::AllocateMemoryAtAddress(void * const address, const bool reser
     status = baseVad->AllocateAtAddress(address, size, &pageDirectory, reservePhysicalPages, &newVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Vad::AllocateAtAddresss() failed with cod %d", status);
+        KLOG(LOG_ERROR, "Vad::AllocateAtAddresss() failed with cod %t", status);
         goto clean;
     }
 
@@ -406,7 +416,7 @@ KeStatus Process::CreateDefaultHeapAndStack()
     status = baseVad->Allocate(DEFAULT_HEAP_SIZE, &this->pageDirectory, false, &heapVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Vad::Allocate() failed with code %d", status);
+        KLOG(LOG_ERROR, "Vad::Allocate() failed with code %t", status);
         goto clean;
     }
 
@@ -417,7 +427,7 @@ KeStatus Process::CreateDefaultHeapAndStack()
     this->mainThread->CreateDefaultStack();
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Thread::CreateDefaultStack() failed with code %d", status);
+        KLOG(LOG_ERROR, "Thread::CreateDefaultStack() failed with code %t", status);
         goto clean;
     }
 
@@ -447,9 +457,14 @@ KeStatus Process::ResolvePageFault(void* const address)
             // A page fault occured in a user process, no vad in use was found, the process should be killed and a user log generated
             // TODO : kill process
         }
+        else if (vad->free)
+        {
+            KLOG(LOG_ERROR, "The found vad shouldn't be free !");
+            status = STATUS_UNEXPECTED;
+        }
         else
         {
-            KLOG(LOG_ERROR, "Vad::LookForVadFromAddress() failed with code %d", status);
+            KLOG(LOG_ERROR, "Vad::LookForVadFromAddress() failed with code %t", status);
         }
 
         goto clean;

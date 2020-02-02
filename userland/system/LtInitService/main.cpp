@@ -6,13 +6,17 @@
 #include <ServiceNames.h>
 
 #include "Common.h"
+#define LOG(LOG_LEVEL, format, ...) LOGGER("INIT", LOG_LEVEL, format, ##__VA_ARGS__)
 
 static void LoadSystem();
+
+static void TestFile();
 
 void main()
 {
     LOG(LOG_INFO, "Starting LtInit service");
 
+    InitMalloc();
     LoadSystem();
 
     LOG(LOG_INFO, "Terminating LtInit service");
@@ -22,29 +26,50 @@ void main()
 
 static void LoadSystem()
 {
-    IpcClient client;
-    IpcServerHandle serverHandle = IPC_INVALID_HANDLE;
-    IpcStatus status = STATUS_FAILURE;
+    TestFile();
+}
 
-    status = client.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
+static void TestFile()
+{
+    Status status = STATUS_FAILURE;
+    Handle fileHandle = INVALID_HANDLE_VALUE;
+    unsigned int fileSize = 0;
+
+    status = FsOpenFile("test.txt", FILE_READ, FILE_SHARE_READ, &fileHandle);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %d", status);
+        LOG(LOG_ERROR, "FsOpenFile() failed with code %t", status);
         return;
     }
 
-    LOG(LOG_INFO, "Sending message '%s'", SERVICE_TEST_CMD);
-
-    status = client.Send(serverHandle, SERVICE_TEST_CMD, StrLen(SERVICE_TEST_CMD));
+    status = FsOpenFile("test.txt", FILE_READ, FILE_SHARE_NONE, &fileHandle);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "IpcClient::Send() failed with code %d", status);
+        LOG(LOG_ERROR, "FsOpenFile() failed with code %t", status);
         return;
     }
 
-    LOG(LOG_INFO, "Testing the heap :");
-    InitMalloc();
-    int* a = (int*)HeapAlloc(sizeof(int));
-    *a = 42;
-    LOG(LOG_INFO, "Value : %d", *a);
+    LOG(LOG_INFO, "Got handle %d", fileHandle);
+
+    status = FsGetFileSize(fileHandle, &fileSize);
+    if (FAILED(status))
+    {
+        LOG(LOG_ERROR, "FsGetFileSize() failed with code %d", status);
+        return;
+    }
+
+    {
+        char * fileContent = nullptr;
+        unsigned int bytesRead = 0;
+        status = FsReadFile(fileHandle, fileContent, fileSize, &bytesRead);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "FsReadFile() failed with code %d", status);
+            return;
+        }
+
+        //LOG(LOG_INFO, "File content : %s", fileContent);
+
+        FsCloseFile(fileHandle);
+    }
 }

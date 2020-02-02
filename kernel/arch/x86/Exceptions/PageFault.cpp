@@ -38,16 +38,16 @@ void PageFaultExceptionHandler(ExceptionContextWithCode* const context)
 {
     u32 code = context->code;
     PageFaultDetails details = { (u8)(code & 1), (u8)(code & 2), (u8)(code & 4), (u8)(code & 8), (u8)(code & 16) };
+    Process* process = gProcessManager.GetCurrentProcess();
 
     if (details.p == NON_PRESENT_PAGE)
     {
         KeStatus status = STATUS_FAILURE;
-        Process* process = gProcessManager.GetCurrentProcess();
 
         status = process->ResolvePageFault((void*)context->cr2);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Process::ResolvePageFault() failed with code %d", status);
+            KLOG(LOG_ERROR, "Process::ResolvePageFault() failed with code %t (addr : %x)", status, context->cr2);
 
             if (gLtDbg.IsConnected())
             {
@@ -56,6 +56,11 @@ void PageFaultExceptionHandler(ExceptionContextWithCode* const context)
             else
             {
                 PrintPageFaultException(context, &details);
+                if (process != nullptr)
+                {
+                    kprint("Process %d\n", process->pid);
+                }
+
                 Pause();
             }
         }
@@ -63,6 +68,12 @@ void PageFaultExceptionHandler(ExceptionContextWithCode* const context)
     else
     {
         PrintPageFaultException(context, &details);
+
+        if (process != nullptr)
+        {
+            kprint("Process %d\n", process->pid);
+        }
+
         Pause();
     }
 }
@@ -93,6 +104,4 @@ static void PrintPageFaultException(ExceptionContextWithCode* context, PageFault
     {
         PrintExceptionUserContextWithCode((ExceptionContextUserWithCode*)context);
     }
-
-    Pause();
 }

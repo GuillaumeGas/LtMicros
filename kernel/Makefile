@@ -1,4 +1,4 @@
-OBJ=kernel
+OBJ=ltkernel
 CC=g++ -nostdlib -nostdinc -fno-builtin -fno-exceptions -fno-rtti -m32 -Wno-write-strings -I ../
 ASM=nasm -f elf32
 LD=ld -m elf_i386 -nostdlib -T linker.ld
@@ -6,12 +6,13 @@ LD=ld -m elf_i386 -nostdlib -T linker.ld
 BOOT=../boot/bootsector.o
 ROOT=kmain.o Kernel.o Logger.o cppsupport.o
 DRIVERS=Screen.o Pic.o Clock.o clock_isr.o Serial.o BaseDriver.o
-LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o
+LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o Status.o
 ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr_exceptions.o InterruptContext.o Pmm.o Vmm.o vmm_utils.o Process.o Thread.o thread_utils.o Syscalls.o syscall_isr.o PageFault.o
 MEM=PagePool.o Heap.o Vad.o
 SYSCALLS=SyscallsHandler.o
 TASK=ProcessManager.o ThreadManager.o Scheduler.o Ipc.o
 MODULE=Module.o Elf.o
+HANDLE=HandleManager.o
 DEBUG=LtDbg.o ltdbg_isr.o LtDbgCom.o
 
 all: $(OBJ) 
@@ -26,7 +27,7 @@ clean:
 doc:
 	doxygen doc/doxyConf
 
-kernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(MODULE) $(DEBUG)
+ltkernel: $(BOOT) $(ROOT) $(DRIVERS) $(LIB) $(ARCHX86) $(MEM) $(SYSCALLS) $(TASK) $(MODULE) $(HANDLE) $(DEBUG)
 	$(LD) $^ -o $@
 
 # ROOT
@@ -78,6 +79,9 @@ List.o: lib/List.cpp
 	$(CC) -c $^
 
 CriticalSection.o: lib/CriticalSection.cpp
+	$(CC) -c $^
+
+Status.o: lib/Status.cpp
 	$(CC) -c $^
 
 # X86 ARCH DIRECTORY
@@ -164,6 +168,10 @@ Module.o: module/Module.cpp
 	$(CC) -c $^
 
 Elf.o: module/Elf.cpp
+	$(CC) -c $^
+
+# HANDLE DIRECTORY
+HandleManager.o: handle/HandleManager.cpp
 	$(CC) -c $^
 
 # DEBUG DIRECTORY

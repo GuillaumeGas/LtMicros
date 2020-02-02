@@ -1,12 +1,12 @@
 #pragma once
 
 #include "malloc.h"
+#include "FileSystem.h"
+#include "types.h"
 
-typedef unsigned char u8;
-typedef unsigned char uchar;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
+#define __debugbreak() asm("int $3")
+
+#define FlagOn(a, b) (((a) & (b)) != 0)
 
 /// @brief Copies a string into another
 /// @param[in] src A pointer to the source string, must be nullptr terminated
@@ -41,3 +41,7 @@ void MemCopy(void * src, void * dst, unsigned int size);
 /// @param[in] byte A byte used to fill the data with
 /// @param[in] size The length in bytes
 void MemSet(void * src, u8 byte, unsigned int size);
+
+// TODO : put that somewhere else
+void RaiseThreadPriority();
+void LowerThreadPriority();

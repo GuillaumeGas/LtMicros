@@ -2,11 +2,14 @@
 
 #include "status.h"
 
-#define IPC_INVALID_HANDLE 0
+#define INVALID_HANDLE_VALUE 0
 
 typedef Status IpcStatus;
 typedef int IpcHandle;
 typedef IpcHandle IpcServerHandle;
+
+// tmp
+typedef int ProcessHandle;
 
 struct IpcMessage
 {
@@ -21,7 +24,7 @@ class IpcServer
 public:
     static IpcStatus Create(const char * const serverName, IpcServer * const server);
 
-    IpcStatus Receive(IpcMessage * const message);
+    IpcStatus Receive(IpcMessage * const message, ProcessHandle * clientHandle);
 
 private:
     IpcHandle _serverHandle;

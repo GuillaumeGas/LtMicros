@@ -26,6 +26,14 @@ enum ThreadState
     THREAD_STATE_DEAD
 };
 
+/// @brief Used to describe a thread priority level, used by the scheduler
+enum ThreadPriorityLevel
+{
+    THREAD_PRIORITY_NORMAL = 0,
+    THREAD_PRIORITY_HIGH,
+    THREAD_PRIORITY_MAX
+};
+
 struct Process;
 
 /// @brief Describes a thread
@@ -41,6 +49,8 @@ struct Thread
     Thread * neighbor;
     /// @brief Indicated the thread privilege level
     PrivilegeLevel privilegeLevel;
+    /// @brief Thread priority level
+    ThreadPriorityLevel threadPriority;
     /// @brief Value of the tics member of ClockDrv when the thread is started or resumed
     u32 ticsOnResume;
 
@@ -75,6 +85,12 @@ struct Thread
     /// @brief Creates the default user thread stack
     /// @return STATUS_SUCCESS on success, an error code otherwise
     KeStatus CreateDefaultStack();
+
+    /// @brief Raises the thread priority level
+    void RaisePriorityLevel();
+
+    /// @brief Lowers the thread priority level
+    void LowerPriorityLevel();
 
     void PrintList();
     void Print();

@@ -31,13 +31,46 @@ struct MemBlock
     void * data;
 };
 
-static void * _Allocate(MemBlock * block, int size);
+static void * _Allocate(MemBlock * block, unsigned int size);
 static void _SplitBlock(MemBlock * block, unsigned int size);
 static MemBlock * _Sbrk(int n);
+
+/* TODO : find a way to implemet mod */
+static unsigned int _local_mod(unsigned int a, unsigned int b)
+{
+    while (a > b)
+        a -= b;
+    return (a < b) ? 1 : 0;
+}
+
+static unsigned int ClosestPow(unsigned int x, unsigned int y)
+{
+    unsigned int val = (unsigned int)x;
+    while (_local_mod(val, y) != 0)
+    {
+        val++;
+    }
+    return val;
+}
+
 
 MemBlock * g_baseBlock = nullptr;
 MemBlock * g_limitBlock = nullptr;
 MemBlock * g_lastBlock = nullptr;
+
+void DumpHeap()
+{
+    MemBlock * currentBlock = g_baseBlock;
+    printf("limit is %x\n", g_limitBlock);
+    printf("last is %x\n", g_lastBlock);
+    while (currentBlock <= g_limitBlock)
+    {
+        printf("[%x, %d, %s]\n", currentBlock, currentBlock->size, currentBlock->state == BLOCK_FREE ? "free" : "used");
+        currentBlock = (MemBlock*)((unsigned int)currentBlock + currentBlock->size);
+        if (currentBlock->size == 0)
+            break;
+    }
+}
 
 void InitMalloc()
 {
@@ -48,8 +81,11 @@ void InitMalloc()
 
 void * HeapAlloc(int size)
 {
+    int blockSize = 0;
+
     if (size <= 0)
     {
+        printf("wtf %d\n", size);
         return nullptr;
     }
 
@@ -62,8 +98,16 @@ void * HeapAlloc(int size)
         g_lastBlock = g_baseBlock;
     }
 
+    blockSize = ClosestPow((unsigned int)size + BLOCK_HEADER_SIZE, 4);
+
     void * res = nullptr;
-    res = _Allocate(g_baseBlock, size + BLOCK_HEADER_SIZE);
+    res = _Allocate(g_baseBlock, (int)blockSize);
+    if (res == nullptr)
+    {
+        printf("Dumping heap\n");
+        DumpHeap();
+        while (1);
+    }
     return res;
 }
 
@@ -87,15 +131,7 @@ void HeapFree(void * ptr)
     //_Defrag(); // TODO : fix it
 }
 
-/* TODO : find a way to implemet mod */
-static unsigned int _local_mod(unsigned int a, unsigned int b)
-{
-    while (a > b)
-        a -= b;
-    return (a > 0) ? 1 : 0;
-}
-
-static void * _Allocate(MemBlock * block, int size)
+static void * _Allocate(MemBlock * block, unsigned int size)
 {
     void * res_ptr = nullptr;
 
@@ -117,7 +153,7 @@ static void * _Allocate(MemBlock * block, int size)
     {
         if (size > DEFAULT_BLOCK_SIZE)
         {
-            unsigned int usize = (unsigned int)size;
+            unsigned int usize = size;
             const unsigned int ubsize = (unsigned int)DEFAULT_BLOCK_SIZE;
             unsigned int n = usize / ubsize;
             if (_local_mod(usize, ubsize) > 0)
@@ -155,7 +191,6 @@ static MemBlock * _Sbrk(int n)
         return nullptr;
     }
 
-    unsigned int i = 0;
     MemBlock * newBlock = (MemBlock*)_sysSbrk(n);    
 
     newBlock->size = n * PAGE_SIZE;

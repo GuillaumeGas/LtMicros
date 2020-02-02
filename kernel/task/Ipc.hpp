@@ -2,10 +2,8 @@
 
 #include <kernel/lib/Status.hpp>
 #include <kernel/lib/List.hpp>
-
 #include <kernel/arch/x86/Process.hpp>
-
-#define IPC_INVALID_HANDLE 0
+#include <kernel/handle/HandleManager.h>
 
 /// @file
 
@@ -51,7 +49,7 @@ public:
     ///             it must be released by using ReleaseMemory() function.
     /// @param[in] size A pointer that will receive the message size in bytes
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size);
+    KeStatus Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size, Handle * const clientHandle);
 
     /// @brief Releases memory allocated for an IPC in a process address space
     /// @param[in] process The process in which the memory must be released

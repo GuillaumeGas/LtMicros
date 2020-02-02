@@ -153,33 +153,47 @@ extern "C"
         return data;
     }
 
-    void ListEnumerate(List * list, EnumerateFunPtr callback, void * Context)
+    KeStatus ListEnumerate(List * list, EnumerateFunPtr callback, void * Context)
     {
+        KeStatus status = STATUS_FAILURE;
+
         if (list == nullptr)
         {
             KLOG(LOG_ERROR, "Invalid list parameter");
-            return;
+            return STATUS_NULL_PARAMETER;
         }
         if (callback == nullptr)
         {
             KLOG(LOG_ERROR, "Invalid callback parameter");
-            return;
+            return STATUS_NULL_PARAMETER;
         }
 
         if (ListIsEmpty(list))
-            return;
+            return STATUS_SUCCESS;
 
         ListElem * elem = list;
         ListElem * next = list->next;
 
         while (elem != nullptr)
         {
-            callback(elem->data, Context);
+            status = callback(elem->data, Context);
+            if (FAILED(status))
+            {
+                if (status == STATUS_LIST_STOP_ITERATING)
+                    status = STATUS_SUCCESS;
+                goto clean;
+            }
+
             elem = next;
 
             if (next != nullptr)
                 next = next->next;
         }
+
+        status = STATUS_SUCCESS;
+
+    clean:
+        return status;
     }
 
     bool ListIsEmpty(List* list)

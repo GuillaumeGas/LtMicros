@@ -1,4 +1,5 @@
 #include "SyscallsHandler.hpp"
+#include "UKSyscallsCommon.h"
 
 #include <kernel/task/ProcessManager.hpp>
 #include <kernel/task/Ipc.hpp>
@@ -72,7 +73,7 @@ void SysSbrk(InterruptFromUserlandContext * context)
     status = currentProcess->IncreaseHeap(context->ebx, (u8**)&res);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Process::IncreaseHeap() failed with code %d", status);
+        KLOG(LOG_ERROR, "Process::IncreaseHeap() failed with code %t", status);
         goto clean;
     }
 
@@ -84,7 +85,7 @@ void SysIpcServerCreate(InterruptFromUserlandContext* context)
 {
     KeStatus status = STATUS_FAILURE;
     const char * serverIdStr = (const char *)context->ebx;
-    IpcHandle handle = IPC_INVALID_HANDLE;
+    IpcHandle handle = INVALID_HANDLE_VALUE;
     Process* process = nullptr;
 
     process = gProcessManager.GetCurrentProcess();
@@ -112,7 +113,7 @@ void SysIpcServerConnect(InterruptFromUserlandContext* context)
 {
     KeStatus status = STATUS_FAILURE;
     const char* serverIdStr = (const char*)context->ebx;
-    IpcHandle handle = IPC_INVALID_HANDLE;
+    IpcHandle handle = INVALID_HANDLE_VALUE;
     Process* process = nullptr;
 
     process = gProcessManager.GetCurrentProcess();
@@ -139,7 +140,7 @@ clean:
 void SysIpcSend(InterruptFromUserlandContext* context)
 {
     KeStatus status = STATUS_FAILURE;
-    IpcHandle handle = IPC_INVALID_HANDLE;
+    IpcHandle handle = INVALID_HANDLE_VALUE;
     char* message = nullptr;
     unsigned int size = 0;
     Process* process = nullptr;
@@ -171,26 +172,22 @@ clean:
 void SysIpcReceive(InterruptFromUserlandContext* context)
 {
     KeStatus status = STATUS_FAILURE;
-    IpcHandle handle = IPC_INVALID_HANDLE;
-    char** message = nullptr;
-    unsigned int* sizePtr = 0;
-    Process* process = nullptr;
+    SysIpcReceiveParameter * parameters = nullptr;
+    Process * serveurProcess = nullptr;
 
-    process = gProcessManager.GetCurrentProcess();
-    if (process == nullptr)
+    serveurProcess = gProcessManager.GetCurrentProcess();
+    if (serveurProcess == nullptr)
     {
         KLOG(LOG_ERROR, "GetCurrentProcess() failed !");
         goto clean;
     }
 
-    handle = (IpcHandle)context->ebx;
-    message = (char**)context->ecx;
-    sizePtr = (unsigned int*)context->edx;
+    parameters = (SysIpcReceiveParameter*)context->ebx;
 
-    status = gIpcHandler.Receive(handle, process, message, sizePtr);
+    status = gIpcHandler.Receive(parameters->ipcHandle, serveurProcess, parameters->message, parameters->sizePtr, parameters->clientHandlePtr);
     if (FAILED(status))
     {
-        KLOG(LOG_DEBUG, "IpcHandler::Receive() failed with code %d (Process %d)", status, process->pid);
+        KLOG(LOG_DEBUG, "IpcHandler::Receive() failed with code %d (Process %d)", status, serveurProcess->pid);
         goto clean;
     }
 
@@ -209,6 +206,30 @@ void SysEnterScreenCriticalSection(InterruptFromUserlandContext * context)
 void SysLeaveScreenCriticalSection(InterruptFromUserlandContext * context)
 {
     s_CriticalSection.Leave();
+}
+
+void SysRaiseThreadPriority(InterruptFromUserlandContext* context)
+{
+    Thread* currentThread = gThreadManager.GetCurrentThread();
+    if (currentThread == nullptr)
+    {
+        KLOG(LOG_ERROR, "ThreadManager::GetCurrentThread() returned nullptr");
+        return;
+    }
+
+    currentThread->RaisePriorityLevel();
+}
+
+void SysLowerThreadPriority(InterruptFromUserlandContext* context)
+{
+    Thread* currentThread = gThreadManager.GetCurrentThread();
+    if (currentThread == nullptr)
+    {
+        KLOG(LOG_ERROR, "ThreadManager::GetCurrentThread() returned nullptr");
+        return;
+    }
+
+    currentThread->LowerPriorityLevel();
 }
 
 void SysInvalid(InterruptFromUserlandContext * context)

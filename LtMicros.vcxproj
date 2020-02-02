@@ -148,10 +148,12 @@
     <ClCompile Include="kernel\drivers\Pic.cpp" />
     <ClCompile Include="kernel\drivers\Screen.cpp" />
     <ClCompile Include="kernel\drivers\Serial.cpp" />
+    <ClCompile Include="kernel\handle\HandleManager.cpp" />
     <ClCompile Include="kernel\Kernel.cpp" />
     <ClCompile Include="kernel\kmain.cpp" />
     <ClCompile Include="kernel\lib\CriticalSection.cpp" />
     <ClCompile Include="kernel\lib\List.cpp" />
+    <ClCompile Include="kernel\lib\Status.cpp" />
     <ClCompile Include="kernel\lib\StdIo.cpp" />
     <ClCompile Include="kernel\lib\StdLib.cpp" />
     <ClCompile Include="kernel\lib\StdMem.cpp" />
@@ -189,6 +191,7 @@
     <ClInclude Include="kernel\drivers\proc_io.hpp" />
     <ClInclude Include="kernel\drivers\Screen.hpp" />
     <ClInclude Include="kernel\drivers\Serial.hpp" />
+    <ClInclude Include="kernel\handle\HandleManager.h" />
     <ClInclude Include="kernel\Kernel.hpp" />
     <ClInclude Include="kernel\lib\ICleanableObject.hpp" />
     <ClInclude Include="kernel\lib\List.hpp" />
@@ -207,6 +210,7 @@
     <ClInclude Include="kernel\multiboot.hpp" />
     <ClInclude Include="kernel\syscalls\SyscallsHandler.hpp" />
     <ClInclude Include="kernel\syscalls\SyscallsList.hpp" />
+    <ClInclude Include="kernel\syscalls\UKSyscallsCommon.h" />
     <ClInclude Include="kernel\task\Common.hpp" />
     <ClInclude Include="kernel\task\Ipc.hpp" />
     <ClInclude Include="kernel\task\ProcessManager.hpp" />

@@ -27,6 +27,8 @@
 
 #include <kernel/module/Module.hpp>
 
+#include <kernel/handle/HandleManager.h>
+
 #include <kernel/debug/LtDbg.hpp>
 
 #include <kernel/Logger.hpp>
@@ -41,7 +43,7 @@
 #endif
 
 /// @brief Kernel page directory physical location
-#define KERNEL_PAGE_DIR_P_ADDR   0x1000
+#define KERNEL_PAGE_DIR_P_ADDR    0x1000
 
 /// @brief Kernel page tables physical location
 #define KERNEL_PAGES_TABLE_P_ADDR 0x400000
@@ -56,6 +58,8 @@ Kernel::Kernel()
     info.vPagePoolLimit = KERNEL_PAGE_POOL_V_LIMIT_ADDR;
     info.vHeapBase = KERNEL_HEAP_V_BASE_ADDR;
     info.vHeapLimit = KERNEL_HEAP_V_LIMIT_ADDR;
+
+    StrCpy((char*)KERNEL_IMAGE_NAME, (char*)&info.imageName);
 
 #ifdef DEBUG_MODE
     info.debug = true;
@@ -72,6 +76,13 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
 
     gIdt.Init();
     gPicDrv.Init();
+
+    if (gKernel.info.debug)
+    {
+        gLtDbg.Init();
+        KLOG(LOG_INFO, "Kernel debugger initialized");
+    }
+
     gClockDrv.Init();
     gSerialDrv.Init();
 
@@ -82,18 +93,12 @@ void Kernel::Init(MultibootPartialInfo * mbi, u32 multibootMagicNumber)
     gHeap.Init();
     gPagePool.Init();
     gProcessManager.Init();
+    gHandleManager.Init();
     gScheduler.Init();
     gIpcHandler.Init();
     gSyscallsX86.Init();
     
     PrintHello();
-
-    if (gKernel.info.debug)
-    {
-        gLtDbg.Init();
-        KLOG(LOG_INFO, "Kernel debugger initialized");
-        __debugbreak();
-    }
 }
 
 void Kernel::Start()
@@ -104,18 +109,18 @@ void Kernel::Start()
     KeStatus status = gProcessManager.CreateSystemProcess(&systemProcess);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "gProcessManager::Create() failed with code %d", status);
+        KLOG(LOG_ERROR, "gProcessManager::Create() failed with code %t", status);
         Panic();
         goto clean;
     }
 
-#ifdef DEBUG_MODE
-    __debugbreak();
-#endif
-
     gKernel.process = systemProcess;
 
     gScheduler.AddThread(systemProcess->mainThread);
+
+#ifdef DEBUG_MODE
+    __debugbreak();
+#endif
 
     LoadModules();
 

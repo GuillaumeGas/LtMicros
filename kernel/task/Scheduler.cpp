@@ -11,6 +11,15 @@
 
 #define DEFAULT_THREAD_LIMIT_WORKING_TIME 100
 
+struct LOOK_FOR_THREAD_CONTEXT
+{
+    bool found;
+    Thread* foundThread;
+    Thread* thread;
+};
+
+static KeStatus LookForThreadWithHigherPriorityCallback(void* data, void* context);
+
 void Scheduler::Init()
 {
     _threadsList = ListCreate();
@@ -61,14 +70,35 @@ void Scheduler::Schedules(InterruptContext * context)
 
     if (_running && _nbThreads > 1)
     {
-        Thread * nextThread = _PickNextThread();
-
-        if (nextThread != nullptr && nextThread != _currentThread)
+        // If the current thread worked enough or if another thread has a higher priority
+        if (_currentThread == nullptr
+            || (gClockDrv.tics - _currentThread->ticsOnResume > DEFAULT_THREAD_LIMIT_WORKING_TIME) 
+            || HasHigherThreadPriority(_currentThread))
         {
-            if (gClockDrv.tics - _currentThread->ticsOnResume > DEFAULT_THREAD_LIMIT_WORKING_TIME)
+            bool found = false;
+            Thread* foundThread = nullptr;
+            do
             {
-                _SwitchToThread(context, nextThread);
-                _currentThread = nextThread;
+                Thread* nextThread = _PickNextThread(_currentThread);
+
+                if (nextThread == nullptr && nextThread == _currentThread)
+                {
+                    found = true;
+                }
+                else
+                {
+                    foundThread = nextThread;
+
+                    if (foundThread->threadPriority >= _currentThread->threadPriority)
+                    {
+                        found = true;
+                    }
+                }
+            } while (!found);
+
+            if (found && _currentThread != foundThread)
+            {
+                _SwitchToThread(context, foundThread);
             }
         }
     }
@@ -96,12 +126,12 @@ Thread * Scheduler::GetCurrentThread()
     return _currentThread;
 }
 
-Thread * Scheduler::_PickNextThread()
+Thread * Scheduler::_PickNextThread(Thread * currentThread)
 {
     Thread * thread = nullptr;
 
     // We didn't start any thread yet
-    if (_currentThread == nullptr)
+    if (currentThread == nullptr)
     {
         thread = (Thread *)ListTop(_threadsList);
     }
@@ -112,7 +142,7 @@ Thread * Scheduler::_PickNextThread()
         while (elem != nullptr)
         {
             // If we are on the current thread node, we retrieve the next one
-            if ((Thread *)elem->data == _currentThread)
+            if ((Thread *)elem->data == currentThread)
             {
                 if (elem->next != nullptr)
                 {
@@ -153,4 +183,51 @@ void Scheduler::_SwitchToThread(InterruptContext * context, Thread * thread)
 
     _currentThread = thread;
     _currentThread->StartOrResume();
+}
+
+bool Scheduler::HasHigherThreadPriority(Thread* thread)
+{
+    LOOK_FOR_THREAD_CONTEXT Context;
+
+    if (thread == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid thread parameter");
+        return false;
+    }
+
+    Context.thread = thread;
+    Context.found = false;
+    Context.foundThread = nullptr;
+
+    ListEnumerate(_threadsList, LookForThreadWithHigherPriorityCallback, &Context);
+
+    return Context.found;
+}
+
+static KeStatus LookForThreadWithHigherPriorityCallback(void* data, void* context)
+{
+    LOOK_FOR_THREAD_CONTEXT* foundContext = (LOOK_FOR_THREAD_CONTEXT*)context;
+    Thread* thread = (Thread*)data;
+
+    if (data == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid data parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (context == nullptr)
+    {
+        KLOG(LOG_ERROR, "Invalid context parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (thread->threadPriority > foundContext->thread->threadPriority)
+    {
+        foundContext->found = true;
+        foundContext->foundThread = thread;
+
+        return STATUS_LIST_STOP_ITERATING;
+    }
+
+    return STATUS_SUCCESS;
 }

@@ -31,6 +31,8 @@ struct Process
 {
     /// @brief Process unique identifier
     int pid;
+    /// @brief Process name
+    char name[512];
     /// @brief Process page directory
     PageDirectory pageDirectory;
     /// @brief A pointer to the process main thread
@@ -59,10 +61,11 @@ struct Process
     /// @brief Creates a x86 process
     /// @warning This does not add the process to the scheduler process list
     /// @warning This does not create the process heap and stack, for this call CreateDefaultHeapAndStack() after having mapped the executable code into process address space
+    /// @param[in]  name The process name
     /// @param[out] newProcess A pointer that will receive an pointer to the created process
     /// @param[in,opt] parent A pointer to the parent process, or nullptr
     /// @return STATUS_SUCCESS on success, an error code otherwise
-    static KeStatus Create(Process ** newProcess, Process * parent = nullptr);
+    static KeStatus Create(const char * name, Process ** newProcess, Process * parent = nullptr);
 
     /// @brief Creates a x86 system process.
     /// @warning This does not add the process to the scheduler process list

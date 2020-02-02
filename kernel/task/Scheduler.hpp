@@ -47,8 +47,14 @@ private:
     unsigned int _nbThreads;
 
     /// @brief Retrieves the next thread waiting to be executed
+    /// @param[in] currentThread Pointer to the current thread
     /// @return A pointer to the thread to be executed
-    Thread * _PickNextThread();
+    Thread * _PickNextThread(Thread * currentThread);
+
+    /// @brief Checks in the threads list if another thread has a higher priority than the given one
+    /// @param[in] thread Pointer to the thread
+    /// @return true if another process has a higher priority, else false
+    bool HasHigherThreadPriority(Thread* thread);
 
     /// @brief Switch to another thread and executes it
     /// @param[in] thread A pointer to the thread to be executed

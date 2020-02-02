@@ -11,3 +11,5 @@ void HeapFree(void * ptr);
 
 /// @brief Initializes the malloc members
 void InitMalloc();
+
+void DumpHeap();

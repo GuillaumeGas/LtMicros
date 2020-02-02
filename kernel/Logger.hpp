@@ -5,7 +5,7 @@
 #include <kernel/lib/stdarg.h>
 #include <kernel/lib/CriticalSection.hpp>
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 
 /// Used to generate a message including the file name and line number
 #define KLOGGER(kmodule, level, format, ...) gLogger.KernelLogger(__FILE__, __LINE__, kmodule, level, format, ##__VA_ARGS__)

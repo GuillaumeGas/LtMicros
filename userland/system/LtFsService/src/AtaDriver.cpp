@@ -103,7 +103,10 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     blockEnd = (offset + size) / ATA_BLOCK_SIZE;
     nbBlocks = blockEnd - blockBegin + 1;
 
-    //buffer = (char *)malloc(nbBlocks * ATA_BLOCK_SIZE);
+    //printf("nbBlocks : %d\n", nbBlocks);
+    //printf("blockBegin : %d, end : %d\n", blockBegin, blockEnd);
+
+    buffer = (char *)HeapAlloc(nbBlocks * ATA_BLOCK_SIZE);
     if (buffer == nullptr)
     {
         printf("Failed to allocate memory.\n");
@@ -116,6 +119,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     for (int i = 0; i < nbBlocks; i++)
     {
         rc = AtaReadSectorPio(dev, bufferPtr, blockBegin + i);
+        //printf("rc : %d\n", rc);
         if (rc == -EIO)
             return -EIO;
 
@@ -124,7 +128,7 @@ int AtaRead(AtaDevice * dev, void * buf, unsigned long offset, unsigned long siz
     }
 
     MemCopy((u8 *)(buffer + offset % ATA_BLOCK_SIZE), (u8 *)buf, size);
-    //free(buffer);
+    HeapFree(buffer);
 
     ENABLE_IRQ();
     return size;
@@ -181,7 +185,7 @@ int AtaWrite(AtaDevice * device, void * buf, unsigned long offset, unsigned long
         return -1;
     }
 
-    printf("count : %d, block : %d, size : %d, offset : %d\n", count, block, size, offset);
+    //printf("count : %d, block : %d, size : %d, offset : %d\n", count, block, size, offset);
 
     DISABLE_IRQ();
     for (int i = 0; i < count && size > 0; i++)

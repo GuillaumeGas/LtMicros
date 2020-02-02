@@ -15,6 +15,7 @@
 #define KERNEL_PAGE_POOL_V_LIMIT_ADDR    0x1000000  // Kernel page pool area limit virtual address
 #define KERNEL_HEAP_V_BASE_ADDR          0x1000000  // Kernel heap base virtual address
 #define KERNEL_HEAP_V_LIMIT_ADDR         0x40000000 // Kernel heap limit virtual address
+#define KERNEL_IMAGE_NAME                "ltkernel.img" // Kernel image name
 
 struct KernelInfo
 {
@@ -36,6 +37,8 @@ struct KernelInfo
     u32 vHeapLimit;
     /// @brief True if kernel is in debug mode (must be connected to LtDbg
 	bool debug;
+    /// @brief Kernel image name
+    char imageName[512];
 
     MultibootPartialInfo * multibootInfo;
 };

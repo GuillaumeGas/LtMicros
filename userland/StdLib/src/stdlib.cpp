@@ -1,6 +1,8 @@
 #include "stdlib.h"
 #include "stdio.h"
 
+#include "syscalls.h"
+
 void StrCpy(const char * src, char * dst)
 {
     if (src == nullptr || dst == nullptr)
@@ -84,4 +86,14 @@ void MemSet(void * src, u8 byte, unsigned int size)
 
     while ((size--) > 0)
         *(_src++) = byte;
+}
+
+void RaiseThreadPriority()
+{
+    _sysRaiseThreadPriority();
+}
+
+void LowerThreadPriority()
+{
+    _sysLowerThreadPriority();
 }

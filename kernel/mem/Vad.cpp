@@ -81,7 +81,7 @@ KeStatus Vad::Allocate(const unsigned int size, const PageDirectory * pageDirect
     status = LookForFreeVadOfMinimumSize(size, &freeVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "LookForFreeVadOfMinimumSize() failed with code %d", status);
+        KLOG(LOG_ERROR, "LookForFreeVadOfMinimumSize() failed with code %t", status);
         goto clean;
     }
 
@@ -90,7 +90,7 @@ KeStatus Vad::Allocate(const unsigned int size, const PageDirectory * pageDirect
         status = freeVad->Split(size);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Split() failed with code %d", status);
+            KLOG(LOG_ERROR, "Split() failed with code %t", status);
             goto clean;
         }
     }
@@ -98,7 +98,7 @@ KeStatus Vad::Allocate(const unsigned int size, const PageDirectory * pageDirect
     status = freeVad->ReservePages(pageDirectory, reservePhysicalPages);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "ReservePages() failed with code %d", status);
+        KLOG(LOG_ERROR, "ReservePages() failed with code %t", status);
         goto clean;
     }
 
@@ -143,7 +143,7 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
     status = LookForFreeVadAtAddressOfMinimumSize(address, size, &freeVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "LookForFreeVadAtAddressOfMinimumSize() failed with code %d", status);
+        KLOG(LOG_ERROR, "LookForFreeVadAtAddressOfMinimumSize() failed with code %t", status);
         goto clean;
     }
 
@@ -155,7 +155,7 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
         status = freeVad->SplitAtAddress(address, size);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "SplitAtAddress() failed with code %d", status);
+            KLOG(LOG_ERROR, "SplitAtAddress() failed with code %t", status);
             goto clean;
         }
 
@@ -166,7 +166,7 @@ KeStatus Vad::AllocateAtAddress(void * const address, const unsigned int size, c
     status = freeVad->ReservePages(pageDirectory, reservePhysicalPages);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "ReservePages() failed with code %d", status);
+        KLOG(LOG_ERROR, "ReservePages() failed with code %t", status);
         goto clean;
     }
 
@@ -373,7 +373,7 @@ KeStatus Vad::Split(const unsigned int size)
     status = Vad::Create(this->baseAddress + (nbPages * PAGE_SIZE), this->size - (nbPages * PAGE_SIZE), true, &newVad);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "Create() failed with code %d", status);
+        KLOG(LOG_ERROR, "Create() failed with code %t", status);
         goto clean;
     }
 
@@ -446,7 +446,7 @@ KeStatus Vad::SplitAtAddress(void * const address, const unsigned int size)
         status = Vad::Create(address, secondBlockSize, true, &newVad);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Create() failed with code %d", status);
+            KLOG(LOG_ERROR, "Create() failed with code %t", status);
             goto clean;
         }
 
@@ -467,7 +467,7 @@ KeStatus Vad::SplitAtAddress(void * const address, const unsigned int size)
             status = newVad->Split(size);
             if (FAILED(status))
             {
-                KLOG(LOG_ERROR, "Split() failed with code %d", status);
+                KLOG(LOG_ERROR, "Split() failed with code %t", status);
                 goto clean;
             }
         }
@@ -478,7 +478,7 @@ KeStatus Vad::SplitAtAddress(void * const address, const unsigned int size)
         status = this->Split(size);
         if (FAILED(status))
         {
-            KLOG(LOG_ERROR, "Split() failed with code %d", status);
+            KLOG(LOG_ERROR, "Split() failed with code %t", status);
             goto clean;
         }
     }

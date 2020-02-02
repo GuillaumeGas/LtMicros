@@ -57,6 +57,8 @@ public:
     /// @param[in] ptr A pointer to the memory to be freed
     void Free(void * ptr);
 
+    void Dump();
+
     /// @brief Heap space base address (also, address of the first block)
     MemBlock * baseBlock;
     /// @brief Heap space limit virtual address
@@ -70,9 +72,9 @@ public:
     int freeCount;
 
 private:
-    void * _Allocate(MemBlock * block, int size);
+    void * _Allocate(MemBlock * block, unsigned int size);
     void _SplitBlock(MemBlock * block, unsigned int size);
-    void _Defrag();
+    void _MergeBlocksFrom(MemBlock * block);
 };
 
 #ifdef __HEAP__

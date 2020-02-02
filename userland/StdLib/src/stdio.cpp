@@ -8,7 +8,7 @@
 
 static int checkType(char type)
 {
-    return (type == 'd' || type == 'c' || type == 's' || type == 'x' || type == 'b');
+    return (type == 'd' || type == 'c' || type == 's' || type == 'x' || type == 'b' || type == 't');
 }
 
 static void printChar(char c)
@@ -86,6 +86,11 @@ static void printBin(const int value, int nbBits)
     printChar('b');
 }
 
+static void printStatus(const int x)
+{
+    printStr((char*)StatusGetStringFromInt((Status)x));
+}
+
 void printf(const char * format, ...)
 {
     _sysEnterScreenCriticalSection();
@@ -102,6 +107,8 @@ void printfEx(const char * format, va_list ap)
 {
     int nbBits = 8;
     int value;
+
+    const char* HEX_STRING = "0x";
 
     while (*format != '\0')
     {
@@ -123,7 +130,7 @@ void printfEx(const char * format, va_list ap)
                         break;
                     case 'x':
                     case 'p':
-                        printStr("0x");
+                        printStr((char *)HEX_STRING);
                         printInt(va_arg(ap, int), 16);
                         break;
                     case 'b':
@@ -137,6 +144,9 @@ void printfEx(const char * format, va_list ap)
                         break;
                     case 's':
                         printStr((char*)va_arg(ap, char *));
+                        break;
+                    case 't':
+                        printStatus(va_arg(ap, int));
                         break;
                     case 'c':
                     default:
@@ -152,4 +162,14 @@ void printfEx(const char * format, va_list ap)
 
         format++;
     }
+}
+/*
+extern "C" void PrintHelloWorld()
+{
+	printf("Hello world from a Ymir program running in userland !\n");
+}*/
+
+extern "C" void PrintHelloWorld(const char * str)
+{
+	printf(str);
 }
