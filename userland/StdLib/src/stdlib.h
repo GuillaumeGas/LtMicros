@@ -6,6 +6,8 @@
 
 #define __debugbreak() asm("int $3")
 
+#define FlagOn(a, b) (((a) & (b)) != 0)
+
 /// @brief Copies a string into another
 /// @param[in] src A pointer to the source string, must be nullptr terminated
 /// @param[in] dst A pointer to the destination buffer

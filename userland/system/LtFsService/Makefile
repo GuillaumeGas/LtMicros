@@ -11,7 +11,7 @@ all: $(OBJ)
 clean:
 	rm -f $(OBJ) *.o
 
-LtFsService.sys: main.o AtaDriver.o ServiceCommands.o Ext2.o File.o FsManager.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o status.o list.o
+LtFsService.sys: main.o AtaDriver.o ServiceCommands.o LtFsCommon.o Ext2.o File.o FsManager.o stdio.o stdlib.o logger.o syscalls.o malloc.o Ipc.o status.o list.o
 	$(LD) $^ -o bin/$@
 
 main.o: src/main.cpp
@@ -21,6 +21,9 @@ AtaDriver.o: src/AtaDriver.cpp
 	$(CC) -c $^
 
 ServiceCommands.o: src/ServiceCommands.cpp
+	$(CC) -c $^
+
+LtFsCommon.o: ../Common/LtFsCommon.cpp
 	$(CC) -c $^
 
 Ext2.o: src/Ext2.cpp

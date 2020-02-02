@@ -36,6 +36,9 @@
     <ClCompile Include="..\system\Common\LtFsCommon.cpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClCompile>
+    <ClCompile Include="src\list.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdio.h">
@@ -73,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="..\system\Common\ServiceNames.h">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="src\list.h">
+      <Filter>Fichiers sources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

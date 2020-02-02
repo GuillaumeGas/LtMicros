@@ -9,11 +9,27 @@
 #include <list.h>
 #include <LtFsCommon.h>
 
-typedef struct ProcessEntry
+struct ProcessEntry
 {
     IpcHandle serverHandle;
     IpcClient ipcClient;
     ProcessHandle processHandle;
+
+    List * fileEntries;
+};
+
+struct FileEntry
+{
+    Handle handle;
+    unsigned int cursor;
+    File * file;
+    FileShareMode shareMode;
+};
+
+struct ServiceCommandContext
+{
+    List * processes;
+    List * fileEntries;
 };
 
 static Status RequestConnect(const ProcessHandle processHandle, LtFsConnectParameter * const parameters);
@@ -21,12 +37,18 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
 
 static Status CreateProcessEntry(ProcessHandle processHandle, ProcessEntry ** process);
 static Status LookForProcessFromHandle(ProcessHandle processHandle, ProcessEntry ** process);
+static Status LookForFileEntryFromFilePtr(File * file, FileEntry ** fileEntry);
+static bool IsFileAccessible(FileEntry * fileEntry, FileAccess access);
+static Status NewFileEntry(File * file, FileAccess access, FileShareMode shareMode, FileEntry ** newFileEntry);
 
-List * gProcessesList;
+ServiceCommandContext gSvcContext = { 0 };
+Handle gCurrentFileHandle = INVALID_HANDLE_VALUE;
 
 void ServiceCommandInit()
 {
-    gProcessesList = ListCreate();
+    gSvcContext.processes = ListCreate();
+    gSvcContext.fileEntries = ListCreate();
+    gCurrentFileHandle = 0;
 }
 
 Status ServiceExecuteCommand(const ProcessHandle processHandle, char * const message, unsigned int size, bool * serviceTerminate)
@@ -102,7 +124,7 @@ static Status RequestConnect(const ProcessHandle processHandle, LtFsConnectParam
         goto clean;
     }
 
-    ListPush(gProcessesList, process);
+    ListPush(gSvcContext.processes, process);
     process = nullptr;
 
     status = STATUS_SUCCESS;
@@ -120,8 +142,11 @@ clean:
 static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFileParameters * const parameters)
 {
     Status status = STATUS_FAILURE;
+    Status resStatus = STATUS_SUCCESS;
     File * file = nullptr;
+    FileEntry * existingFileEntry = nullptr;
     ProcessEntry * process = nullptr;
+    LtFsResponse * response = nullptr;
 
     if (parameters == nullptr)
     {
@@ -147,8 +172,6 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
 
     RaiseThreadPriority();
 
-    //__debugbreak();
-
     status = OpenFileFromName(parameters->filePath, &file);
     if (FAILED(status))
     {
@@ -156,10 +179,62 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
         goto clean;
     }
 
-    LOG(LOG_INFO, "File openned ! Send its content...");
+    status = LookForFileEntryFromFilePtr(file, &existingFileEntry);
+    if (FAILED(status))
+    {
+        LOG(LOG_ERROR, "LookForFileEntryFromFilePtr() failed with code %t", status);
+        goto clean;
+    }
+
+    // If a file has been found, we check if it may be shared
+    if (existingFileEntry != nullptr)
+    {
+        if (IsFileAccessible(existingFileEntry, parameters->access) == false)
+        {
+            resStatus = STATUS_ACCESS_DENIED;
+        }
+    }
+
+    if (resStatus == STATUS_ACCESS_DENIED)
+    {
+        status = LtFsResponse::Create(resStatus, nullptr, 0, &response);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "LtFsResponse::Create() failed with code %t", status);
+            goto clean;
+        }
+
+        LOG(LOG_INFO, "Access denied !");
+    }
+    else
+    {
+        FileEntry * newFileEntry = nullptr;
+
+        status = NewFileEntry(file, parameters->access, parameters->shareMode, &newFileEntry);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "NewFileEntry() failed with code %t", status);
+            goto clean;
+        }
+
+        ListPush(gSvcContext.fileEntries, newFileEntry);
+        ListPush(process->fileEntries, newFileEntry);
+
+        status = LtFsResponse::Create(resStatus, &newFileEntry->handle, sizeof(Handle), &response);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "LtFsResponse::Create() failed with code %t", status);
+            goto clean;
+        }
+
+        LOG(LOG_INFO, "File openned ! Sending response...");
+    }
+
+
+    LOG(LOG_DEBUG, "Sending message of size %d", response->size);
 
     // send the response
-    status = process->ipcClient.Send(process->serverHandle, (char*)file->content, StrLen((char*)file->content) + 1);
+    status = process->ipcClient.Send(process->serverHandle, (char*)response, response->size);
     if (FAILED(status))
     {
         LOG(LOG_ERROR, "IpcClient::Send() failed with code %t", status);
@@ -170,6 +245,10 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
 
 clean:
     LowerThreadPriority();
+
+    /*
+        TODO : free memory
+    */
 
     return status;
 }
@@ -210,7 +289,7 @@ clean:
     return status;
 }
 
-typedef struct LOOK_FOR_PROCESS_CONTEXT
+struct LOOK_FOR_PROCESS_CONTEXT
 {
     ProcessHandle processHandle;
     ProcessEntry * processEntry;
@@ -221,13 +300,13 @@ static Status LookForProcessFromHandleCallback(void * data, void * context)
     ProcessEntry * entry = (ProcessEntry*)data;
     LOOK_FOR_PROCESS_CONTEXT * ctx = (LOOK_FOR_PROCESS_CONTEXT*)context;
 
-    if (data == INVALID_HANDLE_VALUE)
+    if (data == nullptr)
     {
         LOG(LOG_ERROR, "Invalid data parameter");
         return STATUS_NULL_PARAMETER;
     }
 
-    if (context == INVALID_HANDLE_VALUE)
+    if (context == nullptr)
     {
         LOG(LOG_ERROR, "Invalid context parameter");
         return STATUS_NULL_PARAMETER;
@@ -245,13 +324,12 @@ static Status LookForProcessFromHandleCallback(void * data, void * context)
 static Status LookForProcessFromHandle(ProcessHandle processHandle, ProcessEntry ** process)
 {
     Status status = STATUS_FAILURE;
-    ProcessEntry * foundProcess = nullptr;
     LOOK_FOR_PROCESS_CONTEXT context = { 0 };
 
     if (processHandle == INVALID_HANDLE_VALUE)
     {
         LOG(LOG_ERROR, "Invalid processHandle parameter");
-        return STATUS_NULL_PARAMETER;
+        return STATUS_INVALID_PARAMETER;
     }
 
     if (process == INVALID_HANDLE_VALUE)
@@ -263,7 +341,7 @@ static Status LookForProcessFromHandle(ProcessHandle processHandle, ProcessEntry
     context.processHandle = processHandle;
     context.processEntry = nullptr;
 
-    status = ListEnumerate(gProcessesList, LookForProcessFromHandleCallback, &context);
+    status = ListEnumerate(gSvcContext.processes, LookForProcessFromHandleCallback, &context);
     if (FAILED(status) && status != STATUS_LIST_STOP_ITERATING)
     {
         LOG(LOG_ERROR, "ListEnumerate() failed with code %t", status);
@@ -271,6 +349,139 @@ static Status LookForProcessFromHandle(ProcessHandle processHandle, ProcessEntry
     }
 
     *process = context.processEntry;
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+struct LOOK_FOR_FILE_ENTRY_CONTEXT
+{
+    File * file;
+    FileEntry * fileEntry;
+};
+
+static Status LookForFileEntryFromFilePtrCallback(void * elem, void * context)
+{
+    LOOK_FOR_FILE_ENTRY_CONTEXT * ctx = (LOOK_FOR_FILE_ENTRY_CONTEXT*)context;
+    FileEntry * entry = (FileEntry*)elem;
+
+    if (elem == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid elem parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (context == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid context parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (entry->file == ctx->file)
+    {
+        ctx->fileEntry = entry;
+        return STATUS_LIST_STOP_ITERATING;
+    }
+
+    return STATUS_SUCCESS;
+}
+
+static Status LookForFileEntryFromFilePtr(File * file, FileEntry ** fileEntry)
+{
+    Status status = STATUS_FAILURE;
+    LOOK_FOR_FILE_ENTRY_CONTEXT Context = { 0 };
+
+    if (file == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid file parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (fileEntry == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid fileEntry parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    Context.file = file;
+    Context.fileEntry = nullptr;
+
+    LOG(LOG_DEBUG, "Looking for %x in list %x", file, gSvcContext.fileEntries);
+
+    status = ListEnumerate(gSvcContext.fileEntries, LookForFileEntryFromFilePtrCallback, &Context);
+    if (FAILED(status) && status != STATUS_LIST_STOP_ITERATING)
+    {
+        LOG(LOG_ERROR, "ListEnumerate() failed with code %t", status);
+        goto clean;
+    }
+
+    *fileEntry = Context.fileEntry;
+
+    status = STATUS_SUCCESS;
+
+clean:
+    return status;
+}
+
+static bool IsFileAccessible(FileEntry * fileEntry, FileAccess access)
+{
+    if (access == FILE_READ)
+    {
+        if (FlagOn(FILE_SHARE_READ, fileEntry->shareMode) == false)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static Status NewFileEntry(File * file, FileAccess access, FileShareMode shareMode, FileEntry ** newFileEntry)
+{
+    Status status = STATUS_FAILURE;
+    FileEntry * fileEntry = nullptr;
+
+    if (file == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid file parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    if (access >= FILE_ACCESS_MAX)
+    {
+        LOG(LOG_ERROR, "Invalid access parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (shareMode >= FILE_SHARE_MAX)
+    {
+        LOG(LOG_ERROR, "Invalid shareMode parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (newFileEntry == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid file parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    fileEntry = (FileEntry*)HeapAlloc(sizeof(FileEntry));
+    if (fileEntry == nullptr)
+    {
+        LOG(LOG_ERROR, "Couldn't allocate %d bytes", sizeof(FileEntry));
+        status = STATUS_ALLOC_FAILED;
+        goto clean;
+    }
+
+    fileEntry->cursor = 0;
+    fileEntry->file = file;
+    fileEntry->handle = ++gCurrentFileHandle;
+    fileEntry->shareMode = shareMode;
+
+    *newFileEntry = fileEntry;
+    fileEntry = nullptr;
 
     status = STATUS_SUCCESS;
 

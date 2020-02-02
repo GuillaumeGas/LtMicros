@@ -26,20 +26,20 @@ static Status FsInit()
     LtFsConnectParameter parameter;
     unsigned int requestSize = 0;
 
-    // TMP : must be different on each process
-    const char ipcId[] = "TestId";
+    // TODO : find a way to generate a GUID
+    const char uniqueIpcServerId[] = __TIME__;
 
     status = gFsContext.ipcClient.ConnectToServer(LTFS_SERVICE_NAME, &serverHandle);
     if (FAILED(status))
         return status;
 
     // We are also an ipc server to be able to receive responses
-    status = IpcServer::Create(ipcId, &ipcServer);
+    status = IpcServer::Create(uniqueIpcServerId, &ipcServer);
     if (FAILED(status))
         return status;
 
     // We send a connect request to the LtFs service so it can connect to our ipc server
-    MemCopy((void*)ipcId, &(parameter.ipcServerId), StrLen(ipcId) + 1);
+    MemCopy((void*)uniqueIpcServerId, &(parameter.ipcServerId), StrLen(uniqueIpcServerId) + 1);
 
     status = LtFsRequest::Create(LTFS_REQUEST_CONNECT, &parameter, sizeof(LtFsConnectParameter), &connectRequest);
     if (FAILED(status))
@@ -60,13 +60,12 @@ static Status FsInit()
 
     gFsContext.isInitilaized = true;
     gFsContext.ltFsServiceHandle = serverHandle;
-    gFsContext.connectedToLtFs = true;
     gFsContext.ipcServer = ipcServer;
 
     return status;
 }
 
-Status FsOpenFile(const char * filePath, const FileAccess access, Handle * const fileHandle)
+Status FsOpenFile(const char * filePath, const FileAccess access, const FileShareMode shareMode, Handle * const fileHandle)
 {
     Status status = STATUS_FAILURE;
     LtFsRequest * request = nullptr;
@@ -79,6 +78,11 @@ Status FsOpenFile(const char * filePath, const FileAccess access, Handle * const
     }
 
     if (access >= FILE_ACCESS_MAX)
+    {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (shareMode >= FILE_SHARE_MAX)
     {
         return STATUS_INVALID_PARAMETER;
     }
@@ -99,15 +103,14 @@ Status FsOpenFile(const char * filePath, const FileAccess access, Handle * const
 
     if ((StrLen(filePath) + 1) > MAX_FULL_PATH_SIZE)
     {
-        status = PATH_TOO_LONG;
+        status = STATUS_PATH_TOO_LONG;
         goto clean;
     }
 
+    parameters.shareMode = shareMode;
     parameters.access = access;
 
     MemCopy((void*)filePath, &(parameters.filePath), StrLen(filePath) + 1);
-
-    //printf("source : %x, dest : %x\n", filePath, &(parameters.filePath));
 
     status = LtFsRequest::Create(LTFS_REQUEST_OPEN_FILE, &parameters, sizeof(LtFsOpenFileParameters), &request);
     if (FAILED(status))
@@ -126,14 +129,22 @@ Status FsOpenFile(const char * filePath, const FileAccess access, Handle * const
     {
         IpcMessage response;
         ProcessHandle clientHandle = INVALID_HANDLE_VALUE;
+        LtFsResponse * ltFsResponse = nullptr;
+
         status = gFsContext.ipcServer.Receive(&response, &clientHandle);
         if (FAILED(status))
         {
-            printf("oh shit (%t)\n", status);
             goto clean;
         }
 
-        printf("[INIT] File content : %s\n", (const char *)response.data);
+        ltFsResponse = (LtFsResponse*)response.data;
+
+        if (ltFsResponse->status != STATUS_ACCESS_DENIED)
+            *fileHandle = (Handle)ltFsResponse->data;
+        else
+            status = ltFsResponse->status;
+
+        // TODO : response.Release();
     }
 
     status = STATUS_SUCCESS;

@@ -8,10 +8,20 @@
 
 #define MAX_FULL_PATH_SIZE 255
 
+typedef unsigned int FileHandle;
+
 enum FileAccess
 {
     FILE_READ,
     FILE_ACCESS_MAX
+};
+
+enum FileShareMode
+{
+    FILE_SHARE_NONE        = 0,
+    FILE_SHARE_READ        = 1,
+    FILE_SHARE_WRITE       = 2,
+    FILE_SHARE_MAX
 };
 
 enum LtFsRequestType
@@ -30,10 +40,20 @@ struct LtFsRequest
     static Status Create(const LtFsRequestType type, void * const parameters, const unsigned int size, LtFsRequest ** outRequest);
 };
 
+struct LtFsResponse
+{
+    Status status;
+    unsigned int size;
+    void * data;
+
+    static Status Create(const Status resStatus, void * const data, const unsigned int size, LtFsResponse ** outResponse);
+};
+
 struct LtFsOpenFileParameters
 {
     char filePath[MAX_FULL_PATH_SIZE];
     FileAccess access;
+    FileShareMode shareMode;
 };
 
 struct LtFsConnectParameter

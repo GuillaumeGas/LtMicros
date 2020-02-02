@@ -207,7 +207,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
         return STATUS_INVALID_PARAMETER;
     }
 
-    //KLOG(LOG_DEBUG, "Handling message from %d, msg addr : %x, size : %d", clientProcess->pid, message, size);
+    //KLOG(LOG_DEBUG, "Handling message from %s, msg addr : %x, size : %d", clientProcess->name, message, size);
 
     ipcObject->criticalSection.Enter();
 
@@ -226,6 +226,9 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
 
     // We allocate memory into the server process address space
     serverProcess = ipcObject->serverProcess;
+
+    //KLOG(LOG_DEBUG, "Allocating mem in process %s", serverProcess->name);
+
     status = serverProcess->AllocateMemory(size, true, (void**)&serverBuffer);
     if (FAILED(status))
     {

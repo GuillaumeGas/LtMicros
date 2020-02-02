@@ -13,8 +13,9 @@
     STATUS_ELEM (STATUS_FILE_NOT_FOUND)               \
     STATUS_ELEM (STATUS_NOT_A_DIRECTORY)              \
     STATUS_ELEM (STATUS_UNEXPECTED)                   \
-    STATUS_ELEM (PATH_TOO_LONG)                       \
+    STATUS_ELEM (STATUS_PATH_TOO_LONG)                \
     STATUS_ELEM (STATUS_LIST_STOP_ITERATING)          \
+    STATUS_ELEM (STATUS_ACCESS_DENIED)                \
 
 enum Status
 {
