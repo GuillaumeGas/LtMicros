@@ -10,6 +10,8 @@
 #include <kernel/drivers/Clock.hpp>
 #include <kernel/handle/HandleManager.h>
 
+#include "IpcBuffer.hpp"
+
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
 #define DKLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -25,26 +27,12 @@ struct IpcObject
     IpcHandle handle;
     /// Pointer to the server process
     Process * serverProcess;
-    /// List of messages
-    List * messages;
+    /// IpcBuffer to handle messages
+    IpcBuffer buffer;
     /// Critical section used to protect the ipcObject
     CriticalSection criticalSection;
 
     static KeStatus Create(const char * serverIdStr, Process * const serverProcess, const IpcHandle handle, IpcObject** const ipcObject);
-};
-
-struct IpcMessage
-{
-    /// The sender process
-    Handle clientProcess;
-
-    /// Pointer to the message content
-    char * message;
-
-    /// The message size
-    unsigned int size;
-
-    static KeStatus Create(const Handle clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage);
 };
 
 struct FIND_IPC_OBJECTS_CONTEXT
@@ -59,22 +47,6 @@ static KeStatus FindIpcObjectByHandleCallback(void* ipcObjectPtr, void* context)
 static KeStatus FindIpcObjectByServerIdCallback(void * ipcObjectPtr, void * context);
 
 static IpcHandle s_IpcObjectHandleCount = INVALID_HANDLE_VALUE;
-
-//static KeStatus TestCb(void * data, void * ctx)
-//{
-//    IpcObject* ipcObject = (IpcObject*)data;
-//    if (ipcObject == nullptr)
-//    {
-//        KLOG(LOG_DEBUG, "NUllll");
-//        return STATUS_SUCCESS;
-//    }
-//    KLOG(LOG_DEBUG, "%x %s", ipcObject, ipcObject->id);
-//    return STATUS_SUCCESS;
-//}
-//static void DumpListIpc(List * list)
-//{
-//    ListEnumerate(list, TestCb, nullptr);
-//}
 
 void IpcHandler::Init()
 {
@@ -121,8 +93,6 @@ KeStatus IpcHandler::AddNewServer(const char * serverIdStr, Process* const serve
     }
 
     ListPush(_ipcObjects, ipcObject);
-
-    //DumpListIpc(_ipcObjects);
 
     *handle = ipcObjectHandle;
 
@@ -177,7 +147,6 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
-    IpcMessage * ipcMessage = nullptr;
     Process * serverProcess = nullptr;
     u8 * serverBuffer = nullptr;
     u8 * kernelBuffer = nullptr;
@@ -214,49 +183,25 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
     ipcObject = _FindIpcObjectByHandle(handle);
     if (ipcObject == nullptr)
     {
-        return IPC_STATUS_SERVER_NOT_FOUND;
-    }
-
-    status = gHandleManager.FindOrCreate(PROCESS_HANDLE, clientProcess, &clientProcessHandle);
-    if (FAILED(status))
-    {
-        KLOG(LOG_ERROR, "HandleManager::FindOrCreate() failed with code %t", status);
+        KLOG(LOG_DEBUG, "Didn't found ipc object for handle %d", handle);
+        status = IPC_STATUS_SERVER_NOT_FOUND;
         goto clean;
     }
 
-    // We allocate memory into the server process address space
-    serverProcess = ipcObject->serverProcess;
-
-    //KLOG(LOG_DEBUG, "Allocating mem in process %s", serverProcess->name);
-
-    status = serverProcess->AllocateMemory(size, true, (void**)&serverBuffer);
-    if (FAILED(status))
+    // A ipc server can't send a message, but only receive one
+    if (clientProcess == ipcObject->serverProcess)
     {
-        KLOG(LOG_DEBUG, "Process::AllocateMemory() failed with code %t", status);
+        KLOG(LOG_DEBUG, "A ipc server tried to send a message");
+        status = IPC_STATUS_ACCESS_DENIED;
         goto clean;
     }
 
-    // We copy the message into kernel address space
-    kernelBuffer = (u8*)HeapAlloc(size);
-    if (kernelBuffer == nullptr)
-    {
-        KLOG(LOG_ERROR, "Couldn't allocate %d bytes", size);
-        gKernel.Panic();
-    }
-
-    MemCopy(message, kernelBuffer, size);
-
-    // We copy the kernel buffer content into serveur process
-    serverProcess->MemoryCopy(kernelBuffer, serverBuffer, size);
-
-    status = IpcMessage::Create(clientProcessHandle, (char*)serverBuffer, size, &ipcMessage);
+    status = ipcObject->buffer.AddBytes(message, size);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "IpcMessage::Create() failed with code %t", status);
-        gKernel.Panic();
+        KLOG(LOG_ERROR, "IpcBuffer::AddBytes() failed with code %t", status);
+        goto clean;
     }
-
-    ListPush(ipcObject->messages, ipcMessage);
 
     status = STATUS_SUCCESS;
 
@@ -272,11 +217,11 @@ clean:
     return status;
 }
 
-KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size, Handle * const clientHandle)
+KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char * const buffer, const unsigned int size, unsigned int * const bytesRead)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
-    IpcMessage * ipcMessage = nullptr;
+    unsigned int localBytesRead = 0;
 
     if (handle == 0)
     {
@@ -290,21 +235,21 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         return STATUS_NULL_PARAMETER;
     }
 
-    if (message == nullptr)
+    if (buffer == nullptr)
     {
-        KLOG(LOG_ERROR, "Invalid message parameter");
+        KLOG(LOG_ERROR, "Invalid buffer parameter");
         return STATUS_NULL_PARAMETER;
     }
 
-    if (size == nullptr)
+    if (size == 0)
     {
         KLOG(LOG_ERROR, "Invalid size parameter");
         return STATUS_NULL_PARAMETER;
     }
 
-    if (clientHandle == nullptr)
+    if (bytesRead == nullptr)
     {
-        KLOG(LOG_ERROR, "Invalid clientHandle parameter");
+        KLOG(LOG_ERROR, "Invalid bytesRead parameter");
         return STATUS_NULL_PARAMETER;
     }
 
@@ -315,20 +260,22 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         return IPC_STATUS_SERVER_NOT_FOUND;
     }
 
+    // An ipc client can't receive a message, but only send one
+    if (serverProcess != ipcObject->serverProcess)
+    {
+        KLOG(LOG_DEBUG, "An ipc client tried to receive a message");
+        status = IPC_STATUS_ACCESS_DENIED;
+    }
+
     do {
         ipcObject->criticalSection.Enter();
-        ipcMessage = (IpcMessage*)ListPop(&ipcObject->messages);
+        status = ipcObject->buffer.ReadBytes(buffer, size, &localBytesRead);
         ipcObject->criticalSection.Leave();
 
         gClockDrv.Pause(1);
-    } while (ipcMessage == nullptr);
+    } while (bytesRead == 0);
 
-    *message = ipcMessage->message;
-    *size = ipcMessage->size;
-    *clientHandle = ipcMessage->clientProcess;
-
-    HeapFree(ipcMessage);
-    ipcMessage = nullptr;
+    *bytesRead = localBytesRead;
 
     status = STATUS_SUCCESS;
 

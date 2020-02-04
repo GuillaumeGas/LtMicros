@@ -43,13 +43,13 @@ public:
     KeStatus Send(const IpcHandle handle, Process* const clientProcess, const char* message, const unsigned int size);
 
     /// @brief Pops the next stacked message in the list associated to the Ipc object
-    /// @param[in] handle The handle on a Ipc object
-    /// @param[in] serverProcess The server process receiving the message
-    /// @param[in] message A pointer that will hold a pointer to the message. The memory is allocated in the server process address space in a specific area,
-    ///             it must be released by using ReleaseMemory() function.
-    /// @param[in] size A pointer that will receive the message size in bytes
+    /// @param[in]  handle The handle on a Ipc object
+    /// @param[in]  serverProcess The server process receiving the message
+    /// @param[in]  message A pointer that will hold a pointer to the message. The memory is allocated by the caller (user process).
+    /// @param[in]  size The message size in bytes
+    /// @param[out] bytesRead A pointer that will hold the number of bytes copied in the buffer
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus Receive(const IpcHandle handle, Process* const serverProcess, char** message, unsigned int* size, Handle * const clientHandle);
+    KeStatus Receive(const IpcHandle handle, Process* const serverProcess, char * const buffer, const unsigned int size, unsigned int * const bytesRead);
 
     /// @brief Releases memory allocated for an IPC in a process address space
     /// @param[in] process The process in which the memory must be released
@@ -58,12 +58,6 @@ public:
     KeStatus ReleaseMemory(Process* const process, void* ptr);
 
 private:
-    /*
-    Pour la partie alloc : on pourrait reprendre le fonctionnement du tas utilisateur, avec une adresse de base
-    et un �quivalent � sbrk.
-    En fait on pourrait �tendre le classe Heap actuel et cr�er un PoolManager qui permettrait de g�rer plusieurs Heap.
-    */
-
     /// @brief Allocates memory in a given process address space
     /// @param[in]  process The process in which the memory must be allocated
     /// @param[in]  size The memory size in bytes that must be allocated
