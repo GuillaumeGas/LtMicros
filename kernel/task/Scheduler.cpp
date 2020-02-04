@@ -104,6 +104,11 @@ void Scheduler::Schedules(InterruptContext * context)
     }
 }
 
+void Scheduler::SchedulesFromRunningThread()
+{
+    // TODO 
+}
+
 Process * Scheduler::GetCurrentProcess()
 {
     if (_currentThread == nullptr)

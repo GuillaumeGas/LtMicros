@@ -164,6 +164,7 @@
     <ClCompile Include="kernel\module\Elf.cpp" />
     <ClCompile Include="kernel\module\Module.cpp" />
     <ClCompile Include="kernel\syscalls\SyscallsHandler.cpp" />
+    <ClCompile Include="kernel\task\Ipc\Ipc.cpp" />
     <ClCompile Include="kernel\task\Ipc\IpcBuffer.cpp" />
     <ClCompile Include="kernel\task\ProcessManager.cpp" />
     <ClCompile Include="kernel\task\Scheduler.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="kernel\syscalls\SyscallsList.hpp" />
     <ClInclude Include="kernel\syscalls\UKSyscallsCommon.h" />
     <ClInclude Include="kernel\task\Common.hpp" />
+    <ClInclude Include="kernel\task\Ipc\Ipc.hpp" />
     <ClInclude Include="kernel\task\Ipc\IpcBuffer.hpp" />
     <ClInclude Include="kernel\task\ProcessManager.hpp" />
     <ClInclude Include="kernel\task\Scheduler.hpp" />

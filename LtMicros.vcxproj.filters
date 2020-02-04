@@ -171,6 +171,9 @@
     <ClCompile Include="kernel\task\Ipc\IpcBuffer.cpp">
       <Filter>Fichiers sources\kernel\task\ipc</Filter>
     </ClCompile>
+    <ClCompile Include="kernel\task\Ipc\Ipc.cpp">
+      <Filter>Fichiers sources\kernel\task\ipc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kernel\multiboot.hpp">
@@ -309,6 +312,9 @@
       <Filter>Fichiers sources\kernel\syscalls</Filter>
     </ClInclude>
     <ClInclude Include="kernel\task\Ipc\IpcBuffer.hpp">
+      <Filter>Fichiers sources\kernel\task\ipc</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\Ipc\Ipc.hpp">
       <Filter>Fichiers sources\kernel\task\ipc</Filter>
     </ClInclude>
   </ItemGroup>

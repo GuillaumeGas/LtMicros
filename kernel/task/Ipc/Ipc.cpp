@@ -7,6 +7,7 @@
 #include <kernel/lib/CriticalSection.hpp>
 #include <kernel/Kernel.hpp>
 #include <kernel/task/ProcessManager.hpp>
+#include <kernel/task/Event.hpp>
 #include <kernel/drivers/Clock.hpp>
 #include <kernel/handle/HandleManager.h>
 
@@ -267,20 +268,18 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         status = IPC_STATUS_ACCESS_DENIED;
     }
 
-    do {
-        ipcObject->criticalSection.Enter();
+    EventWait(ipcObject->buffer.ReadyToReadEvent);
+
+    ipcObject->criticalSection.Enter();
         
-        status = ipcObject->buffer.ReadBytes(buffer, size, &localBytesRead);
-        if (FAILED(status))
-        {
-            KLOG(LOG_ERROR, "IpcBuffer::ReadBytes() failed with code %t", status);
-            goto clean;
-        }
+    status = ipcObject->buffer.ReadBytes(buffer, size, &localBytesRead);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "IpcBuffer::ReadBytes() failed with code %t", status);
+        goto clean;
+    }
 
-        ipcObject->criticalSection.Leave();
-
-        gClockDrv.Pause(1);
-    } while (bytesRead == 0);
+    ipcObject->criticalSection.Leave();
 
     *bytesRead = localBytesRead;
 

@@ -3,6 +3,7 @@
 #include <kernel/lib/Status.hpp>
 #include <kernel/lib/List.hpp>
 #include <kernel/arch/x86/Vmm.hpp>
+#include <kernel/task/Event.hpp>
 
 /// @file
 
@@ -18,6 +19,8 @@ public:
 
     KeStatus AddBytes(const char* message, const unsigned int size);
     KeStatus ReadBytes(char* const buffer, const unsigned int size, unsigned int* const bytesRead);
+
+    Event ReadyToReadEvent;
 
 private:
     Page * AllocatePage() const;

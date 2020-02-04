@@ -27,6 +27,7 @@ void IpcBuffer::Init()
     currentReadLimit = nullptr;
 
     pagesList = ListCreate();
+    ReadyToReadEvent = EventCreate();
 }
 
 KeStatus IpcBuffer::AddBytes(const char* message, const unsigned int size)
@@ -81,6 +82,8 @@ KeStatus IpcBuffer::AddBytes(const char* message, const unsigned int size)
             }
         }
     } while (remainingBytes > 0);
+
+    EventSignal(this->ReadyToReadEvent);
 
     status = STATUS_SUCCESS;
 
