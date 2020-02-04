@@ -2,7 +2,7 @@
 #include "UKSyscallsCommon.h"
 
 #include <kernel/task/ProcessManager.hpp>
-#include <kernel/task/Ipc.hpp>
+#include <kernel/task/ipc/Ipc.hpp>
 #include <kernel/lib/CriticalSection.hpp>
 
 #include <kernel/Logger.hpp>
@@ -184,7 +184,7 @@ void SysIpcReceive(InterruptFromUserlandContext* context)
 
     parameters = (SysIpcReceiveParameter*)context->ebx;
 
-    status = gIpcHandler.Receive(parameters->ipcHandle, serveurProcess, parameters->message, parameters->sizePtr, parameters->clientHandlePtr);
+    status = gIpcHandler.Receive(parameters->ipcHandle, serveurProcess, parameters->buffer, parameters->size, parameters->readBytesPtr);
     if (FAILED(status))
     {
         KLOG(LOG_DEBUG, "IpcHandler::Receive() failed with code %d (Process %d)", status, serveurProcess->pid);

@@ -10,9 +10,9 @@
 struct SysIpcReceiveParameter
 {
     unsigned int ipcHandle;
-    char** message;
-    unsigned int* sizePtr;
-    unsigned int * clientHandlePtr;
+    char * buffer;
+    unsigned int size;
+    unsigned int * readBytesPtr;
 };
 
 /// @}

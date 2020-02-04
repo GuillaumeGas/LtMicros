@@ -24,7 +24,7 @@ class IpcServer
 public:
     static IpcStatus Create(const char * const serverName, IpcServer * const server);
 
-    IpcStatus Receive(IpcMessage * const message, ProcessHandle * clientHandle);
+    IpcStatus Receive(char * const buffer, const unsigned int size, unsigned int * const readByteses);
 
 private:
     IpcHandle _serverHandle;

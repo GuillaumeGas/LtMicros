@@ -1,6 +1,7 @@
 #include "IpcBuffer.hpp"
 
 #include <kernel/Logger.hpp>
+#include <kernel/mem/PagePool.hpp>
 
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("IPCBUFFER", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
@@ -9,9 +10,31 @@
 #define DKLOG(LOG_LEVEL, format, ...)
 #endif
 
+IpcBuffer::IpcBuffer()
+{
+
+}
+
+void IpcBuffer::Init()
+{
+    currentPageWrite = nullptr;
+    currentPageRead = nullptr;
+
+    currentPageWritePtr = nullptr;
+    currentPageReadPtr = nullptr;
+
+    currentWriteLimit = nullptr;
+    currentReadLimit = nullptr;
+
+    pagesList = ListCreate();
+}
+
 KeStatus IpcBuffer::AddBytes(const char* message, const unsigned int size)
 {
     KeStatus status = STATUS_FAILURE;
+    char * currentPage = nullptr;
+    char * localMessage = (char*)message;
+    unsigned int remainingBytes = size;
 
     if (message == nullptr)
     {
@@ -25,12 +48,39 @@ KeStatus IpcBuffer::AddBytes(const char* message, const unsigned int size)
         return STATUS_INVALID_PARAMETER;
     }
 
-    /*
-        - Ecrire ce qu'on peut sur le buffer courant ET déplacer le curseur d'écriture
-        - Si on a pas pu tout écrire,
-            - allouer une nouvelle page, et ajouter la courante dans la liste de pages. La nouvelle page devient la courante.
-            - refaire cette opération autant de fois qu'il le faudra
-    */
+    if (this->currentPageWritePtr == nullptr)
+    {
+        status = AllocateWritePage();
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "AllocateWritePage() failed with code %t", status);
+            goto clean;
+        }
+    }
+
+    do
+    {
+        while (remainingBytes > 0 && (this->currentPageWritePtr < this->currentWriteLimit))
+        {
+            *(this->currentPageWritePtr) = *localMessage;
+
+            this->currentPageWritePtr++;
+            localMessage++;
+            remainingBytes--;
+
+            if (this->currentPageWrite == this->currentPageRead)
+                this->currentReadLimit++;
+        }
+        if (remainingBytes > 0)
+        {
+            status = AllocateWritePage();
+            if (FAILED(status))
+            {
+                KLOG(LOG_ERROR, "AllocateWritePage() failed with code %t", status);
+                goto clean;
+            }
+        }
+    } while (remainingBytes > 0);
 
     status = STATUS_SUCCESS;
 
@@ -41,6 +91,8 @@ clean:
 KeStatus IpcBuffer::ReadBytes(char* const buffer, const unsigned int size, unsigned int* const bytesRead)
 {
     KeStatus status = STATUS_FAILURE;
+    unsigned int localSize = size;
+    char * localBuffer = buffer;
 
     if (buffer == nullptr)
     {
@@ -60,17 +112,99 @@ KeStatus IpcBuffer::ReadBytes(char* const buffer, const unsigned int size, unsig
         return STATUS_NULL_PARAMETER;
     }
 
-    /*
-        - Essayer de lire les size octets sur la page courante, et mettre à jour le curseur de lecture.
-        - Si on est arrivé en haut de la page ET qu'on a pas assez lu d'octets
-           - on passe à la page suivante si il y en une, et on fait ça jusqu'à avoir lu les size octets
-           - si il n'y a pas assez d'octets à lire, on met à jour bytesRead avec les octets lu
+    if (this->currentPageReadPtr == nullptr)
+    {
+        Page * nextPage = (Page*)ListTop(this->pagesList);
+        this->currentPageRead = nextPage;
+        this->currentPageReadPtr = (char*)nextPage->vAddr;
 
-           Si on a pu tout lire, on met *bytesRead = size
-    */
+        if (this->currentPageRead == this->currentPageWrite)
+            this->currentReadLimit = this->currentPageWritePtr;
+        else
+            this->currentReadLimit = (char*)(nextPage->vAddr + PAGE_SIZE);
+    }
+
+    do
+    {
+        while (localSize > 0 && (this->currentPageReadPtr < this->currentReadLimit))
+        {
+            //KLOG(LOG_DEBUG, "[%c]", *(this->currentPageReadPtr));
+
+            *localBuffer = *(this->currentPageReadPtr);
+            localBuffer++;
+            this->currentPageReadPtr++;
+            localSize--;
+        }
+
+        if (localSize > 0)
+        {
+            // If we are not on the last page, we may remove it from the list and free memory
+            if (this->currentPageWrite != this->currentPageRead)
+            {
+                // removing the older page, on the top of the list
+                Page * page = (Page*)ListPop(&this->pagesList);
+
+                // we release the page
+                gPagePool.Free(*page);
+
+                // And we take the next one
+                page = (Page*)ListTop(this->pagesList);
+
+                this->currentPageReadPtr = (char*)page->vAddr;
+                this->currentReadLimit = (char*)(page->vAddr + PAGE_SIZE);
+            }
+            else
+            {
+                break;
+            }
+        }
+    } while (localSize > 0);
+
+    *bytesRead = (localSize == 0 ? size : (size - localSize));
 
     status = STATUS_SUCCESS;
 
 clean:
     return status;
+}
+
+Page * IpcBuffer::AllocatePage() const
+{
+    Page * newPage = nullptr;
+    Page p = gPagePool.Allocate();
+
+    if (p.vAddr == 0)
+    {
+        return nullptr;
+    }
+
+    newPage = (Page*)HeapAlloc(sizeof(Page));
+    if (newPage == nullptr)
+    {
+        KLOG(LOG_ERROR, "Couldn't allocate %d bytes", sizeof(Page));
+        return nullptr;
+    }
+
+    newPage->pAddr = p.pAddr;
+    newPage->vAddr = p.vAddr;
+
+    return newPage;
+}
+
+KeStatus IpcBuffer::AllocateWritePage()
+{
+    Page * newPage = AllocatePage();
+    if (newPage == nullptr)
+    {
+        KLOG(LOG_ERROR, "AllocatePage() failed");
+        return STATUS_ALLOC_FAILED;
+    }
+
+    this->currentPageWrite = newPage;
+    this->currentPageWritePtr = (char*)newPage->vAddr;
+    this->currentWriteLimit = (char *)(newPage->vAddr + PAGE_SIZE);
+
+    ListPush(this->pagesList, newPage);
+
+    return STATUS_SUCCESS;
 }

@@ -269,7 +269,14 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
 
     do {
         ipcObject->criticalSection.Enter();
+        
         status = ipcObject->buffer.ReadBytes(buffer, size, &localBytesRead);
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "IpcBuffer::ReadBytes() failed with code %t", status);
+            goto clean;
+        }
+
         ipcObject->criticalSection.Leave();
 
         gClockDrv.Pause(1);
@@ -452,8 +459,8 @@ KeStatus IpcObject::Create(const char * serverIdStr, Process * const serverProce
 
     object->handle = handle;
     object->id = serverIdStrCopy;
-    object->messages = ListCreate();
     object->serverProcess = (Process *)serverProcess;
+    object->buffer.Init();
 
     *ipcObject = object;
     object = nullptr;
@@ -461,53 +468,5 @@ KeStatus IpcObject::Create(const char * serverIdStr, Process * const serverProce
     status = STATUS_SUCCESS;
 
 clean:
-    return status;
-}
-
-KeStatus IpcMessage::Create(const Handle clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage)
-{
-    KeStatus status = STATUS_FAILURE;
-    IpcMessage * newIpcMessage = nullptr;
-
-    if (clientProcess == INVALID_HANDLE_VALUE)
-    {
-        KLOG(LOG_ERROR, "Invalid clientProcess parameter");
-        return STATUS_INAVLID_HANDLE;
-    }
-
-    if (message == nullptr)
-    {
-        KLOG(LOG_ERROR, "Invalid message parameter");
-        return STATUS_NULL_PARAMETER;
-    }
-
-    if (size == 0)
-    {
-        KLOG(LOG_ERROR, "Invalid size parameter");
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    if (ipcMessage == nullptr)
-    {
-        KLOG(LOG_ERROR, "Invalid ipcMessage parameter");
-        return STATUS_NULL_PARAMETER;
-    }
-
-    newIpcMessage = (IpcMessage*)HeapAlloc(sizeof(IpcMessage));
-    if (newIpcMessage == nullptr)
-    {
-        KLOG(LOG_ERROR, "Couldn't allocate %d bytes", sizeof(IpcMessage));
-        gKernel.Panic();
-    }
-
-    newIpcMessage->clientProcess = clientProcess;
-    newIpcMessage->message = message;
-    newIpcMessage->size = size;
-
-    *ipcMessage = newIpcMessage;
-    newIpcMessage = nullptr;
-
-    status = STATUS_SUCCESS;
-
     return status;
 }

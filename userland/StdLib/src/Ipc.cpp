@@ -39,27 +39,33 @@ clean:
     return status;
 }
 
-IpcStatus IpcServer::Receive(IpcMessage * const message, ProcessHandle * clientHandle)
+IpcStatus IpcServer::Receive(char * const buffer, const unsigned int size, unsigned int * const readBytes)
 {
     IpcStatus status = STATUS_FAILURE;
     SysIpcReceiveParameter parameters;
 
-    if (message == nullptr)
+    if (buffer == nullptr)
     {
-        printf("Invalid message parameter\n");
+        printf("Invalid buffer parameter\n");
         return STATUS_NULL_PARAMETER;
     }
 
-    if (clientHandle == nullptr)
+    if (size == 0)
     {
-        printf("Invalid clientHandle parameter\n");
+        printf("Invalid size parameter\n");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (readBytes == nullptr)
+    {
+        printf("Invalid readBytes parameter\n");
         return STATUS_NULL_PARAMETER;
     }
 
     parameters.ipcHandle = _serverHandle;
-    parameters.message = (char**)&message->data;
-    parameters.sizePtr = &message->size;
-    parameters.clientHandlePtr = (unsigned int*)clientHandle;
+    parameters.buffer = buffer;
+    parameters.size = size;
+    parameters.readBytesPtr = readBytes;
 
     status = (IpcStatus)_sysIpcReceive(&parameters);
     if (FAILED(status))

@@ -127,7 +127,7 @@ Status FsOpenFile(const char * filePath, const FileAccess access, const FileShar
     }
 
     {
-        IpcMessage response;
+        /*IpcMessage response;
         ProcessHandle clientHandle = INVALID_HANDLE_VALUE;
         LtFsResponse * ltFsResponse = nullptr;
 
@@ -142,7 +142,7 @@ Status FsOpenFile(const char * filePath, const FileAccess access, const FileShar
         if (ltFsResponse->status != STATUS_ACCESS_DENIED)
             *fileHandle = (Handle)ltFsResponse->data;
         else
-            status = ltFsResponse->status;
+            status = ltFsResponse->status;*/
 
         // TODO : response.Release();
     }

@@ -17,7 +17,7 @@
 
 #include <kernel/task/ProcessManager.hpp>
 #include <kernel/task/Scheduler.hpp>
-#include <kernel/task/Ipc.hpp>
+#include <kernel/task/ipc/Ipc.hpp>
 
 #include <kernel/syscalls/SyscallsHandler.hpp>
 

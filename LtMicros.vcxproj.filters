@@ -52,6 +52,9 @@
     <Filter Include="Fichiers sources\kernel\handle">
       <UniqueIdentifier>{0d226b35-91df-4b8e-a15d-15d3b9add963}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\kernel\task\ipc">
+      <UniqueIdentifier>{d39650d5-e5e8-4579-8c72-87c5cb124a26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kernel\kmain.cpp">
@@ -153,9 +156,6 @@
     <ClCompile Include="kernel\module\Module.cpp">
       <Filter>Fichiers sources\kernel\module</Filter>
     </ClCompile>
-    <ClCompile Include="kernel\task\Ipc.cpp">
-      <Filter>Fichiers sources\kernel\task</Filter>
-    </ClCompile>
     <ClCompile Include="kernel\mem\Vad.cpp">
       <Filter>Fichiers sources\kernel\mem</Filter>
     </ClCompile>
@@ -167,6 +167,9 @@
     </ClCompile>
     <ClCompile Include="kernel\lib\Status.cpp">
       <Filter>Fichiers sources\kernel\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\task\Ipc\IpcBuffer.cpp">
+      <Filter>Fichiers sources\kernel\task\ipc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -293,9 +296,6 @@
     <ClInclude Include="kernel\module\Module.hpp">
       <Filter>Fichiers sources\kernel\module</Filter>
     </ClInclude>
-    <ClInclude Include="kernel\task\Ipc.hpp">
-      <Filter>Fichiers sources\kernel\task</Filter>
-    </ClInclude>
     <ClInclude Include="kernel\mem\Vad.hpp">
       <Filter>Fichiers sources\kernel\mem</Filter>
     </ClInclude>
@@ -307,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="kernel\syscalls\UKSyscallsCommon.h">
       <Filter>Fichiers sources\kernel\syscalls</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\task\Ipc\IpcBuffer.hpp">
+      <Filter>Fichiers sources\kernel\task\ipc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
