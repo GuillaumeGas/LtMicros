@@ -22,6 +22,8 @@ enum ThreadState
     THREAD_STATE_RUNNING,
     /// @brief The thread is paused
     THREAD_STATE_PAUSED,
+    /// @brief The thread is waiting that an event is signaled
+    THREAD_STATE_WAITING,
     /// @brief The thread is dead and may be suppressed
     THREAD_STATE_DEAD
 };

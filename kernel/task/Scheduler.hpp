@@ -32,7 +32,8 @@ public:
     /// @param[in] Interrupt context, used to save the current thread state (pushed on the stack during interrupt)
     void Schedules(InterruptContext * context);
 
-    void SchedulesFromRunningThread();
+    /// @brief Provokes a software interrupt, the associated routine will call the scheduler and start the next thread
+    void ContextSwitchInterrupt();
 
     /// @brief Retrieves the current running process
     /// @return A pointer to the current process structure

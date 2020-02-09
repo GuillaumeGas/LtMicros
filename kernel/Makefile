@@ -7,7 +7,7 @@ BOOT=../boot/bootsector.o
 ROOT=kmain.o Kernel.o Logger.o cppsupport.o
 DRIVERS=Screen.o Pic.o Clock.o clock_isr.o Serial.o BaseDriver.o
 LIB=StdLib.o StdIo.o asm_helper.o StdMem.o List.o CriticalSection.o Status.o
-ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr_exceptions.o InterruptContext.o Pmm.o Vmm.o vmm_utils.o Process.o Thread.o thread_utils.o Syscalls.o syscall_isr.o PageFault.o
+ARCHX86=gdtLoader.o Gdt.o Idt.o idtLoader.o isr_utils.o isr_exceptions_asm.o isr_exceptions.o InterruptContext.o Pmm.o Vmm.o vmm_utils.o Process.o Thread.o thread_utils.o Syscalls.o syscall_isr.o PageFault.o SchedulerX86.o scheduler_isr.o
 MEM=PagePool.o Heap.o Vad.o
 SYSCALLS=SyscallsHandler.o
 TASK=ProcessManager.o ThreadManager.o Scheduler.o Ipc.o IpcBuffer.o Event.o
@@ -135,6 +135,12 @@ syscall_isr.o: arch/x86/syscall_isr.asm
 
 PageFault.o: arch/x86/Exceptions/PageFault.cpp
 	$(CC) -c $^
+
+SchedulerX86.o: arch/x86/SchedulerX86.cpp
+	$(CC) -c $^
+
+scheduler_isr.o: arch/x86/scheduler_isr.asm
+	$(ASM) -o $@ $^
 
 # MEM DIRECTORY
 PagePool.o: mem/PagePool.cpp

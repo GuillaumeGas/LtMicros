@@ -138,9 +138,6 @@
     <ClCompile Include="kernel\lib\CriticalSection.cpp">
       <Filter>Fichiers sources\kernel\lib</Filter>
     </ClCompile>
-    <ClCompile Include="kernel\arch\x86\Syscalls.cpp">
-      <Filter>Fichiers sources\kernel\arch\x86</Filter>
-    </ClCompile>
     <ClCompile Include="kernel\syscalls\SyscallsHandler.cpp">
       <Filter>Fichiers sources\kernel\syscalls</Filter>
     </ClCompile>
@@ -176,6 +173,12 @@
     </ClCompile>
     <ClCompile Include="kernel\task\Event.cpp">
       <Filter>Fichiers sources\kernel\task</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\Syscalls.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\arch\x86\SchedulerX86.cpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -278,9 +281,6 @@
     <ClInclude Include="kernel\syscalls\SyscallsList.hpp">
       <Filter>Fichiers sources\kernel\syscalls</Filter>
     </ClInclude>
-    <ClInclude Include="kernel\arch\x86\Syscalls.hpp">
-      <Filter>Fichiers sources\kernel\arch\x86</Filter>
-    </ClInclude>
     <ClInclude Include="kernel\syscalls\SyscallsHandler.hpp">
       <Filter>Fichiers sources\kernel\syscalls</Filter>
     </ClInclude>
@@ -322,6 +322,12 @@
     </ClInclude>
     <ClInclude Include="kernel\task\Event.hpp">
       <Filter>Fichiers sources\kernel\task</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\Syscalls.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\arch\x86\SchedulerX86.hpp">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -369,6 +375,9 @@
     </None>
     <None Include="iso\boot\grub\grub.cfg">
       <Filter>Fichiers sources</Filter>
+    </None>
+    <None Include="kernel\arch\x86\scheduler_isr.asm">
+      <Filter>Fichiers sources\kernel\arch\x86</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -177,7 +177,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
         return STATUS_INVALID_PARAMETER;
     }
 
-    //KLOG(LOG_DEBUG, "Handling message from %s, msg addr : %x, size : %d", clientProcess->name, message, size);
+    DKLOG(LOG_DEBUG, "Handling message from %s, msg addr : %x, size : %d", clientProcess->name, message, size);
 
     ipcObject->criticalSection.Enter();
 
@@ -268,7 +268,7 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         status = IPC_STATUS_ACCESS_DENIED;
     }
 
-    EventWait(ipcObject->buffer.ReadyToReadEvent);
+    EventWait(&ipcObject->buffer.ReadyToReadEvent);
 
     ipcObject->criticalSection.Enter();
         

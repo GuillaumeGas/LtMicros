@@ -137,6 +137,7 @@
     <ClCompile Include="kernel\arch\x86\isr_exceptions.cpp" />
     <ClCompile Include="kernel\arch\x86\Pmm.cpp" />
     <ClCompile Include="kernel\arch\x86\Process.cpp" />
+    <ClCompile Include="kernel\arch\x86\SchedulerX86.cpp" />
     <ClCompile Include="kernel\arch\x86\Syscalls.cpp" />
     <ClCompile Include="kernel\arch\x86\Thread.cpp" />
     <ClCompile Include="kernel\arch\x86\Vmm.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="kernel\arch\x86\MemCommon.hpp" />
     <ClInclude Include="kernel\arch\x86\Pmm.hpp" />
     <ClInclude Include="kernel\arch\x86\Process.hpp" />
+    <ClInclude Include="kernel\arch\x86\SchedulerX86.hpp" />
     <ClInclude Include="kernel\arch\x86\Syscalls.hpp" />
     <ClInclude Include="kernel\arch\x86\Thread.hpp" />
     <ClInclude Include="kernel\arch\x86\Vmm.hpp" />
@@ -229,6 +231,7 @@
     <None Include="kernel\arch\x86\IdtLoader.asm" />
     <None Include="kernel\arch\x86\isr_exceptions.asm" />
     <None Include="kernel\arch\x86\isr_utils.asm" />
+    <None Include="kernel\arch\x86\scheduler_isr.asm" />
     <None Include="kernel\arch\x86\syscall_isr.asm" />
     <None Include="kernel\arch\x86\thread_utils.asm" />
     <None Include="kernel\arch\x86\vmm_utils.asm" />

@@ -2,6 +2,8 @@
 #include "Scheduler.hpp"
 
 #include <kernel/arch/x86/InterruptContext.hpp>
+#include <kernel/arch/x86/SchedulerX86.hpp>
+#include <kernel/arch/x86/Idt.hpp>
 #include <kernel/debug/LtDbg.hpp>
 #include <kernel/Kernel.hpp>
 #include <kernel/drivers/Clock.hpp>
@@ -10,6 +12,8 @@
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SCHEDULER", LOG_LEVEL, format, ##__VA_ARGS__)
 
 #define DEFAULT_THREAD_LIMIT_WORKING_TIME 100
+
+#define RunnableThread(state) (state == THREAD_STATE_RUNNING || state == THREAD_STATE_INIT || state == THREAD_STATE_PAUSED)
 
 struct LOOK_FOR_THREAD_CONTEXT
 {
@@ -28,6 +32,9 @@ void Scheduler::Init()
         KLOG(LOG_ERROR, "ListCreate() failed");
         gKernel.Panic();
     }
+
+    gIdt.InitDescriptor((u32)_asm_context_swtich_isr, CPU_GATE, ISR_INDEX_CONTEXT_SWITCH);
+    gIdt.Reload();
 
     _running = false;
     _currentThread = nullptr;
@@ -70,10 +77,14 @@ void Scheduler::Schedules(InterruptContext * context)
 
     if (_running && _nbThreads > 1)
     {
+        // The current thread may be waiting
+        bool IsCurrentThreadRunnable = (_currentThread != nullptr ? RunnableThread(_currentThread->state) : true);
+
         // If the current thread worked enough or if another thread has a higher priority
         if (_currentThread == nullptr
             || (gClockDrv.tics - _currentThread->ticsOnResume > DEFAULT_THREAD_LIMIT_WORKING_TIME) 
-            || HasHigherThreadPriority(_currentThread))
+            || HasHigherThreadPriority(_currentThread)
+            || IsCurrentThreadRunnable == false)
         {
             bool found = false;
             Thread* foundThread = nullptr;
@@ -89,7 +100,7 @@ void Scheduler::Schedules(InterruptContext * context)
                 {
                     foundThread = nextThread;
 
-                    if (foundThread->threadPriority >= _currentThread->threadPriority)
+                    if (foundThread->threadPriority >= _currentThread->threadPriority && RunnableThread(foundThread->state))
                     {
                         found = true;
                     }
@@ -104,9 +115,9 @@ void Scheduler::Schedules(InterruptContext * context)
     }
 }
 
-void Scheduler::SchedulesFromRunningThread()
+void Scheduler::ContextSwitchInterrupt()
 {
-    // TODO 
+    __contextSwitchInt();
 }
 
 Process * Scheduler::GetCurrentProcess()
@@ -226,7 +237,7 @@ static KeStatus LookForThreadWithHigherPriorityCallback(void* data, void* contex
         return STATUS_NULL_PARAMETER;
     }
 
-    if (thread->threadPriority > foundContext->thread->threadPriority)
+    if (thread->threadPriority > foundContext->thread->threadPriority && RunnableThread(thread->state))
     {
         foundContext->found = true;
         foundContext->foundThread = thread;

@@ -9,6 +9,8 @@
 #include <kernel/Logger.hpp>
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("SYSCALLSX86", LOG_LEVEL, format, ##__VA_ARGS__)
 
+#define ISR_INDEX_SYSCALL 48
+
 extern "C" void _asm_syscall_isr(void);
 
 extern "C" void syscall_isr(InterruptFromUserlandContext * context)
@@ -24,6 +26,6 @@ extern "C" void syscall_isr(InterruptFromUserlandContext * context)
 
 void SyscallsX86::Init()
 {
-    gIdt.InitDescriptor((u32)(_asm_syscall_isr), SYSCALL_GATE, 48);
+    gIdt.InitDescriptor((u32)(_asm_syscall_isr), SYSCALL_GATE, ISR_INDEX_SYSCALL);
     gIdt.Reload();
 }

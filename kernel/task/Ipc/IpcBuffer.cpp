@@ -83,7 +83,7 @@ KeStatus IpcBuffer::AddBytes(const char* message, const unsigned int size)
         }
     } while (remainingBytes > 0);
 
-    EventSignal(this->ReadyToReadEvent);
+    EventSignal(&this->ReadyToReadEvent);
 
     status = STATUS_SUCCESS;
 
@@ -131,8 +131,6 @@ KeStatus IpcBuffer::ReadBytes(char* const buffer, const unsigned int size, unsig
     {
         while (localSize > 0 && (this->currentPageReadPtr < this->currentReadLimit))
         {
-            //KLOG(LOG_DEBUG, "[%c]", *(this->currentPageReadPtr));
-
             *localBuffer = *(this->currentPageReadPtr);
             localBuffer++;
             this->currentPageReadPtr++;
