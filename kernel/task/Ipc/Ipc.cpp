@@ -268,7 +268,17 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         status = IPC_STATUS_ACCESS_DENIED;
     }
 
-    EventWait(&ipcObject->buffer.ReadyToReadEvent);
+    // We determine if bytes are available in the ipcbuffer or if we have to wait
+    {
+        bool bytesAvailable = false;
+
+        ipcObject->criticalSection.Enter();
+        bytesAvailable = ipcObject->buffer.BytesAvailable();
+        ipcObject->criticalSection.Leave();
+
+        if (!bytesAvailable)
+            EventWait(&ipcObject->buffer.ReadyToReadEvent);
+    }
 
     ipcObject->criticalSection.Enter();
         

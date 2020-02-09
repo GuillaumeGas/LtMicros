@@ -209,3 +209,14 @@ KeStatus IpcBuffer::AllocateWritePage()
 
     return STATUS_SUCCESS;
 }
+
+bool IpcBuffer::BytesAvailable() const
+{
+    // Bytes have been written, but we didn't read yet
+    if (this->currentPageReadPtr == nullptr && this->currentPageWritePtr != nullptr)
+        return true;
+    // We didn't reach the limit, still have bytes to read
+    if (this->currentPageReadPtr != nullptr && (this->currentPageReadPtr < this->currentReadLimit))
+        return true;
+    return false;
+}
