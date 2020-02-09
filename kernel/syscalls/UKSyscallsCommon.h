@@ -1,5 +1,7 @@
 #pragma once
 
+typedef unsigned int Handle;
+
 /// @file
 
 /// @addgroup Syscalls
@@ -13,6 +15,7 @@ struct SysIpcReceiveParameter
     char * buffer;
     unsigned int size;
     unsigned int * readBytesPtr;
+    Handle * clientProcessHandlePtr;
 };
 
 /// @}

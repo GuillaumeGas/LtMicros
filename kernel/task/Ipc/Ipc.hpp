@@ -48,8 +48,16 @@ public:
     /// @param[in]  message A pointer that will hold a pointer to the message. The memory is allocated by the caller (user process).
     /// @param[in]  size The message size in bytes
     /// @param[out] bytesRead A pointer that will hold the number of bytes copied in the buffer
+    /// @param[out] clientProcessHandle A pointer that will hold a handle on the client process
     /// @return IPC_STATUS_SUCCESS on success, an error code otherwise
-    KeStatus Receive(const IpcHandle handle, Process* const serverProcess, char * const buffer, const unsigned int size, unsigned int * const bytesRead);
+    KeStatus Receive(
+        const IpcHandle       handle,
+        Process* const        serverProcess,
+        char * const          buffer,
+        const unsigned int    size,
+        unsigned int * const  bytesRead,
+        Handle * const clientProcessHandle
+    );
 
     /// @brief Releases memory allocated for an IPC in a process address space
     /// @param[in] process The process in which the memory must be released

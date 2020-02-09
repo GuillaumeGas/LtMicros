@@ -2,6 +2,7 @@
 
 #include <status.h>
 #include <Ipc.hpp>
+#include <LtFsCommon.h>
 
-Status ServiceExecuteCommand(const ProcessHandle processHandle, char * const message, unsigned int size, bool * serviceTerminate);
+Status ServiceExecuteCommand(IpcServer * const server, const Handle clientProcess, const LtFsRequestType requestType, bool * serviceTerminate);
 void ServiceCommandInit();

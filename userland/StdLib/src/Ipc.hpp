@@ -1,15 +1,13 @@
 #pragma once
 
 #include "status.h"
+#include "types.h"
 
 #define INVALID_HANDLE_VALUE 0
 
 typedef Status IpcStatus;
 typedef int IpcHandle;
 typedef IpcHandle IpcServerHandle;
-
-// tmp
-typedef int ProcessHandle;
 
 struct IpcMessage
 {
@@ -24,7 +22,7 @@ class IpcServer
 public:
     static IpcStatus Create(const char * const serverName, IpcServer * const server);
 
-    IpcStatus Receive(char * const buffer, const unsigned int size, unsigned int * const readByteses);
+    IpcStatus Receive(char * const buffer, const unsigned int size, unsigned int * const readByteses, Handle * clientProcessHandle);
 
 private:
     IpcHandle _serverHandle;

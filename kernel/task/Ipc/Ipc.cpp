@@ -197,6 +197,22 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
         goto clean;
     }
 
+    status = gHandleManager.FindOrCreate(HandleType::PROCESS_HANDLE, clientProcess, &clientProcessHandle);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "HandleManager::FindOrCreate() failed with code %t", status);
+        goto clean;
+    }
+
+    KLOG(LOG_DEBUG, "Writing handle %d", clientProcessHandle);
+
+    status = ipcObject->buffer.AddBytes((char*)clientProcessHandle, sizeof(Handle));
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "IpcBuffer::AddBytes() failed with code %t", status);
+        goto clean;
+    }
+
     status = ipcObject->buffer.AddBytes(message, size);
     if (FAILED(status))
     {
@@ -218,11 +234,12 @@ clean:
     return status;
 }
 
-KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char * const buffer, const unsigned int size, unsigned int * const bytesRead)
+KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char * const buffer, const unsigned int size, unsigned int * const bytesRead, Handle * clientProcessHandle)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
     unsigned int localBytesRead = 0;
+    Handle localProcessHandle = INVALID_HANDLE_VALUE;
 
     if (handle == 0)
     {
@@ -282,6 +299,15 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
 
     ipcObject->criticalSection.Enter();
         
+    status = ipcObject->buffer.ReadBytes((char*)&localProcessHandle, sizeof(Handle), &localBytesRead);
+    if (FAILED(status))
+    {
+        KLOG(LOG_ERROR, "IpcBuffer::ReadBytes() failed with code %t", status);
+        goto clean;
+    }
+
+    KLOG(LOG_DEBUG, "Reading process handle %d", localProcessHandle);
+
     status = ipcObject->buffer.ReadBytes(buffer, size, &localBytesRead);
     if (FAILED(status))
     {
@@ -292,6 +318,7 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
     ipcObject->criticalSection.Leave();
 
     *bytesRead = localBytesRead;
+    *clientProcessHandle = localProcessHandle;
 
     status = STATUS_SUCCESS;
 

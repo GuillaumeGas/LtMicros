@@ -184,7 +184,7 @@ void SysIpcReceive(InterruptFromUserlandContext* context)
 
     parameters = (SysIpcReceiveParameter*)context->ebx;
 
-    status = gIpcHandler.Receive(parameters->ipcHandle, serveurProcess, parameters->buffer, parameters->size, parameters->readBytesPtr);
+    status = gIpcHandler.Receive(parameters->ipcHandle, serveurProcess, parameters->buffer, parameters->size, parameters->readBytesPtr, parameters->clientProcessHandlePtr);
     if (FAILED(status))
     {
         KLOG(LOG_DEBUG, "IpcHandler::Receive() failed with code %d (Process %d)", status, serveurProcess->pid);

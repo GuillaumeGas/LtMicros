@@ -13,7 +13,7 @@ struct ProcessEntry
 {
     IpcHandle serverHandle;
     IpcClient ipcClient;
-    ProcessHandle processHandle;
+    Handle processHandle;
 
     List * fileEntries;
 };
@@ -32,11 +32,11 @@ struct ServiceCommandContext
     List * fileEntries;
 };
 
-static Status RequestConnect(const ProcessHandle processHandle, LtFsConnectParameter * const parameters);
-static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFileParameters * const parameters);
+static Status RequestConnect(IpcServer * const server, const Handle clientProcess);
+static Status RequestOpenFile(IpcServer * const server, const Handle clientProcess);
 
-static Status CreateProcessEntry(ProcessHandle processHandle, ProcessEntry ** process);
-static Status LookForProcessFromHandle(ProcessHandle processHandle, ProcessEntry ** process);
+static Status CreateProcessEntry(Handle processHandle, ProcessEntry ** process);
+static Status LookForProcessFromHandle(Handle processHandle, ProcessEntry ** process);
 static Status LookForFileEntryFromFilePtr(File * file, FileEntry ** fileEntry);
 static bool IsFileAccessible(FileEntry * fileEntry, FileAccess access);
 static Status NewFileEntry(File * file, FileAccess access, FileShareMode shareMode, FileEntry ** newFileEntry);
@@ -51,51 +51,67 @@ void ServiceCommandInit()
     gCurrentFileHandle = 0;
 }
 
-Status ServiceExecuteCommand(const ProcessHandle processHandle, char * const message, unsigned int size, bool * serviceTerminate)
+Status ServiceExecuteCommand(IpcServer * const server, const Handle clientProcess, const LtFsRequestType requestType, bool * serviceTerminate)
 {
     Status status = STATUS_FAILURE;
-    LtFsRequest * request = (LtFsRequest*)message;
 
-    if (request == nullptr)
+    if (server == nullptr)
     {
-        LOG(LOG_ERROR, "Invalid message");
+        LOG(LOG_ERROR, "Invalid server parameter");
         return STATUS_NULL_PARAMETER;
     }
 
-    switch (request->type)
+    if (clientProcess == INVALID_HANDLE_VALUE)
+    {
+        LOG(LOG_ERROR, "Invalid clientProcess parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (serviceTerminate == nullptr)
+    {
+        LOG(LOG_ERROR, "Invalid serviceTerminate parameter");
+        return STATUS_NULL_PARAMETER;
+    }
+
+    switch (requestType)
     {
     case LTFS_REQUEST_TERMINATE:
         *serviceTerminate = true;
         status = STATUS_SUCCESS;
         break;
     case LTFS_REQUEST_CONNECT:
-        status = RequestConnect(processHandle, (LtFsConnectParameter*)&(request->parameters));
+        status = RequestConnect(server, clientProcess);
         break;
     case LTFS_REQUEST_OPEN_FILE:
-        status = RequestOpenFile(processHandle, (LtFsOpenFileParameters*)&(request->parameters));
+        status = RequestOpenFile(server, clientProcess);
         break;
     default:
-        LOG(LOG_ERROR, "Invalid request type %d", request->type);
+        LOG(LOG_ERROR, "Invalid request type %d", requestType);
         status = STATUS_UNEXPECTED;
     }
 
     return status;
 }
 
-static Status RequestConnect(const ProcessHandle processHandle, LtFsConnectParameter * const parameters)
+static Status RequestConnect(IpcServer * const server, const Handle clientProcess)
 {
     Status status = STATUS_FAILURE;
     ProcessEntry * process = nullptr;
+    LtFsConnectParameter parameters = { 0 };
 
-    if (parameters == nullptr)
+    if (server == nullptr)
     {
-        LOG(LOG_ERROR, "Invalid parameters parameter");
+        LOG(LOG_ERROR, "Invalid server parameter");
         return STATUS_NULL_PARAMETER;
     }
 
-    LOG(LOG_INFO, "Connecting to %s", parameters->ipcServerId);
+    if (clientProcess == INVALID_HANDLE_VALUE)
+    {
+        LOG(LOG_ERROR, "Invalid clientProcess parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
 
-    status = LookForProcessFromHandle(processHandle, &process);
+    status = LookForProcessFromHandle(clientProcess, &process);
     if (FAILED(status))
     {
         LOG(LOG_ERROR, "LookForProcessFromHandle() failed with code %t", status);
@@ -110,17 +126,29 @@ static Status RequestConnect(const ProcessHandle processHandle, LtFsConnectParam
         goto clean;
     }
 
-    status = CreateProcessEntry(processHandle, &process);
+    status = CreateProcessEntry(clientProcess, &process);
     if (FAILED(status))
     {
         LOG(LOG_ERROR, "CreateProcessEntry() failed with code %t", status);
         goto clean;
     }
 
-    status = process->ipcClient.ConnectToServer(parameters->ipcServerId, &process->serverHandle);
+    {
+        unsigned int readBytes = 0;
+        Handle processHandle;
+
+        status = server->Receive((char*)&parameters, sizeof(LtFsConnectParameter), &readBytes, &processHandle);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "IpcServer::Receive() failed with code %t", status);
+            goto clean;
+        }
+    }
+
+    status = process->ipcClient.ConnectToServer(parameters.ipcServerId, &process->serverHandle);
     if (FAILED(status))
     {
-        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %t (id : %s)", parameters->ipcServerId);
+        LOG(LOG_ERROR, "IpcClient::ConnectToServer() failed with code %t (id : %s)", parameters.ipcServerId);
         goto clean;
     }
 
@@ -139,7 +167,7 @@ clean:
     return status;
 }
 
-static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFileParameters * const parameters)
+static Status RequestOpenFile(IpcServer * const server, const Handle clientProcess)
 {
     Status status = STATUS_FAILURE;
     Status resStatus = STATUS_SUCCESS;
@@ -147,14 +175,22 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
     FileEntry * existingFileEntry = nullptr;
     ProcessEntry * process = nullptr;
     LtFsResponse * response = nullptr;
+    LtFsOpenFileParameters parameters = { 0 };
+    Handle fileHandle = INVALID_HANDLE_VALUE;
 
-    if (parameters == nullptr)
+    if (server == nullptr)
     {
-        LOG(LOG_ERROR, "Invalid parameters parameter");
+        LOG(LOG_ERROR, "Invalid server parameter");
         return STATUS_NULL_PARAMETER;
     }
 
-    status = LookForProcessFromHandle(processHandle, &process);
+    if (clientProcess == INVALID_HANDLE_VALUE)
+    {
+        LOG(LOG_ERROR, "Invalid clientProcess parameter");
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    status = LookForProcessFromHandle(clientProcess, &process);
     if (FAILED(status))
     {
         LOG(LOG_ERROR, "LookForProcessFromHandle() failed with code %t", status);
@@ -168,11 +204,20 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
         goto clean;
     }
 
-    LOG(LOG_INFO, "Openning %s", parameters->filePath);
+    {
+        unsigned int readBytes;
+        Handle processHandle;
+        status = server->Receive((char*)&parameters, sizeof(LtFsOpenFileParameters), &readBytes, &processHandle);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "IpcServer::Receive() failed with code %t", status);
+            goto clean;
+        }
+    }
 
     RaiseThreadPriority();
 
-    status = OpenFileFromName(parameters->filePath, &file);
+    status = OpenFileFromName(parameters.filePath, &file);
     if (FAILED(status))
     {
         LOG(LOG_ERROR, "OpenFileFromName() failed with code %t", status);
@@ -189,7 +234,7 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
     // If a file has been found, we check if it may be shared
     if (existingFileEntry != nullptr)
     {
-        if (IsFileAccessible(existingFileEntry, parameters->access) == false)
+        if (IsFileAccessible(existingFileEntry, parameters.access) == false)
         {
             resStatus = STATUS_ACCESS_DENIED;
         }
@@ -197,20 +242,13 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
 
     if (resStatus == STATUS_ACCESS_DENIED)
     {
-        status = LtFsResponse::Create(resStatus, nullptr, 0, &response);
-        if (FAILED(status))
-        {
-            LOG(LOG_ERROR, "LtFsResponse::Create() failed with code %t", status);
-            goto clean;
-        }
-
         LOG(LOG_INFO, "Access denied !");
     }
     else
     {
         FileEntry * newFileEntry = nullptr;
 
-        status = NewFileEntry(file, parameters->access, parameters->shareMode, &newFileEntry);
+        status = NewFileEntry(file, parameters.access, parameters.shareMode, &newFileEntry);
         if (FAILED(status))
         {
             LOG(LOG_ERROR, "NewFileEntry() failed with code %t", status);
@@ -220,25 +258,27 @@ static Status RequestOpenFile(const ProcessHandle processHandle, LtFsOpenFilePar
         ListPush(gSvcContext.fileEntries, newFileEntry);
         ListPush(process->fileEntries, newFileEntry);
 
-        status = LtFsResponse::Create(resStatus, &newFileEntry->handle, sizeof(Handle), &response);
-        if (FAILED(status))
-        {
-            LOG(LOG_ERROR, "LtFsResponse::Create() failed with code %t", status);
-            goto clean;
-        }
+        fileHandle = newFileEntry->handle;
 
         LOG(LOG_INFO, "File openned ! Sending response...");
     }
 
-
-    LOG(LOG_DEBUG, "Sending message of size %d", response->size);
-
-    // send the response
-    status = process->ipcClient.Send(process->serverHandle, (char*)response, response->size);
+    // Sending return status
+    status = process->ipcClient.Send(process->serverHandle, (char*)&resStatus, sizeof(Status));
     if (FAILED(status))
     {
         LOG(LOG_ERROR, "IpcClient::Send() failed with code %t", status);
         goto clean;
+    }
+
+    if (FAILED(response->status) == false)
+    {
+        status = process->ipcClient.Send(process->serverHandle, (char*)&fileHandle, sizeof(Handle));
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "IpcClient::Send() failed with code %t", status);
+            goto clean;
+        }
     }
 
     status = STATUS_SUCCESS;
@@ -253,7 +293,7 @@ clean:
     return status;
 }
 
-static Status CreateProcessEntry(ProcessHandle processHandle, ProcessEntry ** process)
+static Status CreateProcessEntry(Handle processHandle, ProcessEntry ** process)
 {
     Status status = STATUS_FAILURE;
     ProcessEntry * localProcess = nullptr;
@@ -291,7 +331,7 @@ clean:
 
 struct LOOK_FOR_PROCESS_CONTEXT
 {
-    ProcessHandle processHandle;
+    Handle processHandle;
     ProcessEntry * processEntry;
 };
 
@@ -321,7 +361,7 @@ static Status LookForProcessFromHandleCallback(void * data, void * context)
     return STATUS_SUCCESS;
 }
 
-static Status LookForProcessFromHandle(ProcessHandle processHandle, ProcessEntry ** process)
+static Status LookForProcessFromHandle(Handle processHandle, ProcessEntry ** process)
 {
     Status status = STATUS_FAILURE;
     LOOK_FOR_PROCESS_CONTEXT context = { 0 };

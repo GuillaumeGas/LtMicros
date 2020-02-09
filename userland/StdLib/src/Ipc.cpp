@@ -1,6 +1,7 @@
 #include "Ipc.hpp"
 #include "syscalls.h"
 #include "stdio.h"
+#include "types.h"
 
 #include <kernel/syscalls/UKSyscallsCommon.h>
 
@@ -39,7 +40,7 @@ clean:
     return status;
 }
 
-IpcStatus IpcServer::Receive(char * const buffer, const unsigned int size, unsigned int * const readBytes)
+IpcStatus IpcServer::Receive(char * const buffer, const unsigned int size, unsigned int * const readBytes, Handle * const clientProcessHandle)
 {
     IpcStatus status = STATUS_FAILURE;
     SysIpcReceiveParameter parameters;
@@ -62,10 +63,17 @@ IpcStatus IpcServer::Receive(char * const buffer, const unsigned int size, unsig
         return STATUS_NULL_PARAMETER;
     }
 
+    if (clientProcessHandle == nullptr)
+    {
+        printf("Invalid clientProcessHandle parameter\n");
+        return STATUS_NULL_PARAMETER;
+    }
+
     parameters.ipcHandle = _serverHandle;
     parameters.buffer = buffer;
     parameters.size = size;
     parameters.readBytesPtr = readBytes;
+    parameters.clientProcessHandlePtr = clientProcessHandle;
 
     status = (IpcStatus)_sysIpcReceive(&parameters);
     if (FAILED(status))

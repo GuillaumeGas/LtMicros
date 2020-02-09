@@ -79,31 +79,26 @@ static void StartListening()
         return;
     }
 
-    char buffer[512];
-    unsigned int bytesRead = 0;
-    status = server.Receive(buffer, 512, &bytesRead);
-    LOG(LOG_INFO, "Message : %s", buffer);
-    LOG(LOG_INFO, "Bytes : %d", bytesRead);
+    do
+    {
+        LtFsRequestType requestType;
+        unsigned int bytesRead = 0;
+        Handle clientProcessHandle = INVALID_HANDLE_VALUE;
 
-    //do
-    //{
-    //    IpcMessage message;
-    //    ProcessHandle clientHandle = INVALID_HANDLE_VALUE;
+        status = server.Receive((char*)&requestType, sizeof(LtFsRequestType), &bytesRead, &clientProcessHandle);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "IpcServer::Receive() failed with code %t", status);
+            break;
+        }
 
-    //    status = server.Receive(&message, &clientHandle);
-    //    if (FAILED(status))
-    //    {
-    //        LOG(LOG_ERROR, "IpcServer::Receive() failed with code %t", status);
-    //        break;
-    //    }
+        status = ServiceExecuteCommand(&server, clientProcessHandle, requestType, &serviceTerminate);
+        if (FAILED(status))
+        {
+            LOG(LOG_ERROR, "ServiceExecuteCommand() failed with code %t", status);
+            break;
+        }
 
-    //    status = ServiceExecuteCommand(clientHandle, (char*)message.data, message.size, &serviceTerminate);
-    //    if (FAILED(status))
-    //    {
-    //        LOG(LOG_ERROR, "ServiceExecuteCommand() failed with code %t", status);
-    //        break;
-    //    }
-
-    //    // message.Release();
-    //} while (!serviceTerminate);
+        // message.Release();
+    } while (!serviceTerminate);
 }

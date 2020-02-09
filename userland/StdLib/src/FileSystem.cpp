@@ -127,24 +127,26 @@ Status FsOpenFile(const char * filePath, const FileAccess access, const FileShar
     }
 
     {
-        /*IpcMessage response;
-        ProcessHandle clientHandle = INVALID_HANDLE_VALUE;
-        LtFsResponse * ltFsResponse = nullptr;
+        Status resStatus = STATUS_FAILURE;
+        unsigned int bytesRead = 0;
+        Handle processHandle = INVALID_HANDLE_VALUE;
 
-        status = gFsContext.ipcServer.Receive(&response, &clientHandle);
+        status = gFsContext.ipcServer.Receive((char*)&resStatus, sizeof(Status), &bytesRead, &processHandle);
         if (FAILED(status))
         {
             goto clean;
         }
 
-        ltFsResponse = (LtFsResponse*)response.data;
-
-        if (ltFsResponse->status != STATUS_ACCESS_DENIED)
-            *fileHandle = (Handle)ltFsResponse->data;
+        if (resStatus != STATUS_ACCESS_DENIED)
+        {
+            status = gFsContext.ipcServer.Receive((char*)fileHandle, sizeof(Handle), &bytesRead, &processHandle);
+            if (FAILED(status))
+            {
+                goto clean;
+            }
+        }
         else
-            status = ltFsResponse->status;*/
-
-        // TODO : response.Release();
+            status = resStatus;
     }
 
     status = STATUS_SUCCESS;
