@@ -179,6 +179,15 @@ clean:
     return status;
 }
 
+void Vad::Release()
+{
+    /*
+        - Si les pages physiques ont été allouées : les libérer
+        - Mettre le vad à libre
+        - Implémenter une fonction de merge de vad libres (on devrait faire la même chose pour la heap)
+    */
+}
+
 KeStatus Vad::LookForVadFromAddress(void* const address, Vad** const outVad)
 {
     KeStatus status = STATUS_FAILURE;

@@ -11,8 +11,6 @@
 #include <kernel/drivers/Clock.hpp>
 #include <kernel/handle/HandleManager.h>
 
-#include "IpcBuffer.hpp"
-
 #define KLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
 #ifdef DEBUG_DEBUGGER
 #define DKLOG(LOG_LEVEL, format, ...) KLOGGER("IPC", LOG_LEVEL, format, ##__VA_ARGS__)
@@ -28,12 +26,28 @@ struct IpcObject
     IpcHandle handle;
     /// Pointer to the server process
     Process * serverProcess;
-    /// IpcBuffer to handle messages
-    IpcBuffer buffer;
+    /// List of messages
+    List * messages;
+    /// Event signaled when a message is ready to be read
+    Event messageAvailableEvent;
     /// Critical section used to protect the ipcObject
     CriticalSection criticalSection;
 
     static KeStatus Create(const char * serverIdStr, Process * const serverProcess, const IpcHandle handle, IpcObject** const ipcObject);
+};
+
+struct IpcMessage
+{
+    /// The sender process
+    Handle clientProcess;
+    /// Pointer to the message content
+    char * message;
+    /// The message size
+    unsigned int size;
+    /// The first page containing the message
+    Page firstPage;
+
+    static KeStatus Create(const Handle clientProcess, char * const message, const unsigned int size, IpcMessage** const ipcMessage);
 };
 
 struct FIND_IPC_OBJECTS_CONTEXT
@@ -148,6 +162,7 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
+    IpcMessage * ipcMessage = nullptr;
     Process * serverProcess = nullptr;
     u8 * serverBuffer = nullptr;
     u8 * kernelBuffer = nullptr;
@@ -206,19 +221,21 @@ KeStatus IpcHandler::Send(const IpcHandle handle, Process* const clientProcess, 
 
     KLOG(LOG_DEBUG, "Writing handle %d", clientProcessHandle);
 
-    status = ipcObject->buffer.AddBytes((char*)clientProcessHandle, sizeof(Handle));
+    // TODO : if the send message pages may be paged, we should make these pages unpageable so we can map them in the receive function
+
+    status = IpcMessage::Create(clientProcessHandle, (char*)serverBuffer, size, &ipcMessage);
     if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "IpcBuffer::AddBytes() failed with code %t", status);
-        goto clean;
+        KLOG(LOG_ERROR, "IpcMessage::Create() failed with code %t", status);
+        gKernel.Panic();
     }
 
-    status = ipcObject->buffer.AddBytes(message, size);
-    if (FAILED(status))
-    {
-        KLOG(LOG_ERROR, "IpcBuffer::AddBytes() failed with code %t", status);
-        goto clean;
-    }
+    ipcObject->criticalSection.Enter();
+
+    ListPush(ipcObject->messages, ipcMessage);
+    EventSignal(&ipcObject->messageAvailableEvent);
+
+    ipcObject->criticalSection.Leave();
 
     status = STATUS_SUCCESS;
 
@@ -234,10 +251,19 @@ clean:
     return status;
 }
 
+/* TODO : find a way to implemet mod */
+static unsigned int _local_mod(unsigned int a, unsigned int b)
+{
+    while (a > b)
+        a -= b;
+    return (a < b) ? 1 : 0;
+}
+
 KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProcess, char * const buffer, const unsigned int size, unsigned int * const bytesRead, Handle * clientProcessHandle)
 {
     KeStatus status = STATUS_FAILURE;
     IpcObject * ipcObject = nullptr;
+    IpcMessage * ipcMessage = nullptr;
     unsigned int localBytesRead = 0;
     Handle localProcessHandle = INVALID_HANDLE_VALUE;
 
@@ -285,34 +311,71 @@ KeStatus IpcHandler::Receive(const IpcHandle handle, Process* const serverProces
         status = IPC_STATUS_ACCESS_DENIED;
     }
 
-    // We determine if bytes are available in the ipcbuffer or if we have to wait
+    // We determine if a message is available
     {
-        bool bytesAvailable = false;
+        bool messageAvailable = false;
 
         ipcObject->criticalSection.Enter();
-        bytesAvailable = ipcObject->buffer.BytesAvailable();
+        messageAvailable = ListIsEmpty(ipcObject->messages) == false;
         ipcObject->criticalSection.Leave();
 
-        if (!bytesAvailable)
-            EventWait(&ipcObject->buffer.ReadyToReadEvent);
+        if (!messageAvailable)
+            EventWait(&ipcObject->messageAvailableEvent);
     }
 
     ipcObject->criticalSection.Enter();
         
-    status = ipcObject->buffer.ReadBytes((char*)&localProcessHandle, sizeof(Handle), &localBytesRead);
-    if (FAILED(status))
+    ipcMessage = (IpcMessage*)ListPop(&ipcObject->messages);
+    if (ipcMessage == nullptr)
     {
-        KLOG(LOG_ERROR, "IpcBuffer::ReadBytes() failed with code %t", status);
+        KLOG(LOG_ERROR, "Unexpected null ipc message");
+        status = STATUS_UNEXPECTED;
+        ipcObject->criticalSection.Leave();
         goto clean;
     }
 
-    KLOG(LOG_DEBUG, "Reading process handle %d", localProcessHandle);
+    /*
+        - Allouer x pages de mémoire virtuelle dans le noyau (ou dans le processus vu qu'on a pas ce qu'il faut en noyau je crois)
+        - Y mapper les pages physiques
+        - Effectuer la copie
+        - Désallouer
+    */
 
-    status = ipcObject->buffer.ReadBytes(buffer, size, &localBytesRead);
-    if (FAILED(status))
     {
-        KLOG(LOG_ERROR, "IpcBuffer::ReadBytes() failed with code %t", status);
-        goto clean;
+        unsigned int calculatedSize = 0;
+        unsigned int nbPages = 0;
+        Vad * vad = nullptr;
+        u32 vAddr = 0;
+        u32 pAddr = 0;
+
+        nbPages = ipcMessage->size / PAGE_SIZE;
+        if (_local_mod(ipcMessage->size, PAGE_SIZE) > 0)
+            nbPages++;
+
+        calculatedSize = nbPages * PAGE_SIZE;
+
+        status = serverProcess->baseVad->Allocate(calculatedSize, &serverProcess->pageDirectory, false, &vad);
+        if (FAILED(status))
+        {
+            KLOG(LOG_ERROR, "Vad::Allocate() failed with code %t (size : %d)", status, calculatedSize);
+            ipcObject->criticalSection.Leave();
+            goto clean;
+        }
+
+        vAddr = (u32)vad->baseAddress;
+        pAddr = (u32)ipcMessage->firstPage.pAddr;
+
+        for (unsigned int index = 0; index < nbPages; index++)
+        {
+            gVmm.AddPageToPageDirectory(vAddr, pAddr, PAGE_PRESENT | PAGE_WRITEABLE, serverProcess->pageDirectory);
+
+            vAddr += PAGE_SIZE;
+            pAddr += PAGE_SIZE;
+        }
+
+        MemCopy((char*)vAddr, buffer, ipcMessage->size);
+
+        vad->Release();
     }
 
     ipcObject->criticalSection.Leave();

@@ -45,6 +45,9 @@ struct Vad
     /// @return STATUS_SUCCESS on success, an error code otherwise
     KeStatus AllocateAtAddress(void * const address, const unsigned int size, const PageDirectory * pageDirectory, const bool reservePhysicalPages, Vad ** const outVad);
 
+    /// @brief Releases a vad
+    void Release();
+
     /// @brief Looks for a vad given an address
     /// @param[in]  address Address that must be containd in the vad we are looking for
     /// @param[out] outVad Pointer that will hold a pointer to the found VAD
